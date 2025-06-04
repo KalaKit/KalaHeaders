@@ -18,7 +18,7 @@
 #include <string>
 #include <compare>
 
-namespace KalaKit
+namespace KalaKit::KalaTypes
 {
 	using std::int8_t;
 	using std::int16_t;
