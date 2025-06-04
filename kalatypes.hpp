@@ -15,6 +15,8 @@
 #include <cstdint>
 #include <limits>
 #include <type_traits>
+#include <string>
+#include <compare>
 
 namespace KalaKit
 {
@@ -29,6 +31,9 @@ namespace KalaKit
 	using std::numeric_limits;
 	using std::is_unsigned_v;
 	using std::is_same_v;
+	using std::string;
+	using std::basic_string;
+	using std::strong_ordering;
 
 	// ======================================================================
 	// 
@@ -122,7 +127,9 @@ namespace KalaKit
 	template<typename T, u8 NumBits>
 	struct BitField
 	{
-		static_assert(is_unsigned_v<T>);
+		static_assert(is_unsigned_v<T>, "Bitfield backing type must be unsigned");
+		static_assert(NumBits <= sizeof(T) * 8, "BitField NumBits exceeds capacity of backing type");
+
 		T value = 0;
 
 		struct BitRef
@@ -172,9 +179,7 @@ namespace KalaKit
 	//   s32<N> - N-length string of c32 (4-byte) characters: full unicode like emojis
 	// 
 	// Usage:
-	//   s8<8> username = "admin";     //ASCII name (max 8 1-byte c8 chars)
-	//   s16<16> label = u"こんにちは"; //japanese (max 16 2-byte c16 chars)
-	//   s32<4> icons = U"🌟🔥💧";   //emoji set (max 4 4-byte c32 chars)
+	//   read docs/usage/fixed_string.md
 	// ======================================================================
 
 	template<typename CharT, usize Length>
@@ -188,54 +193,371 @@ namespace KalaKit
 			"FixedString only supports c8, c16, c32"
 		);
 
-		CharT data[Length]{};
+		CharT data[Length]{}; //zero-initialized
 
-		/// <summary>
-		/// Default constructor (zero-filled)
-		/// </summary>
+		//constructs a zero-initialized fixed string (all characters set to 0)
 		constexpr FixedString() = default;
 
-		/// <summary>
-		/// Construct directly from a string literal
-		/// </summary>
+		//constructs from a string literal known at runtime
 		template<usize N>
 		constexpr FixedString(const CharT(&literal)[N])
 		{
 			static_assert(N - 1 <= Length, "Literal is too long for FixedString");
-			for (usize i = 0; i < N - 1; ++i) data[i] = literal[i];
+
+			for (usize i = 0; i < Length; ++i)
+			{
+				data[i] = (i < N - 1) ? literal[i] : 0;
+			}
 		}
 
-		/// <summary>
-		/// Overwrite contents using a string literal
-		/// </summary>
+		//constructs from a single character
+		constexpr FixedString(CharT ch)
+		{
+			data[0] = ch;
+			for (usize i = 1; i < Length; ++i) data[i] = 0;
+		}
+
+		//assigns from a string literal at runtime
 		template<usize N>
 		constexpr FixedString& operator=(const CharT(&literal)[N])
 		{
 			static_assert(N - 1 <= Length, "Literal too long for FixedString");
-			for (usize i = 0; i < N - 1; ++i) data[i] = literal[i];
 
-			//zero-fill the rest
-			for (usize i = N - 1; i < Length; ++i) data[i] = 0;
+			for (usize i = 0; i < Length; ++i)
+			{
+				data[i] = (i < N - 1) ? literal[i] : 0;
+			}
 
+			return *this;
+		}
+
+		//construct from a C-style null-terminated string at runtime
+		constexpr FixedString(const CharT* str)
+		{
+			for (usize i = 0; i < Length; ++i)
+			{
+				data[i] = str[i];
+				if (str[i] == 0)
+				{
+					//fill remaining with zeros
+					for (++i; i < Length; ++i) data[i] = 0;
+					break;
+				}
+			}
+		}
+
+		//assigns from a C-style null-terminated string at runtime
+		FixedString& operator=(const CharT* str)
+		{
+			for (usize i = 0; i < Length; ++i)
+			{
+				data[i] = str[i];
+				if (str[i] == 0)
+				{
+					//fill remaining with zeros
+					for (++i; i < Length; ++i) data[i] = 0;
+					break;
+				}
+			}
+			return *this;
+		}
+
+		//constructs from basic_string at runtime
+		constexpr FixedString(const basic_string<CharT>& str)
+		{
+			const usize count = str.size();
+			for (usize i = 0; i < Length; ++i)
+			{
+				data[i] = (i < count) ? str[i] : 0;
+			}
+		}
+
+		//assigns from basic_string at runtime
+		FixedString& operator=(const basic_string<CharT>& str)
+		{
+			const usize count = str.size();
+			for (usize i = 0; i < Length; ++i)
+			{
+				data[i] = (i < count) ? str[i] : 0;
+			}
+			return *this;
+		}
+
+		//converts to basic_string
+		basic_string<CharT> to_string() const
+		{
+			usize count = 0;
+			while (count < Length
+				   && data[count] != 0)
+			{
+				++count;
+			}
+			return basic_string<CharT>(data, count);
+		} 
+
+		constexpr usize size() const { return Length; }
+		constexpr usize length() const
+		{
+			for (usize i = 0; i < Length; ++i)
+			{
+				if (data[i] == 0) return i;
+			}
+			return Length;
+		}
+		constexpr const CharT* begin() const { return data; }
+		constexpr CharT* begin() { return data; }
+		constexpr const CharT* end() const { return data + Length; }
+		constexpr CharT* end() { return data + Length; }
+		constexpr const CharT* c_str() const { return data; }
+		constexpr const CharT* data() const { return data; }
+		constexpr bool empty() const { return data[0] == 0; }
+		constexpr void clear() { for (usize i = 0; i < Length; ++i) data[i] = 0; }
+		constexpr bool starts_with(const FixedString& prefix) const
+		{
+			for (usize i = 0; i < prefix.size(); ++i)
+			{
+				if (data[i] != prefix.data[i]) return false;
+			}
+			return true;
+		}
+		constexpr bool ends_with(const FixedString& suffix) const
+		{
+			usize len = length(), slen = suffix.length();
+			if (slen > len) return false;
+			for (usize i = 0; i < slen; ++i)
+			{
+				if (data[len - slen + i] != suffix.data[i]) return false;
+			}
+			return true;
+		}
+		constexpr usize find(CharT ch, usize start = 0) const
+		{
+			for (usize i = start; i < Length; ++i)
+			{ 
+				if (data[i] == 0) break; //stop at null terminator
+				if (data[i] == ch) return i;
+			}
+			return Length; //not found
+		}
+		constexpr bool contains(CharT ch) const
+		{
+			return find(ch) != Length;
+		}
+
+		//returns a substring view from start to start+count
+		constexpr FixedString substr(usize start, usize count) const
+		{
+			FixedString result{};
+			for (usize i = 0; i < count && (start + i) < Length; ++i)
+			{
+				result.data[i] = data[start + i];
+			}
+			return result;
+		}
+
+		//truncates the string at a given length
+		constexpr void truncate(usize newLength)
+		{
+			if (newLength < Length) data[newLength] = 0;
+		}
+
+		//resizes the string to a given length, filling with a character if needed
+		constexpr void resize(usize newLength, CharT fill = 0)
+		{
+			usize current = length();
+			if (newLength < current) data[newLength] = 0;
+			else
+			{
+				for (usize i = current; i < newLength && i < Length; ++i)
+				{
+					data[i] = fill;
+				}
+				if (newLength < Length) data[newLength] = 0;
+			}
+		}
+
+		//remove a matching prefix
+		constexpr void trim_start(const FixedString& pattern)
+		{
+			usize plen = pattern.length();
+			if (plen == 0) return;
+
+			while (starts_with(pattern))
+			{
+				for (usize i = 0; i + plen < Length; ++i)
+				{
+					data[i] = data[i + plen];
+				}
+				for (usize i = length(); i < Length; ++i)
+				{
+					data[i] = 0;
+				}
+			}
+		}
+
+		//removes a matching suffix
+		constexpr void trim_end(const FixedString& pattern)
+		{
+			usize plen = pattern.length();
+			if (plen == 0) return;
+
+			while (ends_with(pattern))
+			{
+				usize len = length();
+				if (len < plen) break;
+				data[len - plen] = 0;
+			}
+		}
+
+		//removes both matching prefix and suffix
+		constexpr void trim(const FixedString& pattern)
+		{
+			trim_start(pattern);
+			trim_end(pattern);
+		}
+
+		//equal comparison between fixed strings
+		friend constexpr bool operator==(const FixedString& lhs, const FixedString& rhs)
+		{
+			for (usize i = 0; i < Length; ++i)
+			{
+				if (lhs.data[i] != rhs.data[i]) return false;
+			}
+			return true;
+		}
+		//not equal comparison between fixed strings
+		friend constexpr bool operator!=(const FixedString& lhs, const FixedString& rhs)
+		{
+			return !(lhs == rhs);
+		}
+		//three-way comparison between fixed strings
+		friend constexpr auto operator<=>(const FixedString& lhs, const FixedString& rhs)
+		{
+			for (usize i = 0; i < Length; ++i)
+			{
+				if (lhs.data[i] != rhs.data[i])
+				{
+					return lhs.data[i] <=> rhs.data[i];
+				}
+				return strong_ordering::equal;
+			}
+		}
+
+		//equal comparison between fixed string and basic_string
+		friend bool operator==(const FixedString& lhs, const basic_string<CharT>& rhs)
+		{
+			for (usize i = 0; i < Length; ++i)
+			{
+				if (i >= rhs.size()) return lhs.data[i] == 0;
+				if (lhs.data[i] != rhs[i]) return false;
+			}
+			return rhs.size() <= Length;
+		}
+		//not equal comparison between fixed string and basic_string
+		friend bool operator!=(const FixedString& lhs, const basic_string<CharT>& rhs)
+		{
+			return !(lhs == rhs);
+		}
+		//three-way comparison between fixed string and basic_string
+		friend auto operator<=>(const FixedString& lhs, const basic_string<CharT>& rhs)
+		{
+			usize i = 0;
+			for (; i < Length && i < rhs.size(); ++i)
+			{
+				if (lhs.data[i] != rhs[i])
+				{
+					return lhs.data[i] <=> rhs[i];
+				}
+			}
+			//shorter string is less
+			if (i < Length && rhs.size() <= i) return strong_ordering::greater;
+			if (i < rhs.size() && Length <= i) return strong_ordering::less;
+			return strong_ordering::equal;
+		}
+
+		//equal comparison between basic_string and fixed string
+		friend bool operator==(const basic_string<CharT>& lhs, const FixedString& rhs)
+		{
+			return lhs == rhs;
+		}
+		//not equal comparison between basic_string and fixed string
+		friend bool operator!=(const basic_string<CharT>& lhs, const FixedString& rhs)
+		{
+			return !(lhs == rhs);
+		}
+
+		//three-way comparison between basic_string and fixed string
+		friend auto operator<=>(const basic_string<CharT>& lhs, const FixedString& rhs)
+		{
+			usize i = 0;
+			for (; i < lhs.size() && i < Length; ++i)
+			{
+				if (lhs[i] != rhs.data[i])
+				{
+					return lhs[i] <=> rhs.data[i];
+				}
+			}
+			if (lhs.size() < rhs.length()) return strong_ordering::less;
+			if (lhs.size() > rhs.length()) return strong_ordering::greater;
+			return strong_ordering::equal;
+		}
+
+		//appends a fixed string to this one
+		constexpr FixedString& operator+=(const FixedString& other)
+		{
+			usize i = length();
+			usize j = 0;
+			while (i < Length
+				   && other.data[j] != 0)
+			{
+				data[i++] = other.data[j];
+			}
+			if (i < Length) data[i] = 0;
 			return *this;
 		}
 
 		constexpr CharT& operator[](usize index) { return data[index]; }
 		constexpr const CharT& operator[](usize index) const { return data[index]; }
-
-		constexpr usize size() const { return Length; }
-		constexpr const CharT* begin() const { return data; }
-		constexpr const CharT* end() const { return data + Length; }
 	};
 
-	template<usize N> using s8 = FixedString<c8, N>;
-	template<usize N> using s16 = FixedString<c16, N>;
-	template<usize N> using s32 = FixedString<c32, N>;
+	template<usize N> using s8 = FixedString<c8, N>;   //fixed-length, 1-byte-only string
+	template<usize N> using s16 = FixedString<c16, N>; //fixed-length, 2-byte or lesser string
+	template<usize N> using s32 = FixedString<c32, N>; //fixed-length, 4-byte or lesser string
+}
+
+namespace std
+{
+	//for fixed string unordered_set and unordered_map
+	template<typename CharT, KalaKit::usize Length>
+	struct hash<KalaKit::FixedString<CharT, Length>>
+	{
+		constexpr size_t operator()(const KalaKit::FixedString<CharT, Length>& str) const
+		{
+			size_t h = 0;
+			for (KalaKit::usize i = 0; i < str.length(); ++i)
+			{
+				h ^= hash<CharT>{}(str[i]) + 0x9e3779b9 + (h << 6) + (h >> 2);
+			}
+			return h;
+		}
+	};
 }
 
 //
 // TODO: future math and utility types to extend KalaKit base types
 //
+
+// contains(FixedString)
+// Check if one FixedString contains another substring(not just a single char).
+
+// + = CharT` or `+ = const CharT *
+// Append a single character or a C - style string to a FixedString(bounded).
+
+// `compare()` method**
+// Lexical comparison returning - 1, 0, or 1 (like `strcmp`).
+
+// `explicit operator std::basic_string<CharT>()
+// Enable implicit / explicit conversion to STL string(alternative to `.to_string()`).
 
 // Vector types
 // using vec2f = ...;   // 2D float vector (x, y)
