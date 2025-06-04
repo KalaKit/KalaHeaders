@@ -47,8 +47,8 @@ namespace KalaKit
 	using f32 = float;
 	
 	using b8 = u8;          //array of 8 1-bit bool states
-	using b8 = u8;          //array if 16 1-bit bool states
-	using b8 = u8;          //array of 32 1-bit bool states
+	using b8 = u16;         //array if 16 1-bit bool states
+	using b8 = u32;         //array of 32 1-bit bool states
 	
 	//
 	// min-max sizes
