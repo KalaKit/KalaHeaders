@@ -6,7 +6,7 @@
 //This header is a part of the KalaKit KalaHeaders repository: https://github.com/KalaKit/KalaHeaders
 
 // ======================================================================
-//  Provides fixed-size, memory-safe primitive types for cross-platform math, logic, and data layout.
+//  Provides fixed-size, memory-safe primitive types for cross-platform math, logic, and strData layout.
 //  Ensures consistent behavior across platforms (Windows, Linux).
 //  Includes constexpr min/max bounds and static assertions for type safety.
 // ======================================================================
@@ -193,7 +193,7 @@ namespace KalaKit::KalaTypes
 			"FixedString only supports c8, c16, c32"
 		);
 
-		CharT data[Length]{}; //zero-initialized
+		CharT strData[Length]{}; //zero-initialized
 
 		//constructs a zero-initialized fixed string (all characters set to 0)
 		constexpr FixedString() = default;
@@ -206,15 +206,15 @@ namespace KalaKit::KalaTypes
 
 			for (usize i = 0; i < Length; ++i)
 			{
-				data[i] = (i < N - 1) ? literal[i] : 0;
+				strData[i] = (i < N - 1) ? literal[i] : 0;
 			}
 		}
 
 		//constructs from a single character
 		constexpr FixedString(CharT ch)
 		{
-			data[0] = ch;
-			for (usize i = 1; i < Length; ++i) data[i] = 0;
+			strData[0] = ch;
+			for (usize i = 1; i < Length; ++i) strData[i] = 0;
 		}
 
 		//assigns from a string literal at runtime
@@ -225,7 +225,7 @@ namespace KalaKit::KalaTypes
 
 			for (usize i = 0; i < Length; ++i)
 			{
-				data[i] = (i < N - 1) ? literal[i] : 0;
+				strData[i] = (i < N - 1) ? literal[i] : 0;
 			}
 
 			return *this;
@@ -236,11 +236,11 @@ namespace KalaKit::KalaTypes
 		{
 			for (usize i = 0; i < Length; ++i)
 			{
-				data[i] = str[i];
+				strData[i] = str[i];
 				if (str[i] == 0)
 				{
 					//fill remaining with zeros
-					for (++i; i < Length; ++i) data[i] = 0;
+					for (++i; i < Length; ++i) strData[i] = 0;
 					break;
 				}
 			}
@@ -251,11 +251,11 @@ namespace KalaKit::KalaTypes
 		{
 			for (usize i = 0; i < Length; ++i)
 			{
-				data[i] = str[i];
+				strData[i] = str[i];
 				if (str[i] == 0)
 				{
 					//fill remaining with zeros
-					for (++i; i < Length; ++i) data[i] = 0;
+					for (++i; i < Length; ++i) strData[i] = 0;
 					break;
 				}
 			}
@@ -268,7 +268,7 @@ namespace KalaKit::KalaTypes
 			const usize count = str.size();
 			for (usize i = 0; i < Length; ++i)
 			{
-				data[i] = (i < count) ? str[i] : 0;
+				strData[i] = (i < count) ? str[i] : 0;
 			}
 		}
 
@@ -278,7 +278,7 @@ namespace KalaKit::KalaTypes
 			const usize count = str.size();
 			for (usize i = 0; i < Length; ++i)
 			{
-				data[i] = (i < count) ? str[i] : 0;
+				strData[i] = (i < count) ? str[i] : 0;
 			}
 			return *this;
 		}
@@ -288,35 +288,35 @@ namespace KalaKit::KalaTypes
 		{
 			usize count = 0;
 			while (count < Length
-				   && data[count] != 0)
+				&& strData[count] != 0)
 			{
 				++count;
 			}
-			return basic_string<CharT>(data, count);
-		} 
+			return basic_string<CharT>(strData, count);
+		}
 
 		constexpr usize size() const { return Length; }
 		constexpr usize length() const
 		{
 			for (usize i = 0; i < Length; ++i)
 			{
-				if (data[i] == 0) return i;
+				if (strData[i] == 0) return i;
 			}
 			return Length;
 		}
-		constexpr const CharT* begin() const { return data; }
-		constexpr CharT* begin() { return data; }
-		constexpr const CharT* end() const { return data + Length; }
-		constexpr CharT* end() { return data + Length; }
-		constexpr const CharT* c_str() const { return data; }
-		constexpr const CharT* data() const { return data; }
-		constexpr bool empty() const { return data[0] == 0; }
-		constexpr void clear() { for (usize i = 0; i < Length; ++i) data[i] = 0; }
+		constexpr const CharT* begin() const { return strData; }
+		constexpr CharT* begin() { return strData; }
+		constexpr const CharT* end() const { return strData + Length; }
+		constexpr CharT* end() { return strData + Length; }
+		constexpr const CharT* c_str() const { return strData; }
+		constexpr const CharT* data() const { return strData; }
+		constexpr bool empty() const { return strData[0] == 0; }
+		constexpr void clear() { for (usize i = 0; i < Length; ++i) strData[i] = 0; }
 		constexpr bool starts_with(const FixedString& prefix) const
 		{
 			for (usize i = 0; i < prefix.size(); ++i)
 			{
-				if (data[i] != prefix.data[i]) return false;
+				if (strData[i] != prefix.strData[i]) return false;
 			}
 			return true;
 		}
@@ -326,16 +326,16 @@ namespace KalaKit::KalaTypes
 			if (slen > len) return false;
 			for (usize i = 0; i < slen; ++i)
 			{
-				if (data[len - slen + i] != suffix.data[i]) return false;
+				if (strData[len - slen + i] != suffix.strData[i]) return false;
 			}
 			return true;
 		}
 		constexpr usize find(CharT ch, usize start = 0) const
 		{
 			for (usize i = start; i < Length; ++i)
-			{ 
-				if (data[i] == 0) break; //stop at null terminator
-				if (data[i] == ch) return i;
+			{
+				if (strData[i] == 0) break; //stop at null terminator
+				if (strData[i] == ch) return i;
 			}
 			return Length; //not found
 		}
@@ -350,7 +350,7 @@ namespace KalaKit::KalaTypes
 			FixedString result{};
 			for (usize i = 0; i < count && (start + i) < Length; ++i)
 			{
-				result.data[i] = data[start + i];
+				result.strData[i] = strData[start + i];
 			}
 			return result;
 		}
@@ -358,21 +358,21 @@ namespace KalaKit::KalaTypes
 		//truncates the string at a given length
 		constexpr void truncate(usize newLength)
 		{
-			if (newLength < Length) data[newLength] = 0;
+			if (newLength < Length) strData[newLength] = 0;
 		}
 
 		//resizes the string to a given length, filling with a character if needed
 		constexpr void resize(usize newLength, CharT fill = 0)
 		{
 			usize current = length();
-			if (newLength < current) data[newLength] = 0;
+			if (newLength < current) strData[newLength] = 0;
 			else
 			{
 				for (usize i = current; i < newLength && i < Length; ++i)
 				{
-					data[i] = fill;
+					strData[i] = fill;
 				}
-				if (newLength < Length) data[newLength] = 0;
+				if (newLength < Length) strData[newLength] = 0;
 			}
 		}
 
@@ -386,11 +386,11 @@ namespace KalaKit::KalaTypes
 			{
 				for (usize i = 0; i + plen < Length; ++i)
 				{
-					data[i] = data[i + plen];
+					strData[i] = strData[i + plen];
 				}
 				for (usize i = length(); i < Length; ++i)
 				{
-					data[i] = 0;
+					strData[i] = 0;
 				}
 			}
 		}
@@ -405,7 +405,7 @@ namespace KalaKit::KalaTypes
 			{
 				usize len = length();
 				if (len < plen) break;
-				data[len - plen] = 0;
+				strData[len - plen] = 0;
 			}
 		}
 
@@ -421,7 +421,7 @@ namespace KalaKit::KalaTypes
 		{
 			for (usize i = 0; i < Length; ++i)
 			{
-				if (lhs.data[i] != rhs.data[i]) return false;
+				if (lhs.strData[i] != rhs.strData[i]) return false;
 			}
 			return true;
 		}
@@ -435,9 +435,9 @@ namespace KalaKit::KalaTypes
 		{
 			for (usize i = 0; i < Length; ++i)
 			{
-				if (lhs.data[i] != rhs.data[i])
+				if (lhs.strData[i] != rhs.strData[i])
 				{
-					return lhs.data[i] <=> rhs.data[i];
+					return lhs.strData[i] <=> rhs.strData[i];
 				}
 				return strong_ordering::equal;
 			}
@@ -448,8 +448,8 @@ namespace KalaKit::KalaTypes
 		{
 			for (usize i = 0; i < Length; ++i)
 			{
-				if (i >= rhs.size()) return lhs.data[i] == 0;
-				if (lhs.data[i] != rhs[i]) return false;
+				if (i >= rhs.size()) return lhs.strData[i] == 0;
+				if (lhs.strData[i] != rhs[i]) return false;
 			}
 			return rhs.size() <= Length;
 		}
@@ -464,9 +464,9 @@ namespace KalaKit::KalaTypes
 			usize i = 0;
 			for (; i < Length && i < rhs.size(); ++i)
 			{
-				if (lhs.data[i] != rhs[i])
+				if (lhs.strData[i] != rhs[i])
 				{
-					return lhs.data[i] <=> rhs[i];
+					return lhs.strData[i] <=> rhs[i];
 				}
 			}
 			//shorter string is less
@@ -492,9 +492,9 @@ namespace KalaKit::KalaTypes
 			usize i = 0;
 			for (; i < lhs.size() && i < Length; ++i)
 			{
-				if (lhs[i] != rhs.data[i])
+				if (lhs[i] != rhs.strData[i])
 				{
-					return lhs[i] <=> rhs.data[i];
+					return lhs[i] <=> rhs.strData[i];
 				}
 			}
 			if (lhs.size() < rhs.length()) return strong_ordering::less;
@@ -508,16 +508,16 @@ namespace KalaKit::KalaTypes
 			usize i = length();
 			usize j = 0;
 			while (i < Length
-				   && other.data[j] != 0)
+				&& other.strData[j] != 0)
 			{
-				data[i++] = other.data[j];
+				strData[i++] = other.strData[j];
 			}
-			if (i < Length) data[i] = 0;
+			if (i < Length) strData[i] = 0;
 			return *this;
 		}
 
-		constexpr CharT& operator[](usize index) { return data[index]; }
-		constexpr const CharT& operator[](usize index) const { return data[index]; }
+		constexpr CharT& operator[](usize index) { return strData[index]; }
+		constexpr const CharT& operator[](usize index) const { return strData[index]; }
 	};
 
 	template<usize N> using s8 = FixedString<c8, N>;   //fixed-length, 1-byte-only string
@@ -531,10 +531,10 @@ namespace std
 	template<typename CharT, KalaKit::KalaTypes::usize Length>
 	struct hash<KalaKit::KalaTypes::FixedString<CharT, Length>>
 	{
-		constexpr size_t operator()(const KalaKit::FixedString<CharT, Length>& str) const
+		constexpr size_t operator()(const KalaKit::KalaTypes::FixedString<CharT, Length>& str) const
 		{
 			size_t h = 0;
-			for (KalaKit::usize i = 0; i < str.length(); ++i)
+			for (KalaKit::KalaTypes::usize i = 0; i < str.length(); ++i)
 			{
 				h ^= hash<CharT>{}(str[i]) + 0x9e3779b9 + (h << 6) + (h >> 2);
 			}
