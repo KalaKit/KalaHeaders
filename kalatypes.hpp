@@ -45,12 +45,12 @@ namespace KalaKit
 	using i16 = int16_t;           //-32,768 to 32,767
 	using i32 = int32_t;           //-2,147,483,648 to 2,147,483,647
 
-	inline constexpr i8  I8_MIN = numeric_limits<i8>::min();
-	inline constexpr i8  I8_MAX = numeric_limits<i8>::max();
-	inline constexpr i16 I16_MIN = numeric_limits<i16>::min();
-	inline constexpr i16 I16_MAX = numeric_limits<i16>::max();
-	inline constexpr i32 I32_MIN = numeric_limits<i32>::min();
-	inline constexpr i32 I32_MAX = numeric_limits<i32>::max();
+	inline constexpr i8  I8_MIN = -128;
+	inline constexpr i8  I8_MAX = 127;
+	inline constexpr i16 I16_MIN = -32768;
+	inline constexpr i16 I16_MAX = 32767;
+	inline constexpr i32 I32_MIN = -2147483648;
+	inline constexpr i32 I32_MAX = 2147483647;
 
 	// ======================================================================
 	// 
@@ -63,11 +63,11 @@ namespace KalaKit
 	using u32 = uint32_t;          //0 to 4,294,967,295
 
 	inline constexpr u8  U8_MIN = 0;
-	inline constexpr u8  U8_MAX = numeric_limits<u8>::max();
+	inline constexpr u8  U8_MAX = 255;
 	inline constexpr u16 U16_MIN = 0;
-	inline constexpr u16 U16_MAX = numeric_limits<u16>::max();
+	inline constexpr u16 U16_MAX = 65535;
 	inline constexpr u32 U32_MIN = 0;
-	inline constexpr u32 U32_MAX = numeric_limits<u32>::max();
+	inline constexpr u32 U32_MAX = 4294967295u;
 
 	// ======================================================================
 	// 
@@ -75,17 +75,17 @@ namespace KalaKit
 	// 
 	// ======================================================================
 
-	using f32 = float;             //up to 38-digit magnitude, ~7 decimal digits precision
+	using f32 = float;             //up to 38-digit magnitude, ~7 digits precision
 
-	inline constexpr f32 F32_MIN = numeric_limits<f32>::lowest();
-	inline constexpr f32 F32_MAX = numeric_limits<f32>::max();
-	inline constexpr f32 F32_EPSILON = numeric_limits<f32>::epsilon();
+	inline constexpr f32 F32_MIN = -3.402823466e+38f;
+	inline constexpr f32 F32_MAX = 3.402823466e+38f;
+	inline constexpr f32 F32_EPSILON = 1.192092896e-07f;
 
-	using f64 = double;            //up to 308-digit magnitude, ~16 decimal digits precision
+	using f64 = double;            //up to 308-digit magnitude, ~16 digits precision
 
-	inline constexpr f64 F64_MIN = numeric_limits<f64>::lowest();
-	inline constexpr f64 F64_MAX = numeric_limits<f64>::max();
-	inline constexpr f64 F64_EPSILON = numeric_limits<f64>::epsilon();
+	inline constexpr f64 F64_MIN = -1.7976931348623157e+308;
+	inline constexpr f64 F64_MAX = 1.7976931348623157e+308;
+	inline constexpr f64 F64_EPSILON = 2.2204460492503131e-16;
 
 	//
 	// SIZE
@@ -94,10 +94,10 @@ namespace KalaKit
 	using usize = size_t;
 	using isize = ptrdiff_t;
 
-	inline constexpr isize ISIZE_MIN = numeric_limits<isize>::min();
-	inline constexpr isize ISIZE_MAX = numeric_limits<isize>::max();
+	inline constexpr isize ISIZE_MIN = static_cast<isize>(~(usize{} >> 1));
+	inline constexpr isize ISIZE_MAX = static_cast<isize>(usize{} >> 1);
 	inline constexpr usize USIZE_MIN = 0;
-	inline constexpr usize USIZE_MAX = numeric_limits<usize>::max();
+	inline constexpr usize USIZE_MAX = static_cast<usize>(~0);
 
 	// ======================================================================
 	// 
