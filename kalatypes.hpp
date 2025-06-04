@@ -544,6 +544,11 @@ namespace std
 }
 
 //
+// TODO: fixes
+//
+// - need to fix invalid size fixed string
+
+//
 // TODO: future math and utility types to extend KalaKit base types
 //
 
