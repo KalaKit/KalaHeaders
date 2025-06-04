@@ -21,7 +21,7 @@ namespace KalaKit
 	using std::uint8_t;
 	using std::uint16_t;
 	using std::uint32_t;
-	using std::suze_t;
+	using std::size_t;
 	using std::ptrdiff_t;
 	using std::numeric_limits;
 	
@@ -47,8 +47,8 @@ namespace KalaKit
 	using f32 = float;
 	
 	using b8 = u8;          //array of 8 1-bit bool states
-	using b8 = u16;         //array if 16 1-bit bool states
-	using b8 = u32;         //array of 32 1-bit bool states
+	using b16 = u16;        //array if 16 1-bit bool states
+	using b32 = u32;        //array of 32 1-bit bool states
 	
 	//
 	// min-max sizes
@@ -79,11 +79,11 @@ namespace KalaKit
 	inline constexpr f32 F32_EPSILON = numeric_limits<f32>::epsilon();
 	
 	//defines get/set/clear/toggle for packed bit types
-	#define KALA_DEFINE_BITOPS(type)                                                           \
-	inline constexpr bool get_bit(type value, u8 index)    { return    (value >> index) & 1; } \
-	inline constexpr void set_bit(type& value, u8 index)   { value |=  (1 << index); }         \
-	inline constexpr void clear_bit(type& value, u8 index) { value &= ~(1 << index); }         \
-	inline constexpr void toggle_bit(type& value, u8 index){ value ^=  (1 << index); }
+	#define KALA_DEFINE_BITOPS(type)                                                               \
+		inline constexpr bool get_bit(type value, u8 index)    { return    (value >> index) & 1; } \
+		inline constexpr void set_bit(type& value, u8 index)   { value |=  (1 << index); }         \
+		inline constexpr void clear_bit(type& value, u8 index) { value &= ~(1 << index); }         \
+		inline constexpr void toggle_bit(type& value, u8 index){ value ^=  (1 << index); }
 
 	KALA_DEFINE_BITOPS(b8)
 	KALA_DEFINE_BITOPS(b16)
