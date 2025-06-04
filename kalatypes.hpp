@@ -31,17 +31,17 @@ namespace KalaKit
 	// CHARS
 	//
 
-	using c8 = char;        //roman letters and arabic numbers
-	using c16 = char16_t;   //international letters and symbols
-	using c32 = char32_t;   //emojis
+	using c8 = char;               //roman letters and arabic numbers
+	using c16 = char16_t;          //international letters and symbols
+	using c32 = char32_t;          //emojis and rare unicode
 
 	//
 	// SIGNED INTS
 	//
 
-	using i8 = int8_t;      //-128 to 127
-	using i16 = int16_t;    //-32,768 to 32,767
-	using i32 = int32_t;    //-2,147,483,648 to 2,147,483,647
+	using i8 = int8_t;             //-128 to 127
+	using i16 = int16_t;           //-32,768 to 32,767
+	using i32 = int32_t;           //-2,147,483,648 to 2,147,483,647
 
 	inline constexpr i8  I8_MIN = numeric_limits<i8>::min();
 	inline constexpr i8  I8_MAX = numeric_limits<i8>::max();
@@ -54,9 +54,9 @@ namespace KalaKit
 	// UNSIGNED INTS
 	//
 
-	using u8 = uint8_t;     //0 - 255
-	using u16 = uint16_t;   //0 - 65,535
-	using u32 = uint32_t;   //0 to 4,294,967,295
+	using u8 = uint8_t;            //0 - 255
+	using u16 = uint16_t;          //0 - 65,535
+	using u32 = uint32_t;          //0 to 4,294,967,295
 
 	inline constexpr u8  U8_MIN = 0;
 	inline constexpr u8  U8_MAX = numeric_limits<u8>::max();
@@ -69,11 +69,17 @@ namespace KalaKit
 	// FLOAT
 	//
 
-	using f32 = float;
+	using f32 = float;             //up to 38-digit magnitude, ~7 decimal digits precision
 
 	inline constexpr f32 F32_MIN = numeric_limits<f32>::lowest();
 	inline constexpr f32 F32_MAX = numeric_limits<f32>::max();
 	inline constexpr f32 F32_EPSILON = numeric_limits<f32>::epsilon();
+
+	using f64 = double;            //up to 308-digit magnitude, ~16 decimal digits precision
+
+	inline constexpr f64 F64_MIN = numeric_limits<f64>::lowest();
+	inline constexpr f64 F64_MAX = numeric_limits<f64>::max();
+	inline constexpr f64 F64_EPSILON = numeric_limits<f64>::epsilon();
 
 	//
 	// SIZE
@@ -116,9 +122,9 @@ namespace KalaKit
 		constexpr bool   operator[](u8 index) const { return (value >> index) & 1; }
 	};
 
-	using b8 = BitField<u8, 8>;           //array of 8 1-bit bool states
-	using b16 = BitField<u16, 16>;        //array of 16 1-bit bool states
-	using b32 = BitField<u32, 32>;        //array of 32 1-bit bool states
+	using b8 = BitField<u8, 8>;    //array of 8 1-bit bool states
+	using b16 = BitField<u16, 16>; //array of 16 1-bit bool states
+	using b32 = BitField<u32, 32>; //array of 32 1-bit bool states
 }
 
 //
