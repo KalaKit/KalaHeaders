@@ -15,101 +15,104 @@
 
 namespace KalaKit
 {
-    using std::int8_t;
-    using std::int16_t;
-    using std::int32_t;
-    using std::uint8_t;
-    using std::uint16_t;
-    using std::uint32_t;
-    using std::suze_t;
-    using std::ptrdiff_t;
-    using std::numeric_limits;
+	using std::int8_t;
+	using std::int16_t;
+	using std::int32_t;
+	using std::uint8_t;
+	using std::uint16_t;
+	using std::uint32_t;
+	using std::suze_t;
+	using std::ptrdiff_t;
+	using std::numeric_limits;
 	
-    //
-    // definitions
-    //
+	//
+	// definitions
+	//
 	
-    using c8  = char;       //roman letters and arabic numbers
-    using c16 = char16_t;   //international letters and symbols
-    using c32 = char32_t;   //emojis
+	using c8  = char;       //roman letters and arabic numbers
+	using c16 = char16_t;   //international letters and symbols
+	using c32 = char32_t;   //emojis
 
-    using i8  = int8_t;     //-128 to 127
-    using i16 = int16_t;    //-32,768 to 32,767
-    using i32 = int32_t;    //-2,147,483,648 to 2,147,483,647
+	using i8  = int8_t;     //-128 to 127
+	using i16 = int16_t;    //-32,768 to 32,767
+	using i32 = int32_t;    //-2,147,483,648 to 2,147,483,647
 
-    using u8  = uint8_t;    //0 - 255
-    using u16 = uint16_t;   //0 - 65,535
-    using u32 = uint32_t;   //0 to 4,294,967,295
+	using u8  = uint8_t;    //0 - 255
+	using u16 = uint16_t;   //0 - 65,535
+	using u32 = uint32_t;   //0 to 4,294,967,295
 
-    using usize = size_t;
-    using isize = ptrdiff_t;
+	using usize = size_t;
+	using isize = ptrdiff_t;
 
-    using f32 = float;
+	using f32 = float;
 	
-    using b8 = u8;          //0 or 1
+	using b8 = u8;          //array of 8 1-bit bool states
+	using b8 = u8;          //array if 16 1-bit bool states
+	using b8 = u8;          //array of 32 1-bit bool states
 	
-    //
-    // min-max sizes
-    //
+	//
+	// min-max sizes
+	//
 
-    inline constexpr i8  I8_MIN  = numeric_limits<i8>::min();
-    inline constexpr i8  I8_MAX  = numeric_limits<i8>::max();
-    inline constexpr u8  U8_MIN  = 0;
-    inline constexpr u8  U8_MAX  = numeric_limits<u8>::max();
+	inline constexpr i8  I8_MIN  = numeric_limits<i8>::min();
+	inline constexpr i8  I8_MAX  = numeric_limits<i8>::max();
+	inline constexpr u8  U8_MIN  = 0;
+	inline constexpr u8  U8_MAX  = numeric_limits<u8>::max();
 
-    inline constexpr i16 I16_MIN = numeric_limits<i16>::min();
-    inline constexpr i16 I16_MAX = numeric_limits<i16>::max();
-    inline constexpr u16 U16_MIN = 0;
-    inline constexpr u16 U16_MAX = numeric_limits<u16>::max();
+	inline constexpr i16 I16_MIN = numeric_limits<i16>::min();
+	inline constexpr i16 I16_MAX = numeric_limits<i16>::max();
+	inline constexpr u16 U16_MIN = 0;
+	inline constexpr u16 U16_MAX = numeric_limits<u16>::max();
 
-    inline constexpr i32 I32_MIN = numeric_limits<i32>::min();
-    inline constexpr i32 I32_MAX = numeric_limits<i32>::max();
-    inline constexpr u32 U32_MIN = 0;
-    inline constexpr u32 U32_MAX = numeric_limits<u32>::max();
+	inline constexpr i32 I32_MIN = numeric_limits<i32>::min();
+	inline constexpr i32 I32_MAX = numeric_limits<i32>::max();
+	inline constexpr u32 U32_MIN = 0;
+	inline constexpr u32 U32_MAX = numeric_limits<u32>::max();
 	
-    inline constexpr isize ISIZE_MIN = numeric_limits<isize>::min();
-    inline constexpr isize ISIZE_MAX = numeric_limits<isize>::max();
-    inline constexpr usize USIZE_MIN = 0;
-    inline constexpr usize USIZE_MAX = numeric_limits<usize>::max();
+	inline constexpr isize ISIZE_MIN = numeric_limits<isize>::min();
+	inline constexpr isize ISIZE_MAX = numeric_limits<isize>::max();
+	inline constexpr usize USIZE_MIN = 0;
+	inline constexpr usize USIZE_MAX = numeric_limits<usize>::max();
 
-    inline constexpr f32 F32_MIN     = numeric_limits<f32>::lowest();
-    inline constexpr f32 F32_MAX     = numeric_limits<f32>::max();
-    inline constexpr f32 F32_EPSILON = numeric_limits<f32>::epsilon();
+	inline constexpr f32 F32_MIN     = numeric_limits<f32>::lowest();
+	inline constexpr f32 F32_MAX     = numeric_limits<f32>::max();
+	inline constexpr f32 F32_EPSILON = numeric_limits<f32>::epsilon();
 	
-    enum class b8state : u8
-    {
-        false_value = 0,
-        true_value = 1,
-        invalid     = 2
-    };
-    inline constexpr bool is_known_b8(b8state v) { return v <= b8state::invalid; }
-    #define b8_false   b8state::false_value
-    #define b8_true    b8state::true_value
-    #define b8_invalid b8state::invalid
-    #define check_known_b8(v) do { if (!is_known_b8(v)) __debugbreak(); } while(0)
-		
-    //
-    // static_assert sanity checks (compile-time)
-    //
-	
-    static_assert(sizeof(i8)  == 1);
-    static_assert(sizeof(i16) == 2);
-    static_assert(sizeof(i32) == 4);
+	//defines get/set/clear/toggle for packed bit types
+	#define KALA_DEFINE_BITOPS(type)                                                           \
+	inline constexpr bool get_bit(type value, u8 index)    { return    (value >> index) & 1; } \
+	inline constexpr void set_bit(type& value, u8 index)   { value |=  (1 << index); }         \
+	inline constexpr void clear_bit(type& value, u8 index) { value &= ~(1 << index); }         \
+	inline constexpr void toggle_bit(type& value, u8 index){ value ^=  (1 << index); }
 
-    static_assert(sizeof(u8)  == 1);
-    static_assert(sizeof(u16) == 2);
-    static_assert(sizeof(u32) == 4);
+	KALA_DEFINE_BITOPS(b8)
+	KALA_DEFINE_BITOPS(b16)
+	KALA_DEFINE_BITOPS(b32)
 
-    static_assert(sizeof(usize) == sizeof(void*));
-    static_assert(sizeof(isize) == sizeof(void*));
+	//
+	// static_assert sanity checks (compile-time)
+	//
+	
+	static_assert(sizeof(i8)  == 1, "i8 must be 1 byte (8 bits)");
+	static_assert(sizeof(i16) == 2, "i16 must be 2 bytes (16 bits)");
+	static_assert(sizeof(i32) == 4, "i32 must be 4 bytes (32 bits)");
 
-    static_assert(sizeof(f32) == 4);
-	
-    static_assert(sizeof(b8) == 1);
-	
-    static_assert(sizeof(c8)  == 1);
-    static_assert(sizeof(c16) == 2);
-    static_assert(sizeof(c32) == 4);
+	static_assert(sizeof(u8)  == 1, "u8 must be 1 byte (8 bits)");
+	static_assert(sizeof(u16) == 2, "u16 must be 2 bytes (16 bits)");
+	static_assert(sizeof(u32) == 4, "u32 must be 4 bytes (32 bits)");
+
+	static_assert(sizeof(usize) == sizeof(void*), "usize must match pointer size");
+	static_assert(sizeof(isize) == sizeof(void*), "isize must match pointer size");
+
+	static_assert(sizeof(f32) == 4, "f32 must be 4 bytes (32-bit float)");
+
+	static_assert(sizeof(b8)  == 1, "b8 must be 1 byte (8 bits)");
+	static_assert(sizeof(b16) == 2, "b16 must be 2 bytes (16 bits)");
+	static_assert(sizeof(b32) == 4, "b32 must be 4 bytes (32 bits)");
+
+	static_assert(sizeof(c8)  == 1, "c8 must be 1 byte (char)");
+	static_assert(sizeof(c16) == 2, "c16 must be 2 bytes (char16_t)");
+	static_assert(sizeof(c32) == 4, "c32 must be 4 bytes (char32_t)");
 }
 
 //
