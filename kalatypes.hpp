@@ -528,8 +528,8 @@ namespace KalaKit::KalaTypes
 namespace std
 {
 	//for fixed string unordered_set and unordered_map
-	template<typename CharT, KalaKit::usize Length>
-	struct hash<KalaKit::FixedString<CharT, Length>>
+	template<typename CharT, KalaKit::KalaTypes::usize Length>
+	struct hash<KalaKit::KalaTypes::FixedString<CharT, Length>>
 	{
 		constexpr size_t operator()(const KalaKit::FixedString<CharT, Length>& str) const
 		{
