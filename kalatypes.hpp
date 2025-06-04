@@ -4,7 +4,7 @@
 //Read LICENSE.md for more information.
 
 // -----------------------------------------------------------------------------
-//  Provides explicit, fixed-size integer and float type aliases.
+//  Provides fixed-size, memory-safe primitive types for cross-platform math, logic, and data layout.
 //  Ensures consistent behavior across platforms (Windows, Linux).
 //  Includes constexpr min/max bounds and static assertions for type safety.
 // -----------------------------------------------------------------------------
