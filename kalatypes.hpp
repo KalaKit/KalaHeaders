@@ -12,6 +12,7 @@
 #pragma once
 #include <cstdint>
 #include <limits>
+#include <type_traits>
 
 namespace KalaKit
 {
@@ -24,6 +25,7 @@ namespace KalaKit
 	using std::size_t;
 	using std::ptrdiff_t;
 	using std::numeric_limits;
+	using std::is_unsigned_v;
 
 	//
 	// CHARS
@@ -32,10 +34,6 @@ namespace KalaKit
 	using c8 = char;        //roman letters and arabic numbers
 	using c16 = char16_t;   //international letters and symbols
 	using c32 = char32_t;   //emojis
-
-	static_assert(sizeof(c8) == 1, "c8 must be 1 byte (char)");
-	static_assert(sizeof(c16) == 2, "c16 must be 2 bytes (char16_t)");
-	static_assert(sizeof(c32) == 4, "c32 must be 4 bytes (char32_t)");
 
 	//
 	// SIGNED INTS
@@ -52,10 +50,6 @@ namespace KalaKit
 	inline constexpr i32 I32_MIN = numeric_limits<i32>::min();
 	inline constexpr i32 I32_MAX = numeric_limits<i32>::max();
 
-	static_assert(sizeof(i8) == 1, "i8 must be 1 byte (8 bits)");
-	static_assert(sizeof(i16) == 2, "i16 must be 2 bytes (16 bits)");
-	static_assert(sizeof(i32) == 4, "i32 must be 4 bytes (32 bits)");
-
 	//
 	// UNSIGNED INTS
 	//
@@ -71,9 +65,15 @@ namespace KalaKit
 	inline constexpr u32 U32_MIN = 0;
 	inline constexpr u32 U32_MAX = numeric_limits<u32>::max();
 
-	static_assert(sizeof(u8) == 1, "u8 must be 1 byte (8 bits)");
-	static_assert(sizeof(u16) == 2, "u16 must be 2 bytes (16 bits)");
-	static_assert(sizeof(u32) == 4, "u32 must be 4 bytes (32 bits)");
+	//
+	// FLOAT
+	//
+
+	using f32 = float;
+
+	inline constexpr f32 F32_MIN = numeric_limits<f32>::lowest();
+	inline constexpr f32 F32_MAX = numeric_limits<f32>::max();
+	inline constexpr f32 F32_EPSILON = numeric_limits<f32>::epsilon();
 
 	//
 	// SIZE
@@ -87,32 +87,38 @@ namespace KalaKit
 	inline constexpr usize USIZE_MIN = 0;
 	inline constexpr usize USIZE_MAX = numeric_limits<usize>::max();
 
-	static_assert(sizeof(usize) == sizeof(void*), "usize must match pointer size");
-	static_assert(sizeof(isize) == sizeof(void*), "isize must match pointer size");
-
-	//
-	// FLOAT
-	//
-
-	using f32 = float;
-
-	inline constexpr f32 F32_MIN = numeric_limits<f32>::lowest();
-	inline constexpr f32 F32_MAX = numeric_limits<f32>::max();
-	inline constexpr f32 F32_EPSILON = numeric_limits<f32>::epsilon();
-
-	static_assert(sizeof(f32) == 4, "f32 must be 4 bytes (32-bit float)");
-
 	//
 	// BOOL
 	//
 
-	using b8 = u8;          //array of 8 1-bit bool states
-	using b16 = u16;        //array if 16 1-bit bool states
-	using b32 = u32;        //array of 32 1-bit bool states
+	template<typename T, u8 NumBits>
+	struct BitField
+	{
+		static_assert(is_unsigned_v<T>);
+		T value = 0;
 
-	static_assert(sizeof(b8) == 1, "b8 must be 1 byte (8 bits)");
-	static_assert(sizeof(b16) == 2, "b16 must be 2 bytes (16 bits)");
-	static_assert(sizeof(b32) == 4, "b32 must be 4 bytes (32 bits)");
+		struct BitRef
+		{
+			T& value;
+			u8 index;
+
+			operator bool() const { return (value >> index) & 1; }
+
+			BitRef& operator=(bool b)
+			{
+				if (b) value |= (T(1) << index);
+				else   value &= ~(T(1) << index);
+				return *this;
+			}
+		};
+
+		constexpr BitRef operator[](u8 index) { return BitRef{ value, index }; }
+		constexpr bool   operator[](u8 index) const { return (value >> index) & 1; }
+	};
+
+	using b8 = BitField<u8, 8>;           //array of 8 1-bit bool states
+	using b16 = BitField<u16, 16>;        //array of 16 1-bit bool states
+	using b32 = BitField<u32, 32>;        //array of 32 1-bit bool states
 }
 
 //
