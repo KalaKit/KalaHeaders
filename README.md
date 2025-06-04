@@ -13,6 +13,6 @@ All headers are cross-platform (Windows and Unix) and work out of the box. Simpl
 
 ## kalatypes.hpp
 
-Provides explicit, fixed-size integer and float type aliases.
+Provides fixed-size, memory-safe primitive types for cross-platform math, logic, and data layout.
 Ensures consistent behavior across platforms (Windows, Linux).
-ncludes constexpr min/max bounds and static assertions for type safety.
+Includes constexpr min/max bounds and static assertions for type safety.
