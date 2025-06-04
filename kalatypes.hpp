@@ -1,13 +1,15 @@
-//Copyright(C) 2025 Lost Empire Entertainment
+﻿//Copyright(C) 2025 Lost Empire Entertainment
 //This header comes with ABSOLUTELY NO WARRANTY.
 //This is free code, and you are welcome to redistribute it under certain conditions.
 //Read LICENSE.md for more information.
 
-// -----------------------------------------------------------------------------
+//This header is a part of the KalaKit KalaHeaders repository: https://github.com/KalaKit/KalaHeaders
+
+// ======================================================================
 //  Provides fixed-size, memory-safe primitive types for cross-platform math, logic, and data layout.
 //  Ensures consistent behavior across platforms (Windows, Linux).
 //  Includes constexpr min/max bounds and static assertions for type safety.
-// -----------------------------------------------------------------------------
+// ======================================================================
 
 #pragma once
 #include <cstdint>
@@ -26,18 +28,13 @@ namespace KalaKit
 	using std::ptrdiff_t;
 	using std::numeric_limits;
 	using std::is_unsigned_v;
+	using std::is_same_v;
 
-	//
-	// CHARS
-	//
-
-	using c8 = char;               //roman letters and arabic numbers
-	using c16 = char16_t;          //international letters and symbols
-	using c32 = char32_t;          //emojis and rare unicode
-
-	//
-	// SIGNED INTS
-	//
+	// ======================================================================
+	// 
+	// SIGNED INT
+	// 
+	// ======================================================================
 
 	using i8 = int8_t;             //-128 to 127
 	using i16 = int16_t;           //-32,768 to 32,767
@@ -50,9 +47,11 @@ namespace KalaKit
 	inline constexpr i32 I32_MIN = numeric_limits<i32>::min();
 	inline constexpr i32 I32_MAX = numeric_limits<i32>::max();
 
-	//
-	// UNSIGNED INTS
-	//
+	// ======================================================================
+	// 
+	// UNSIGNED INT
+	// 
+	// ======================================================================
 
 	using u8 = uint8_t;            //0 - 255
 	using u16 = uint16_t;          //0 - 65,535
@@ -65,9 +64,11 @@ namespace KalaKit
 	inline constexpr u32 U32_MIN = 0;
 	inline constexpr u32 U32_MAX = numeric_limits<u32>::max();
 
-	//
+	// ======================================================================
+	// 
 	// FLOAT
-	//
+	// 
+	// ======================================================================
 
 	using f32 = float;             //up to 38-digit magnitude, ~7 decimal digits precision
 
@@ -93,9 +94,30 @@ namespace KalaKit
 	inline constexpr usize USIZE_MIN = 0;
 	inline constexpr usize USIZE_MAX = numeric_limits<usize>::max();
 
-	//
-	// BOOL
-	//
+	// ======================================================================
+	// 
+	// BITFIELD BOOL
+	// 
+	// Provides a tightly packed array of 1-bit boolean flags using a backing integer.
+	// Reduces memory usage and padding compared to individual bools (which are 1 byte).
+	// Backing type (T) must be unsigned: u8, u16 or u32.
+	// 
+	// Types:
+	//   b8 - 8 booleans into 1 byte
+	//   b16 - 16 booleans into 2 bytes
+	//   b32 - 32 booleans into 4 bytes
+	// 
+	// Usage:
+	//   b8 flags{};
+	//   flags[0] = true;                   //enable bit 0
+	//   if (flags[3]) { /*do something*/ } //check bit 3
+	// 
+	//   //with named indices:
+	//   constexpr u8 visible = 0;
+	//   constexpr u8 active = 1;
+	//   flags[visible] = true;
+	//   if (flags[active]) { /*do something*/ }
+	// ======================================================================
 
 	template<typename T, u8 NumBits>
 	struct BitField
@@ -125,6 +147,90 @@ namespace KalaKit
 	using b8 = BitField<u8, 8>;    //array of 8 1-bit bool states
 	using b16 = BitField<u16, 16>; //array of 16 1-bit bool states
 	using b32 = BitField<u32, 32>; //array of 32 1-bit bool states
+
+	// ======================================================================
+	// 
+	// CHAR
+	// 
+	// ======================================================================
+
+	using c8 = char;               //roman letters and arabic numbers
+	using c16 = char16_t;          //international letters and symbols
+	using c32 = char32_t;          //emojis and rare unicode
+
+	// ======================================================================
+	// 
+	// FIXED LENGTH STRING
+	// 
+	// Defines compile-time fixed-length strings for safe, bounded text storage.
+	// These strings are strongly typed and enforce character encoding and size limits.
+	// Overwrites zero-fill unused space to prevent garbage memory.
+	// 
+	// Types:
+	//   s8<N>  - N-length string of c8  (1-byte) characters: ASCII/english text and arabic numbers
+	//   s16<N> - N-length string of c16 (2-byte) characters: international alphabets
+	//   s32<N> - N-length string of c32 (4-byte) characters: full unicode like emojis
+	// 
+	// Usage:
+	//   s8<8> username = "admin";     //ASCII name (max 8 1-byte c8 chars)
+	//   s16<16> label = u"こんにちは"; //japanese (max 16 2-byte c16 chars)
+	//   s32<4> icons = U"🌟🔥💧";   //emoji set (max 4 4-byte c32 chars)
+	// ======================================================================
+
+	template<typename CharT, usize Length>
+	struct FixedString
+	{
+		static_assert
+		(
+			is_same_v<CharT, c8>
+			|| is_same_v<CharT, c16>
+			|| is_same_v<CharT, c32>,
+			"FixedString only supports c8, c16, c32"
+		);
+
+		CharT data[Length]{};
+
+		/// <summary>
+		/// Default constructor (zero-filled)
+		/// </summary>
+		constexpr FixedString() = default;
+
+		/// <summary>
+		/// Construct directly from a string literal
+		/// </summary>
+		template<usize N>
+		constexpr FixedString(const CharT(&literal)[N])
+		{
+			static_assert(N - 1 <= Length, "Literal is too long for FixedString");
+			for (usize i = 0; i < N - 1; ++i) data[i] = literal[i];
+		}
+
+		/// <summary>
+		/// Overwrite contents using a string literal
+		/// </summary>
+		template<usize N>
+		constexpr FixedString& operator=(const CharT(&literal)[N])
+		{
+			static_assert(N - 1 <= Length, "Literal too long for FixedString");
+			for (usize i = 0; i < N - 1; ++i) data[i] = literal[i];
+
+			//zero-fill the rest
+			for (usize i = N - 1; i < Length; ++i) data[i] = 0;
+
+			return *this;
+		}
+
+		constexpr CharT& operator[](usize index) { return data[index]; }
+		constexpr const CharT& operator[](usize index) const { return data[index]; }
+
+		constexpr usize size() const { return Length; }
+		constexpr const CharT* begin() const { return data; }
+		constexpr const CharT* end() const { return data + Length; }
+	};
+
+	template<usize N> using s8 = FixedString<c8, N>;
+	template<usize N> using s16 = FixedString<c16, N>;
+	template<usize N> using s32 = FixedString<c32, N>;
 }
 
 //
@@ -147,23 +253,3 @@ namespace KalaKit
 // Quaternion and rotation
 // using quat = ...;    // quaternion for rotation (x, y, z, w)
 // using euler = ...;   // euler angles (pitch, yaw, roll)
-// using radians = f32; // semantic angle type
-
-// Color types
-// using rgba8 = u32;   // packed 8-bit RGBA
-// using coloru32 = u32;// alternate name for packed color
-
-// Rectangles and boxes
-// using rectf = ...;   // 2D rectangle with position + size
-// using box3f = ...;   // 3D AABB or bounding box
-
-// Math constants
-// inline constexpr f32 f32_pi  = 3.141593f;
-// inline constexpr f32 f32_tau = 6.283185f;
-// inline constexpr f32 deg2rad     = f32_pi / 180.0f;
-// inline constexpr f32 rad2deg     = 180.0f / f32_pi;
-
-// Bit/byte utilities
-// inline constexpr usize bits_per_byte  = 8;
-// inline constexpr usize bits_per_u8    = 8;
-// inline constexpr usize bits_per_u32   = 32;
