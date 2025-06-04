@@ -28,21 +28,25 @@ namespace KalaKit
     //
     // definitions
     //
+	
+    using c8  = char;       //roman letters and arabic numbers
+    using c16 = char16_t;   //international letters and symbols
+    using c32 = char32_t;   //emojis
 
-    using i8  = int8_t;
-    using i16 = int16_t;
-    using i32 = int32_t;
+    using i8  = int8_t;     //-128 to 127
+    using i16 = int16_t;    //-32,768 to 32,767
+    using i32 = int32_t;    //-2,147,483,648 to 2,147,483,647
 
-    using u8  = uint8_t;
-    using u16 = uint16_t;
-    using u32 = uint32_t;
+    using u8  = uint8_t;    //0 - 255
+    using u16 = uint16_t;   //0 - 65,535
+    using u32 = uint32_t;   //0 to 4,294,967,295
 
     using usize = size_t;
     using isize = ptrdiff_t;
 
     using f32 = float;
 	
-    using b8 = u8;
+    using b8 = u8;          //0 or 1
 	
     //
     // min-max sizes
@@ -75,8 +79,8 @@ namespace KalaKit
     enum class b8state : u8
     {
         false_value = 0,
-	true_value = 1,
-	invalid     = 2
+        true_value = 1,
+        invalid     = 2
     };
     inline constexpr bool is_known_b8(b8state v) { return v <= b8state::invalid; }
     #define b8_false   b8state::false_value
@@ -102,7 +106,10 @@ namespace KalaKit
     static_assert(sizeof(f32) == 4);
 	
     static_assert(sizeof(b8) == 1);
-
+	
+    static_assert(sizeof(c8)  == 1);
+    static_assert(sizeof(c16) == 2);
+    static_assert(sizeof(c32) == 4);
 }
 
 //
