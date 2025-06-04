@@ -231,7 +231,7 @@ namespace KalaKit::KalaTypes
 			return *this;
 		}
 
-		//construct from a C-style null-terminated string at runtime
+		//construct from a basic_string at runtime
 		constexpr FixedString(const CharT* str)
 		{
 			for (usize i = 0; i < Length; ++i)
@@ -246,7 +246,7 @@ namespace KalaKit::KalaTypes
 			}
 		}
 
-		//assigns from a C-style null-terminated string at runtime
+		//assigns from a basic_string at runtime
 		FixedString& operator=(const CharT* str)
 		{
 			for (usize i = 0; i < Length; ++i)
