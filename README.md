@@ -16,3 +16,8 @@ All headers are cross-platform (Windows and Unix) and work out of the box. Simpl
 Provides fixed-size, memory-safe primitive types for cross-platform math, logic, and data layout.
 Ensures consistent behavior across platforms (Windows, Linux).
 Includes constexpr min/max bounds and static assertions for type safety.
+
+## kalacrash.hpp
+
+Terminates when Crash() is called, aborting all actions 
+and creating a crash log at ./kalacrash_index.txt
