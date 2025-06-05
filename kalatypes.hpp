@@ -231,21 +231,6 @@ namespace KalaKit::KalaTypes
 			return *this;
 		}
 
-		//construct from a basic_string at runtime
-		constexpr FixedString(const CharT* str)
-		{
-			for (usize i = 0; i < Length; ++i)
-			{
-				strData[i] = str[i];
-				if (str[i] == 0)
-				{
-					//fill remaining with zeros
-					for (++i; i < Length; ++i) strData[i] = 0;
-					break;
-				}
-			}
-		}
-
 		//assigns from a basic_string at runtime
 		FixedString& operator=(const CharT* str)
 		{
