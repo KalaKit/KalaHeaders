@@ -65,7 +65,8 @@ namespace KalaKit::KalaCrash
 			logFile << "Crash reason: " << reason;
 		}
 		
-		cerr << "[FATAL_ERROR]: " << reason << "\n";	
+		cerr << "[FATAL_ERROR]: " << reason << "\n";
+		logFile.close();
 		
 		terminate();
 	}
