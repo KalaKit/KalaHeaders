@@ -11,13 +11,19 @@ All headers are cross-platform (Windows and Unix) and work out of the box. Simpl
 
 # Headers in this repository
 
-## kalatypes.hpp
+## ktypes.hpp
 
 Provides fixed-size, memory-safe primitive types for cross-platform math, logic, and data layout.
 Ensures consistent behavior across platforms (Windows, Linux).
 Includes constexpr min/max bounds and static assertions for type safety.
 
-## kalacrash.hpp
+## kfixedstring.hpp
+
+Implements a fixed-size string type that mimics standard strings without dynamic memory.
+Supports three variants: ASCII-only, UTF-16, and UTF-32, each with compile-time length limits.
+Includes all common string operations: assignment, appending, search, trimming, and more.
+
+## kcrash.hpp
 
 Terminates when Crash() is called, aborting all actions 
 and creating a crash log at ./kalacrash_index.txt
