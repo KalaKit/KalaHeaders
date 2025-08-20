@@ -125,7 +125,7 @@ namespace KalaHeaders
 		}
 
 		//Returns current time in chosen or default format.
-		static const string& GetTime(TimeFormat time = TimeFormat::TIME_DEFAULT)
+		static const string& GetTime(TimeFormat timeFormat = TimeFormat::TIME_DEFAULT)
 		{
 			static string result{};
 
@@ -180,7 +180,7 @@ namespace KalaHeaders
 			return result;
 		}
 		//Returns current date in chosen or default format.
-		static const string& GetDate(DateFormat date = DateFormat::DATE_DEFAULT)
+		static const string& GetDate(DateFormat dateFormat = DateFormat::DATE_DEFAULT)
 		{
 			static string result{};
 
