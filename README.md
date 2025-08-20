@@ -36,14 +36,14 @@ Shorthands for math variables and overrideable cross-platform templates for conv
 
 ### Templates
 
-| Function                     | Input            | Output            | Constraint             | Typical use cases                       |
-|------------------------------|------------------|-------------------|------------------------|------------------------------------------|
-| `ToVar<T>(uintptr_t h)`      | `uintptr_t`      | `T` (pointer)     | `is_pointer_v<T>`      | Structs, classes, functions, arrays     |
-| `ToVar<T>(uintptr_t h)`      | `uintptr_t`      | `T` (integral)    | `is_integral_v<T>`     | Integers, bitmask flags, opaque handles |
-| `ToVar<T>(uintptr_t h)`      | `uintptr_t`      | `T` (enum)        | `is_enum_v<T>`         | Enums, enum bitmasks, typed API handles |
-| `FromVar<T>(T* h)`           | `T*` (pointer)   | `u64` (`uintptr_t`)| —                      | Structs, classes, functions, arrays     |
-| `FromVar<T>(T h)`            | Integral type    | `u64` (`uintptr_t`)| `is_integral_v<T>`     | Integers, bitmask flags, opaque handles |
-| `FromVar<T>(T h)`            | Enum type        | `u64` (`uintptr_t`)| `is_enum_v<T>`         | Enums, enum bitmasks, typed API handles |
+| Function                | Converts **from → to**           | Constraint             | Typical use cases                       |
+|-------------------------|----------------------------------|------------------------|------------------------------------------|
+| `ToVar<T>(uintptr_t h)` | `uintptr_t` → pointer `T`        | `is_pointer_v<T>`      | Reinterpret raw handle as a pointer (structs, classes, arrays, funcs) |
+| `ToVar<T>(uintptr_t h)` | `uintptr_t` → integral `T`       | `is_integral_v<T>`     | Reinterpret raw handle as int/flag/opaque handle |
+| `ToVar<T>(uintptr_t h)` | `uintptr_t` → enum `T`           | `is_enum_v<T>`         | Reinterpret raw handle as enum/enum flags/API handle |
+| `FromVar<T>(T* h)`      | pointer `T*` → `uintptr_t`       | —                      | Turn a pointer into a numeric handle (safe storage, hashing, serialization) |
+| `FromVar<T>(T h)`       | integral `T` → `uintptr_t`       | `is_integral_v<T>`     | Turn an int/flag into a raw handle value |
+| `FromVar<T>(T h)`       | enum `T` → `uintptr_t`           | `is_enum_v<T>`         | Turn an enum/enum flag into a raw handle value |
 
 ---
 
