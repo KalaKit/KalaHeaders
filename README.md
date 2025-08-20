@@ -6,7 +6,7 @@ Header-only scripts made in C++ 20, great for general use. They don't depend on 
 
 Macros and cross platform import/export
 
-- macros for __declspec/__attribute__ for windows/linux api
+- macros for __declspec/__attribute__/__stdcall for windows/linux api
 - inline macros for forceinline and noinline
 - deprecated macro
 - debug assert macro (assertions are compiled out completely in release)

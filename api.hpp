@@ -8,6 +8,7 @@
 //
 // Provides:
 //   - Cross-platform export/import macro (LIB_API)
+//   - Win32 machine level function calling convenction (LIB_APIENTRY)
 //   - Function inlining control (FORCE_INLINE, NO_INLINE)
 //   - Deprecation marker (DEPRECATED)
 //   - Debug-only assertion (DEBUG_ASSERT)
@@ -27,6 +28,16 @@
 #define LIB_API  __attribute__((visibility("default")))
 #else
 #define LIB_API 
+#endif
+
+//
+// WIN32 MACHINE LEVEL FUNCTION CALLING CONVENCTION
+//
+
+#ifdef _WIN32
+#define LIB_APIENTRY __stdcall
+#elif __linux__
+#define LIB_APIENTRY
 #endif
 
 //
