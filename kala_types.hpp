@@ -7,9 +7,11 @@
 // Read LICENSE.md for more information.
 //
 // Provides:
+//   - MATH                   - shorthands for common math variables
+//   - PLATFORM CONVERT       - helpers for common platform-agnostic conversion operators
 //   - STRING                 - shorthands and helpers for string operations
 //   - TYPE TRAITS            - helpers for checking if var is type
-//   - FIXED TYPE CONTAINERS  - shorthands for common fixed-type containers
+//   - FIXED TYPE CONTAINERS  - shorthands and helpers for common fixed-type containers
 //   - MEMORY                 - shorthands and helpers for smart pointer operations
 //   - TUPLE                  - helpers for tuple operations
 //   - SPAN                   - shorthands and helpers for span operations
@@ -20,6 +22,8 @@
 //   - LOG                    - shorthands and helpers for logging operations
 //   - TIME                   - shorthands and helpers for time operations
 //   - SORT                   - helpers for sort operations
+//   - THREADING              - shorthands and helpers for threading operations
+//   - NETWORKING             - shorthands and helpers for networking operations
 //------------------------------------------------------------------------------
 
 #pragma once
@@ -59,6 +63,24 @@ using std::ignore;    //ignore a tuple variable
 using std::byte;      //for binary operations in filestream
 using std::streambuf; //for log ostream reset
 using std::sort;
+
+//
+// MATH
+//
+
+namespace KMath
+{
+	
+}
+
+//
+// PLATFORM CONVERT
+//
+
+namespace KConvert
+{
+	
+}
 
 //
 // STRING
@@ -145,6 +167,8 @@ namespace KContainer
 
 	template<typename K, typename V>
 	using k_map = std::map<K, V>;
+	
+	//TODO: add get, set, push, emplace templates
 }
 
 //
@@ -578,7 +602,7 @@ namespace KLog
 
 namespace KTime
 {
-
+	//TODO: add content
 }
 
 //
@@ -587,5 +611,23 @@ namespace KTime
 
 namespace KSort
 {
+	//TODO: add content
+}
 
+//
+// THREADING
+//
+
+namespace KThread
+{
+	//TODO: add content
+}
+
+//
+// NETWORKING
+//
+
+namespace KNetworking
+{
+	//TODO: add content
 }
