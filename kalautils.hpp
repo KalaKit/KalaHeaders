@@ -1,14 +1,16 @@
 //------------------------------------------------------------------------------
-// kala_types.hpp
+// kalautils.hpp
 //
 // Copyright (C) 2025 Lost Empire Entertainment
 //
 // This is free source code, and you are welcome to redistribute it under certain conditions.
 // Read LICENSE.md for more information.
 //
+// Shorthands and helpers for many common C++ 20 operations.
+//
 // Provides:
 //   - MATH                   - shorthands for common math variables
-//   - PLATFORM CONVERT       - helpers for common platform-agnostic conversion operators
+//   - PLATFORM CONVERT       - helpers for common platform-agnostic conversion operations
 //   - STRING                 - shorthands and helpers for string operations
 //   - TYPE TRAITS            - helpers for checking if var is type
 //   - FIXED TYPE CONTAINERS  - shorthands and helpers for common fixed-type containers
@@ -70,7 +72,8 @@ using std::sort;
 
 namespace KMath
 {
-	
+	//TODO: add shorthands and helpers for pi, deg, rad, min, max, clamp, lerp etc
+	//TODO: move math shorthands from core_types.hpp to here
 }
 
 //
@@ -79,7 +82,7 @@ namespace KMath
 
 namespace KConvert
 {
-	
+	//TODO: move platform-agnostic helpers from core_types.hpp to here
 }
 
 //
@@ -620,7 +623,7 @@ namespace KSort
 
 namespace KThread
 {
-	//TODO: add content
+	//TODO: add shorthands and helpers for thread, mutex, lock, launching, joining, detaching, closing threads
 }
 
 //
@@ -629,5 +632,5 @@ namespace KThread
 
 namespace KNetworking
 {
-	//TODO: add content
+	//TODO: add shorthands and helpers for sockets, ip parsing, send/recv
 }
