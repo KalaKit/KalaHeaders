@@ -3,7 +3,7 @@
 //
 // Copyright (C) 2025 Lost Empire Entertainment
 //
-// This is free software, and you are welcome to redistribute it under certain conditions.
+// This is free source code, and you are welcome to redistribute it under certain conditions.
 // Read LICENSE.md for more information.
 //
 // Provides:
@@ -23,6 +23,7 @@
 using std::is_pointer_v;
 using std::is_integral_v;
 using std::is_enum_v;
+using std::is_same_v;
 using std::underlying_type_t;
 
 //
