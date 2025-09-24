@@ -102,15 +102,18 @@ Comprehensive logger header for any logging needs - sends cout, cerr and clog me
 
 Provides various string helpers to improve workflow with string operations
 
-| Function         | Description                                           |
-|------------------|-------------------------------------------------------|
-| SplitString      | Split origin into a vector of chunks between each splitter |
-| TrimString       | Remove leading and trailing whitespace characters from origin |
-| RemoveFromString | Remove all occurrences of target from origin          |
-| ToUpperString    | Set all letters of this string to uppercase letters   |
-| ToLowerString    | Set all letters of this string to lowercase letters   |
-| StartsWith       | Check if origin starts with target                    |
-| EndsWith         | Check if origin ends with target                      |
+| Function             | Description                                                         |
+|----------------------|---------------------------------------------------------------------|
+| CompareStrings       | Compare origin to target with optional case sensitivity toggle      |
+| SplitString          | Split origin into a vector of chunks between each splitter          |
+| JoinString           | Join all elements of a vector into a single string with a delimiter |
+| TrimString           | Remove leading and trailing whitespace characters from origin       |
+| RemoveAllFromString  | Remove all occurrences of target from origin                        |
+| ReplaceAllFromString | Replace all occurrences of target from origin with replacement      |
+| ToUpperString        | Set all letters of this string to uppercase letters                 |
+| ToLowerString        | Set all letters of this string to lowercase letters                 |
+| StartsWith           | Check if origin starts with target                                  |
+| EndsWith             | Check if origin ends with target                                    |
 
 ## EXPERIMENTAL HEADERS
 

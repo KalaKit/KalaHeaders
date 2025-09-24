@@ -1,5 +1,3 @@
-/.vs
-/testing/c_helpers/.vs
-/testing/c_helpers/x64
-/testing/c_helpers/*.vcxproj*
-/testing/c_helpers/c_helpers
+/experimental/testing/c_helpers/.vs
+/experimental/testing/c_helpers/x64
+/experimental/testing/c_helpers/*.vcxproj*
