@@ -1,0 +1,17 @@
+# Default VS stuff
+out/
+.vs/
+
+# CMake build targets
+build/
+debug/
+release/
+
+# Large files
+*.pdb
+*.obj
+*.exp
+
+# Misc
+*.spv # Vulkan shader files
+*.exe
