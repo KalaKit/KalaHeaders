@@ -27,6 +27,11 @@ origin: core_utils.hpp
 target: ..@KalaWindow@_external_shared@KalaHeaders@core_utils.hpp, ..@Elypso-engine@_external_shared@KalaHeaders@core_utils.hpp, ..@Elypso-hub@_external_shared@KalaHeaders@core_utils.hpp, ..@KalaServer@_external_shared@KalaHeaders@core_utils.hpp, ..@KalaFont@_external_shared@KalaHeaders@core_utils.hpp, ..@KalaMove@_external_shared@KalaHeaders@core_utils.hpp, ..@KalaExtract@_external_shared@KalaHeaders@core_utils.hpp, ..@cli_template@_external_shared@KalaHeaders@core_utils.hpp, ..@Circuit-chan@_external_shared@KalaHeaders@core_utils.hpp
 action: forcecopy
 
+//copy math_utils
+origin: math_utils.hpp
+target: ..@KalaWindow@_external_shared@KalaHeaders@math_utils.hpp, ..@Elypso-engine@_external_shared@KalaHeaders@math_utils.hpp, ..@Elypso-hub@_external_shared@KalaHeaders@math_utils.hpp, ..@KalaServer@_external_shared@KalaHeaders@math_utils.hpp, ..@KalaFont@_external_shared@KalaHeaders@math_utils.hpp, ..@KalaMove@_external_shared@KalaHeaders@math_utils.hpp, ..@KalaExtract@_external_shared@KalaHeaders@math_utils.hpp, ..@cli_template@_external_shared@KalaHeaders@math_utils.hpp, ..@Circuit-chan@_external_shared@KalaHeaders@math_utils.hpp
+action: forcecopy
+
 //copy log_utils
 origin: log_utils.hpp
 target: ..@KalaWindow@_external_shared@KalaHeaders@log_utils.hpp, ..@Elypso-engine@_external_shared@KalaHeaders@log_utils.hpp, ..@Elypso-hub@_external_shared@KalaHeaders@log_utils.hpp, ..@KalaServer@_external_shared@KalaHeaders@log_utils.hpp, ..@KalaFont@_external_shared@KalaHeaders@log_utils.hpp, ..@KalaMove@_external_shared@KalaHeaders@log_utils.hpp, ..@KalaExtract@_external_shared@KalaHeaders@log_utils.hpp, ..@cli_template@_external_shared@KalaHeaders@log_utils.hpp, ..@Circuit-chan@_external_shared@KalaHeaders@log_utils.hpp
