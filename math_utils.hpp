@@ -1,5 +1,5 @@
 //------------------------------------------------------------------------------
-// MATh_utils.hpp
+// math_utils.hpp
 //
 // Copyright (C) 2025 Lost Empire Entertainment
 //
