@@ -10,12 +10,12 @@
 
 //copy readme
 origin: README.md
-target: ..@KalaWindow@_external_shared@KalaHeaders@README.md, ..@Elypso-engine@_external_shared@KalaHeaders@README.md, ..@Elypso-hub@_external_shared@KalaHeaders@README.md, ..@KalaServer@_external_shared@KalaHeaders@README.md, ..@KalaFont@_external_shared@KalaHeaders@README.md, ..@KalaMove@_external_shared@KalaHeaders@README.md, ..@KalaExtract@_external_shared@KalaHeaders@README.md, ..@cli_template@_external_shared@KalaHeaders@README.md, ..@Circuit-chan@_external_shared@KalaHeaders@README.md, ..@SolinIDE@_external_shared@KalaHeaders@README.md
+target: ..@KalaWindow@_external_shared@KalaHeaders@README.md, ..@Elypso-engine@_external_shared@KalaHeaders@README.md, ..@Elypso-hub@_external_shared@KalaHeaders@README.md, ..@KalaServer@_external_shared@KalaHeaders@README.md, ..@KalaFont@_external_shared@KalaHeaders@README.md, ..@KalaMove@_external_shared@KalaHeaders@README.md, ..@KalaExtract@_external_shared@KalaHeaders@README.md, ..@cli_template@_external_shared@KalaHeaders@README.md, ..@Circuit-chan@_external_shared@KalaHeaders@README.md, ..@Solin@_external_shared@KalaHeaders@README.md
 action: forcecopy
 
 //copy license
 origin: LICENSE.md
-target: ..@KalaWindow@_external_shared@KalaHeaders@LICENSE.md, ..@Elypso-engine@_external_shared@KalaHeaders@LICENSE.md, ..@Elypso-hub@_external_shared@KalaHeaders@LICENSE.md, ..@KalaServer@_external_shared@KalaHeaders@LICENSE.md, ..@KalaFont@_external_shared@KalaHeaders@LICENSE.md, ..@KalaMove@_external_shared@KalaHeaders@LICENSE.md, ..@KalaExtract@_external_shared@KalaHeaders@LICENSE.md, ..@cli_template@_external_shared@KalaHeaders@LICENSE.md, ..@Circuit-chan@_external_shared@KalaHeaders@LICENSE.md, ..@SolinIDE@_external_shared@KalaHeaders@LICENSE.md
+target: ..@KalaWindow@_external_shared@KalaHeaders@LICENSE.md, ..@Elypso-engine@_external_shared@KalaHeaders@LICENSE.md, ..@Elypso-hub@_external_shared@KalaHeaders@LICENSE.md, ..@KalaServer@_external_shared@KalaHeaders@LICENSE.md, ..@KalaFont@_external_shared@KalaHeaders@LICENSE.md, ..@KalaMove@_external_shared@KalaHeaders@LICENSE.md, ..@KalaExtract@_external_shared@KalaHeaders@LICENSE.md, ..@cli_template@_external_shared@KalaHeaders@LICENSE.md, ..@Circuit-chan@_external_shared@KalaHeaders@LICENSE.md, ..@Solin@_external_shared@KalaHeaders@LICENSE.md
 action: forcecopy
 
 //
@@ -24,30 +24,30 @@ action: forcecopy
 
 //copy core_utils
 origin: core_utils.hpp
-target: ..@KalaWindow@_external_shared@KalaHeaders@core_utils.hpp, ..@Elypso-engine@_external_shared@KalaHeaders@core_utils.hpp, ..@Elypso-hub@_external_shared@KalaHeaders@core_utils.hpp, ..@KalaServer@_external_shared@KalaHeaders@core_utils.hpp, ..@KalaFont@_external_shared@KalaHeaders@core_utils.hpp, ..@KalaMove@_external_shared@KalaHeaders@core_utils.hpp, ..@KalaExtract@_external_shared@KalaHeaders@core_utils.hpp, ..@cli_template@_external_shared@KalaHeaders@core_utils.hpp, ..@Circuit-chan@_external_shared@KalaHeaders@core_utils.hpp, ..@SolinIDE@_external_shared@KalaHeaders@core_utils.hpp
+target: ..@KalaWindow@_external_shared@KalaHeaders@core_utils.hpp, ..@Elypso-engine@_external_shared@KalaHeaders@core_utils.hpp, ..@Elypso-hub@_external_shared@KalaHeaders@core_utils.hpp, ..@KalaServer@_external_shared@KalaHeaders@core_utils.hpp, ..@KalaFont@_external_shared@KalaHeaders@core_utils.hpp, ..@KalaMove@_external_shared@KalaHeaders@core_utils.hpp, ..@KalaExtract@_external_shared@KalaHeaders@core_utils.hpp, ..@cli_template@_external_shared@KalaHeaders@core_utils.hpp, ..@Circuit-chan@_external_shared@KalaHeaders@core_utils.hpp, ..@Solin@_external_shared@KalaHeaders@core_utils.hpp
 action: forcecopy
 
 //copy math_utils
 origin: math_utils.hpp
-target: ..@KalaWindow@_external_shared@KalaHeaders@math_utils.hpp, ..@Elypso-engine@_external_shared@KalaHeaders@math_utils.hpp, ..@Elypso-hub@_external_shared@KalaHeaders@math_utils.hpp, ..@KalaServer@_external_shared@KalaHeaders@math_utils.hpp, ..@KalaFont@_external_shared@KalaHeaders@math_utils.hpp, ..@KalaMove@_external_shared@KalaHeaders@math_utils.hpp, ..@KalaExtract@_external_shared@KalaHeaders@math_utils.hpp, ..@cli_template@_external_shared@KalaHeaders@math_utils.hpp, ..@Circuit-chan@_external_shared@KalaHeaders@math_utils.hpp, ..@SolinIDE@_external_shared@KalaHeaders@math_utils.hpp
+target: ..@KalaWindow@_external_shared@KalaHeaders@math_utils.hpp, ..@Elypso-engine@_external_shared@KalaHeaders@math_utils.hpp, ..@Elypso-hub@_external_shared@KalaHeaders@math_utils.hpp, ..@KalaServer@_external_shared@KalaHeaders@math_utils.hpp, ..@KalaFont@_external_shared@KalaHeaders@math_utils.hpp, ..@KalaMove@_external_shared@KalaHeaders@math_utils.hpp, ..@KalaExtract@_external_shared@KalaHeaders@math_utils.hpp, ..@cli_template@_external_shared@KalaHeaders@math_utils.hpp, ..@Circuit-chan@_external_shared@KalaHeaders@math_utils.hpp, ..@Solin@_external_shared@KalaHeaders@math_utils.hpp
 action: forcecopy
 
 //copy log_utils
 origin: log_utils.hpp
-target: ..@KalaWindow@_external_shared@KalaHeaders@log_utils.hpp, ..@Elypso-engine@_external_shared@KalaHeaders@log_utils.hpp, ..@Elypso-hub@_external_shared@KalaHeaders@log_utils.hpp, ..@KalaServer@_external_shared@KalaHeaders@log_utils.hpp, ..@KalaFont@_external_shared@KalaHeaders@log_utils.hpp, ..@KalaMove@_external_shared@KalaHeaders@log_utils.hpp, ..@KalaExtract@_external_shared@KalaHeaders@log_utils.hpp, ..@cli_template@_external_shared@KalaHeaders@log_utils.hpp, ..@Circuit-chan@_external_shared@KalaHeaders@log_utils.hpp, ..@SolinIDE@_external_shared@KalaHeaders@log_utils.hpp
+target: ..@KalaWindow@_external_shared@KalaHeaders@log_utils.hpp, ..@Elypso-engine@_external_shared@KalaHeaders@log_utils.hpp, ..@Elypso-hub@_external_shared@KalaHeaders@log_utils.hpp, ..@KalaServer@_external_shared@KalaHeaders@log_utils.hpp, ..@KalaFont@_external_shared@KalaHeaders@log_utils.hpp, ..@KalaMove@_external_shared@KalaHeaders@log_utils.hpp, ..@KalaExtract@_external_shared@KalaHeaders@log_utils.hpp, ..@cli_template@_external_shared@KalaHeaders@log_utils.hpp, ..@Circuit-chan@_external_shared@KalaHeaders@log_utils.hpp, ..@Solin@_external_shared@KalaHeaders@log_utils.hpp
 action: forcecopy
 
 //copy string_utils
 origin: string_utils.hpp
-target: ..@KalaWindow@_external_shared@KalaHeaders@string_utils.hpp, ..@Elypso-engine@_external_shared@KalaHeaders@string_utils.hpp, ..@Elypso-hub@_external_shared@KalaHeaders@string_utils.hpp, ..@KalaServer@_external_shared@KalaHeaders@string_utils.hpp, ..@KalaFont@_external_shared@KalaHeaders@string_utils.hpp, ..@KalaMove@_external_shared@KalaHeaders@string_utils.hpp, ..@KalaExtract@_external_shared@KalaHeaders@string_utils.hpp, ..@cli_template@_external_shared@KalaHeaders@string_utils.hpp, ..@Circuit-chan@_external_shared@KalaHeaders@string_utils.hpp, ..@SolinIDE@_external_shared@KalaHeaders@string_utils.hpp
+target: ..@KalaWindow@_external_shared@KalaHeaders@string_utils.hpp, ..@Elypso-engine@_external_shared@KalaHeaders@string_utils.hpp, ..@Elypso-hub@_external_shared@KalaHeaders@string_utils.hpp, ..@KalaServer@_external_shared@KalaHeaders@string_utils.hpp, ..@KalaFont@_external_shared@KalaHeaders@string_utils.hpp, ..@KalaMove@_external_shared@KalaHeaders@string_utils.hpp, ..@KalaExtract@_external_shared@KalaHeaders@string_utils.hpp, ..@cli_template@_external_shared@KalaHeaders@string_utils.hpp, ..@Circuit-chan@_external_shared@KalaHeaders@string_utils.hpp, ..@Solin@_external_shared@KalaHeaders@string_utils.hpp
 action: forcecopy
 
 //copy file_utils
 origin: file_utils.hpp
-target: ..@KalaWindow@_external_shared@KalaHeaders@file_utils.hpp, ..@Elypso-engine@_external_shared@KalaHeaders@file_utils.hpp, ..@Elypso-hub@_external_shared@KalaHeaders@file_utils.hpp, ..@KalaServer@_external_shared@KalaHeaders@file_utils.hpp, ..@KalaFont@_external_shared@KalaHeaders@file_utils.hpp, ..@KalaMove@_external_shared@KalaHeaders@file_utils.hpp, ..@KalaExtract@_external_shared@KalaHeaders@file_utils.hpp, ..@cli_template@_external_shared@KalaHeaders@file_utils.hpp, ..@Circuit-chan@_external_shared@KalaHeaders@file_utils.hpp, ..@SolinIDE@_external_shared@KalaHeaders@file_utils.hpp
+target: ..@KalaWindow@_external_shared@KalaHeaders@file_utils.hpp, ..@Elypso-engine@_external_shared@KalaHeaders@file_utils.hpp, ..@Elypso-hub@_external_shared@KalaHeaders@file_utils.hpp, ..@KalaServer@_external_shared@KalaHeaders@file_utils.hpp, ..@KalaFont@_external_shared@KalaHeaders@file_utils.hpp, ..@KalaMove@_external_shared@KalaHeaders@file_utils.hpp, ..@KalaExtract@_external_shared@KalaHeaders@file_utils.hpp, ..@cli_template@_external_shared@KalaHeaders@file_utils.hpp, ..@Circuit-chan@_external_shared@KalaHeaders@file_utils.hpp, ..@Solin@_external_shared@KalaHeaders@file_utils.hpp
 action: forcecopy
 
 //copy hierarchy_utils
 origin: hierarchy_utils.hpp
-target: ..@KalaWindow@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@Elypso-engine@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@Elypso-hub@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@KalaServer@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@KalaFont@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@KalaMove@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@KalaExtract@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@cli_template@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@Circuit-chan@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@SolinIDE@_external_shared@KalaHeaders@hierarchy_utils.hpp
+target: ..@KalaWindow@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@Elypso-engine@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@Elypso-hub@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@KalaServer@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@KalaFont@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@KalaMove@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@KalaExtract@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@cli_template@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@Circuit-chan@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@Solin@_external_shared@KalaHeaders@hierarchy_utils.hpp
 action: forcecopy
