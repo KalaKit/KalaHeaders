@@ -139,14 +139,9 @@ namespace KalaHeaders
 	{
 		vector<u8> pcmData;  //PCM data in bytes
 		
-		u32 sampleRate;   //usually 44100hz or 48000hz
+		u32 sampleRate;   //the sample rate of the original file, usually 44100hz or 48000hz
+		u8 bitsPerSample; //the bps of the original file, usually 16-bit int, 24-bit int or 32-bit float (unused in mp3 and opus, defaults to 16)
 		u8 channels;      //usually 1 channel (mono) or 2 channels (stereo)
-		u8 bitsPerSample; //16-bit int, 24-bit int or 32-bit float (unused in mp3 and opus, defaults to 16)
-		
-		u32 bitrate;      //bitrate = sampleRate * channels * bitsPerSample (unused in opus, varies at runtime)
-		u16 blockAlign;   //bytes per frame = channels * bitsPerSample / 8
-		u32 totalFrames;  //total interleaved frames = frames.size() / blockAlign
-		u32 durationMs;   //playback length = totalFrames * 1000 / sampleRate (half of duration if channels is 2)
 	};
 	
 	inline bool ContainsSampleRate(u32 sr)
@@ -353,20 +348,6 @@ namespace KalaHeaders
 			pData.sampleRate    = correctSampleRate;
 			pData.channels      = correctChannels;
 			pData.bitsPerSample = correctBPS;
-			
-			pData.bitrate =
-				pData.sampleRate 
-				* static_cast<u32>(pData.channels)
-				* static_cast<u32>(pData.bitsPerSample);
-			pData.blockAlign = 
-				static_cast<u16>(pData.channels) 
-				* (static_cast<u32>(pData.bitsPerSample) / 8u);
-			pData.totalFrames = 
-				static_cast<u32>(pData.pcmData.size() 
-				/ pData.blockAlign);
-			pData.durationMs = (
-				static_cast<u32>(pData.totalFrames) * 1000u)
-				/ static_cast<u32>(pData.sampleRate);
 
 			in.close();	
 			
