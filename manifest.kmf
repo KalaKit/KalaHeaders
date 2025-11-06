@@ -51,3 +51,8 @@ action: forcecopy
 origin: hierarchy_utils.hpp
 target: ..@KalaWindow@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@Elypso-engine@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@Elypso-hub@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@KalaServer@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@KalaMove@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@KalaData@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@KalaFont@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@cli_template@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@Circuit-chan@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@Solin@_external_shared@KalaHeaders@hierarchy_utils.hpp
 action: forcecopy
+
+//copy import_ktf
+origin: import_ktf.hpp
+target: ..@KalaWindow@_external_shared@KalaHeaders@import_ktf.hpp, ..@Elypso-engine@_external_shared@KalaHeaders@import_ktf.hpp, ..@Elypso-hub@_external_shared@KalaHeaders@import_ktf.hpp, ..@KalaServer@_external_shared@KalaHeaders@import_ktf.hpp, ..@KalaMove@_external_shared@KalaHeaders@import_ktf.hpp, ..@KalaData@_external_shared@KalaHeaders@import_ktf.hpp, ..@KalaFont@_external_shared@KalaHeaders@import_ktf.hpp, ..@cli_template@_external_shared@KalaHeaders@import_ktf.hpp, ..@Circuit-chan@_external_shared@KalaHeaders@import_ktf.hpp, ..@Solin@_external_shared@KalaHeaders@import_ktf.hpp
+action: forcecopy
