@@ -55,13 +55,13 @@ Offset | Size | Field
 ??+10  | 2    | top bearing (Y)
 ??+12  | 2    | advance
 
-??+14  | 2    | top-left vertice position (x, y)
-??+16  | 2    | top-right vertice position (x, y)
-??+18  | 2    | bottom-right vertice position (x, y)
-??+20  | 2    | bottom-left vertice position (x, y)
+??+14  | 4    | top-left vertice position (x, y)
+??+18  | 4    | top-right vertice position (x, y)
+??+22  | 4    | bottom-right vertice position (x, y)
+??+26  | 4    | bottom-left vertice position (x, y)
 
-??+22  | 4    | raw pixels size
-??+24  | 1    | each raw pixel value
+??+30  | 4    | raw pixels size
+??+34  | 1    | each raw pixel value
 ...
 
 ------------------------------------------------------------------------------*/
@@ -111,7 +111,7 @@ namespace KalaHeaders
 	constexpr u8 CORRECT_GLYPH_TABLE_SIZE = 12u;
 	
 	//The offset where pixel data must always start relative to each glyph block
-	constexpr u8 RAW_PIXEL_DATA_OFFSET = 26u;
+	constexpr u8 RAW_PIXEL_DATA_OFFSET = 34u;
 	
 	//Max allowed glyphs for bitmap and glyph exporting
 	constexpr u16 MAX_GLYPH_COUNT = 1024u;
@@ -150,10 +150,10 @@ namespace KalaHeaders
 		//uv of this glyph
 		array<array<u8, 2>, 4> uvs = 
 		{{
-			{ 0,   255 },
-			{ 255, 0   },
-			{ 255, 255 },
-			{ 0,   255 }
+		    {0, 1},  //top-left
+			{1, 1},  //top-right
+			{1, 0},  //bottom-right
+			{0, 0}   //bottom-left
 		}};       
 		u32 glyphTableSize{};     //glyph search table size in bytes
 		u32 glyphBlockSize{};     //glyph payload block size in bytes
@@ -170,15 +170,15 @@ namespace KalaHeaders
 	//The font payload table for glyph export-import
 	struct GlyphBlock
 	{
-		u32 charCode{};                    //glyph character code in unicode
-		u16 width{};                       //glyph width
-		u16 height{};                      //glyph height
-		i16 bearingX{};                    //glyph left bearing
-		i16 bearingY{};                    //glyph top bearing
-		u16 advance{};                     //glyph advance
-		array<array<i8, 2>, 4> vertices{}; //vertices of this glyph, can be negative
-		u32 rawPixelSize{};                //size of this glyph's pixels
-		vector<u8> rawPixels{};            //8-bit raw pixels of this glyph (0 - 255, 0 is transparent, 255 is white)
+		u32 charCode{};                     //glyph character code in unicode
+		u16 width{};                        //glyph width
+		u16 height{};                       //glyph height
+		i16 bearingX{};                     //glyph left bearing
+		i16 bearingY{};                     //glyph top bearing
+		u16 advance{};                      //glyph advance
+		array<array<i16, 2>, 4> vertices{}; //vertices of this glyph, can be negative
+		u32 rawPixelSize{};                 //size of this glyph's pixels
+		vector<u8> rawPixels{};             //8-bit raw pixels of this glyph (0 - 255, 0 is transparent, 255 is white)
 	};
 	
 	enum class ImportResult : u8
@@ -424,10 +424,10 @@ namespace KalaHeaders
 				memcpy(&b.advance,  rawData.data() + offset + 12, sizeof(u16));
 				
 				//vertices
-				memcpy(&b.vertices, rawData.data() + offset + 14, 8);
+				memcpy(&b.vertices, rawData.data() + offset + 14, sizeof(b.vertices));
 				
 				//raw pixel size
-				memcpy(&b.rawPixelSize, rawData.data() + offset + 22, sizeof(u32));
+				memcpy(&b.rawPixelSize, rawData.data() + offset + 30, sizeof(u32));
 				
 				if (offset + static_cast<u32>(RAW_PIXEL_DATA_OFFSET) + b.rawPixelSize > fileSize)
 				{
@@ -436,7 +436,7 @@ namespace KalaHeaders
 				
 				//raw pixel data
 				b.rawPixels.resize(b.rawPixelSize);
-				memcpy(b.rawPixels.data(), rawData.data() + offset + 26, b.rawPixelSize);
+				memcpy(b.rawPixels.data(), rawData.data() + offset + RAW_PIXEL_DATA_OFFSET, b.rawPixelSize);
 				
 				blocks.push_back(move(b));
 			}
