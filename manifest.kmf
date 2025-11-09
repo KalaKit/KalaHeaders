@@ -47,9 +47,9 @@ origin: file_utils.hpp
 target: ..@KalaWindow@_external_shared@KalaHeaders@file_utils.hpp, ..@Elypso-engine@_external_shared@KalaHeaders@file_utils.hpp, ..@Elypso-hub@_external_shared@KalaHeaders@file_utils.hpp, ..@KalaServer@_external_shared@KalaHeaders@file_utils.hpp, ..@KalaMove@_external_shared@KalaHeaders@file_utils.hpp, ..@KalaData@_external_shared@KalaHeaders@file_utils.hpp, ..@KalaFont@_external_shared@KalaHeaders@file_utils.hpp, ..@KalaCLI@_external_shared@KalaHeaders@file_utils.hpp, ..@Circuit-chan@_external_shared@KalaHeaders@file_utils.hpp, ..@Solin@_external_shared@KalaHeaders@file_utils.hpp
 action: forcecopy
 
-//copy hierarchy_utils
-origin: hierarchy_utils.hpp
-target: ..@KalaWindow@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@Elypso-engine@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@Elypso-hub@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@KalaServer@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@KalaMove@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@KalaData@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@KalaFont@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@KalaCLI@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@Circuit-chan@_external_shared@KalaHeaders@hierarchy_utils.hpp, ..@Solin@_external_shared@KalaHeaders@hierarchy_utils.hpp
+//copy registry_utils
+origin: registry_utils.hpp
+target: ..@KalaWindow@_external_shared@KalaHeaders@registry_utils.hpp, ..@Elypso-engine@_external_shared@KalaHeaders@registry_utils.hpp, ..@Elypso-hub@_external_shared@KalaHeaders@registry_utils.hpp, ..@KalaServer@_external_shared@KalaHeaders@registry_utils.hpp, ..@KalaMove@_external_shared@KalaHeaders@registry_utils.hpp, ..@KalaData@_external_shared@KalaHeaders@registry_utils.hpp, ..@KalaFont@_external_shared@KalaHeaders@registry_utils.hpp, ..@KalaCLI@_external_shared@KalaHeaders@registry_utils.hpp, ..@Circuit-chan@_external_shared@KalaHeaders@registry_utils.hpp, ..@Solin@_external_shared@KalaHeaders@registry_utils.hpp
 action: forcecopy
 
 //copy import_ktf
