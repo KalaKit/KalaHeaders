@@ -31,7 +31,9 @@ Provides:
 - shorthands for math variables
 - vec2, vec3, vec4, mat2, mat3, mat4, quat (vec4)
 - operators and helpers for vec, mat and quat types
+- swizzle operators for vec2-vec4
 - mat containers as column-major and scalar form
+- color conversion, tonemap conversion, color operators for sdr and hdr
 
 ## string_utils.hpp
 
