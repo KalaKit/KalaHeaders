@@ -2494,37 +2494,41 @@ namespace KalaHeaders
 		COLOR_SRGB_TO_LINEAR = 1, //converts directly from srgb to linear
 		COLOR_LINEAR_TO_SRGB = 2, //converts directly from linear to srgb
 		
+		//srgb conversion
+		
 		COLOR_HSL_TO_HSV = 3, //converts directly from hsl to hsv
 		COLOR_HSV_TO_HSL = 4, //converts directly from hsv to hsl
 		
-		COLOR_XYZ_TO_LAB = 5, //converts directly from xyz to lab
-		COLOR_LAB_TO_XYZ = 6, //converts directly from lab to xyz
+		COLOR_SRGB_TO_HSV       = 5,
+		COLOR_SRGB_TO_HSL       = 6,
+		COLOR_SRGB_TO_RGB8      = 7,
+		COLOR_SRGB_TO_CMYK      = 8,
 		
-		COLOR_OKLAB_TO_OKLCH = 7, //converts directly from oklab to oklch
-		COLOR_OKLCH_TO_OKLAB = 8, //converts directly from oklch to oklab
+		COLOR_HSV_TO_SRGB       = 10,
+		COLOR_HSL_TO_SRGB       = 11,
+		COLOR_RGB8_TO_SRGB      = 12,
+		COLOR_CMYK_TO_SRGB      = 13,
 		
-		COLOR_SRGB_TO_HSV       = 9,
-		COLOR_SRGB_TO_HSL       = 10,
-		COLOR_SRGB_TO_XYZ       = 11,
-		COLOR_SRGB_TO_LAB       = 12,
-		COLOR_SRGB_TO_OKLAB     = 13,
-		COLOR_SRGB_TO_OKLCH     = 14,
-		COLOR_SRGB_TO_RGB8      = 15,
-		COLOR_SRGB_TO_CMYK      = 16,
-		COLOR_SRGB_TO_GREYSCALE = 17,
+		COLOR_SRGB_TO_PREMULTIPLIED   = 15,
+		COLOR_SRGB_FROM_PREMULTIPLIED = 16,
 		
-		COLOR_HSV_TO_SRGB       = 18,
-		COLOR_HSL_TO_SRGB       = 19,
-		COLOR_XYZ_TO_SRGB       = 20,
-		COLOR_LAB_TO_SRGB       = 21,
-		COLOR_OKLAB_TO_SRGB     = 22,
-		COLOR_OKLCH_TO_SRGB     = 23,
-		COLOR_RGB8_TO_SRGB      = 24,
-		COLOR_CMYK_TO_SRGB      = 25,
-		COLOR_GREYSCALE_TO_SRGB = 26,
+		//linear conversion
 		
-		COLOR_SRGB_TO_PREMULTIPLIED   = 27,
-		COLOR_SRGB_FROM_PREMULTIPLIED = 28
+		COLOR_XYZ_TO_LAB = 17, //converts directly from xyz to lab
+		COLOR_LAB_TO_XYZ = 18, //converts directly from lab to xyz
+		
+		COLOR_OKLAB_TO_OKLCH = 19, //converts directly from oklab to oklch
+		COLOR_OKLCH_TO_OKLAB = 20, //converts directly from oklch to oklab
+		
+		COLOR_LINEAR_TO_XYZ   = 21,
+		COLOR_LINEAR_TO_LAB   = 22,
+		COLOR_LINEAR_TO_OKLAB = 23,
+		COLOR_LINEAR_TO_OKLCH = 24,
+		
+		COLOR_XYZ_TO_LINEAR   = 25,
+		COLOR_LAB_TO_LINEAR   = 26,
+		COLOR_OKLAB_TO_LINEAR = 27,
+		COLOR_OKLCH_TO_LINEAR = 28
 	}
 	
 	//Converts input color to returned color with chosen ColorConvertType
@@ -2536,13 +2540,17 @@ namespace KalaHeaders
 		ColorConvertType type,
 		const vec4& c)
 	{		
-		//always range-normalize if not converting from rgb8 to srgb
-		vec4 nc = (
-			type == ColorConvertType::COLOR_RGB8_TO_SRGB
-			|| type == ColorConvertType::COLOR_SRGB_TO_PREMULTIPLIED
-			|| type == ColorConvertType::COLOR_SRGB_FROM_PREMULTIPLIED)
-			? c
-			: vec4(normalize_r(rgb(c)), c.a);
+		bool canNormalize = 
+			type == COLOR_SRGB_TO_LINEAR
+			|| type == COLOR_SRGB_TO_HSV
+			|| type == COLOR_SRGB_TO_HSL
+			|| type == COLOR_SRGB_TO_RGB8
+			|| type == COLOR_SRGB_TO_CMYK;
+			
+		//always range-normalize if non-linear
+		vec4 nc = canNormalize
+			? vec4(normalize_r(rgb(c)), c.a)
+			: c;
 	
 		f32 r = nc.x;
 		f32 g = nc.y;
@@ -2616,6 +2624,202 @@ namespace KalaHeaders
 				
 				return vec4(H, S_l, L, a);
 			};
+	
+		auto SRGB_TO_HSV = [&]() -> vec4
+			{
+				f32 maxc = max(r, max(g, b));
+				f32 minc = min(r, min(g, b));
+				f32 delta = maxc - minc;
+				
+				f32 h{};
+				f32 s{};
+				f32 v = maxc;
+				
+				if (delta > epsilon)
+				{
+					//saturation
+					
+					if (maxc > 0.0f) s = delta / maxc;
+					
+					//hue
+					
+					if (maxc == r) h = (g - b) / delta;
+					else if (maxc == g) h = 2.0f + (b - r) / delta;
+					else h = 4.0f + (r - g) / delta;
+					
+					h /= 6.0f;
+					if (h < 0.0f) h += 1.0f;
+				}
+				
+				return vec4(h, s, v, a);
+			};
+		auto SRGB_TO_HSL = [&]() -> vec4
+			{
+				f32 maxc = max(r, max(g, b));
+				f32 minc = min(r, min(g, b));
+				f32 delta = maxc - minc;
+				
+				f32 h{};
+				f32 s{};
+				f32 l = 0.5f * (maxc + minc);
+				
+				if (delta <= epsilon) return vec4(0, 0, l, a);
+				else
+				{
+					//saturation
+					
+					if (l < 0.5f) s = delta / (maxc + minc);
+					else s = delta / (2.0f - maxc - minc);
+					
+					//hue
+					
+					if (maxc == r) h = (g - b) / delta;
+					else if (maxc == g) h = 2.0f + (b - r) / delta;
+					else h = 4.0f + (r - g) / delta;
+					
+					h /= 6.0f;
+					if (h < 0.0f) h += 1.0f;
+				}
+				
+				return vec4(h, s, l, a);
+			};
+		auto SRGB_TO_RGB8 = [&]() -> vec4
+			{
+				auto to_rgb8 = [](f32 c) -> f32
+					{
+						return clamp(c * 255.0f, 0.0f, 255.0f);
+					};
+					
+				return vec4(
+					to_rgb8(r),
+					to_rgb8(g),
+					to_rgb8(b),
+					to_rgb8(a));
+			};
+		auto SRGB_TO_CMYK = [&]() -> vec4
+			{
+				f32 k = 1.0f - max(r, max(g, b));
+				
+				//pure black shortcut
+				if (k >= 1.0f - epsilon) return vec4(vec3(0.0f), 1.0f);
+				
+				f32 c = (1.0f - r - k) / (1.0f - k);
+				f32 m = (1.0f - g - k) / (1.0f - k);
+				f32 y = (1.0f - b - k) / (1.0f - k);
+				
+				//r = C, g = M, b = Y, a = K
+				return vec4(c, m, y, k);
+			};
+			
+		auto HSV_TO_SRGB = [&]() -> vec4
+			{
+				f32 h = r;
+				f32 s = g;
+				f32 v = b;
+				
+				if (s <= epsilon) return vec4(v, v, v, a);
+				
+				h = fmodf(h, 1.0f) * 6.0f;
+				f32 i = floorf(h);
+				f32 f = h - i;
+				
+				f32 p = v * (1.0f - s);
+				f32 q = v * (1.0f - s * f);
+				f32 t = v * (1.0f - s * (1.0f - f));
+				
+				f32 R{};
+				f32 G{};
+				f32 B{};
+				
+				switch (static_cast<int>(i))
+				{
+					default:
+					case 0: R = v; G = t; B = p; break;
+					case 1: R = q; G = v; B = p; break;
+					case 2: R = p; G = v; B = t; break;
+					case 3: R = p; G = q; B = v; break;
+					case 4: R = t; G = p; B = v; break;
+					case 5: R = v; G = p; B = q; break;
+				}
+				
+				return vec4(R, G, B, a);
+			};
+		auto HSL_TO_SRGB = [&]() -> vec4
+			{
+				f32 h = r;
+				f32 s = g;
+				f32 l = b;
+				
+				f32 R{};
+				f32 G{};
+				f32 B{};
+				
+				if (s <= epsilon) R = G = B = l;
+				else
+				{
+					auto hue_to_srgb = [](f32 p, f32 q, f32 t) -> f32
+						{
+							if (t < 0.0f) t += 1.0f;
+							if (t > 1.0f) t -= 1.0f;
+							
+							if (t < 1.0f / 6.0f) return p + (q - p) * 6.0f * t;
+							if (t < 1.0f / 2.0f) return q;
+							if (t < 2.0f / 3.0f) return p + (q - p) * (2.0f / 3.0f - t) * 6.0f;
+							
+							return p;
+						};
+						
+					f32 q = (l < 0.5f)
+						? (l * (1.0f + s))
+						: (l + s - l * s);
+						
+					f32 p = 2.0f * l - q;
+					
+					R = hue_to_srgb(p, q, h + 1.0f / 3.0f);
+					G = hue_to_srgb(p, q, h);
+					B = hue_to_srgb(p, q, h - 1.0f / 3.0f);
+				}
+				
+				return vec4(R, G, B, a);
+			};
+		auto RGB8_TO_SRGB = [&]() -> vec4 
+		{ 
+			return vec4(
+				r / 255.0f, 
+				g / 255.0f, 
+				b / 255.0f, 
+				a); 
+		};
+		auto CMYK_TO_SRGB = [&]() -> vec4
+			{
+				f32 C = r;
+				f32 M = g;
+				f32 Y = b;
+				f32 K = a;
+				
+				if (K >= 1.0f - epsilon) return vec4(vec3(0.0f), 1.0f);
+				
+				f32 R = (1.0f - C) * (1.0f - K);
+				f32 G = (1.0f - M) * (1.0f - K);
+				f32 B = (1.0f - Y) * (1.0f - K);
+				
+				//alpha as 1.0f because CMYK has no alpha channel
+				return vec4(R, G, B, 1.0f);
+			};
+			
+		auto SRGB_TO_PREMULTIPLIED = [&]() -> vec4
+			{
+				return vec4(r * a, g * a, b * a, a);
+			};
+		auto SRGB_FROM_PREMULTIPLIED = [&]() -> vec4
+			{
+				//completely transparent, no color information
+				if (a <= epsilon) return vec4(0.0f);
+				
+				return vec4(r / a, g / a, b / a, a);
+			};
+			
+		//linear conversion
 			
 		auto XYZ_TO_LAB = [&](
 			const vec4& inColor{},
@@ -2742,90 +2946,29 @@ namespace KalaHeaders
 				
 				return vec4(L, A, Bc, a);
 			};
-	
-		auto SRGB_TO_HSV = [&]() -> vec4
-			{
-				f32 maxc = max(r, max(g, b));
-				f32 minc = min(r, min(g, b));
-				f32 delta = maxc - minc;
-				
-				f32 h{};
-				f32 s{};
-				f32 v = maxc;
-				
-				if (delta > epsilon)
-				{
-					//saturation
-					
-					if (maxc > 0.0f) s = delta / maxc;
-					
-					//hue
-					
-					if (maxc == r) h = (g - b) / delta;
-					else if (maxc == g) h = 2.0f + (b - r) / delta;
-					else h = 4.0f + (r - g) / delta;
-					
-					h /= 6.0f;
-					if (h < 0.0f) h += 1.0f;
-				}
-				
-				return vec4(h, s, v, a);
-			};
-		auto SRGB_TO_HSL = [&]() -> vec4
-			{
-				f32 maxc = max(r, max(g, b));
-				f32 minc = min(r, min(g, b));
-				f32 delta = maxc - minc;
-				
-				f32 h{};
-				f32 s{};
-				f32 l = 0.5f * (maxc + minc);
-				
-				if (delta <= epsilon) return vec4(0, 0, l, a);
-				else
-				{
-					//saturation
-					
-					if (l < 0.5f) s = delta / (maxc + minc);
-					else s = delta / (2.0f - maxc - minc);
-					
-					//hue
-					
-					if (maxc == r) h = (g - b) / delta;
-					else if (maxc == g) h = 2.0f + (b - r) / delta;
-					else h = 4.0f + (r - g) / delta;
-					
-					h /= 6.0f;
-					if (h < 0.0f) h += 1.0f;
-				}
-				
-				return vec4(h, s, l, a);
-			};
-		auto SRGB_TO_XYZ = [&]() -> vec4 
-		{ 
-			vec3 rgb_linear(
-				to_linear(r),
-				to_linear(g),
-				to_linear(b));
 			
+		auto LINEAR_TO_XYZ = [&]() -> vec4 
+		{
 			constexpr mat3 M(
 				0.4124564f, 0.3575761f, 0.1804375f,
 				0.2126729f, 0.7151522f, 0.0721750f,
 				0.0193339f, 0.1191920f, 0.9503041f);
 				
-			return vec4(vec3(M * rgb_linear), a);
+			vec3 xyz = M * vec3(r, g, b);
+			return vec4(xyz, a);
 		};
-		auto SRGB_TO_LAB = [&]() -> vec4
+		auto LINEAR_TO_LAB = [&]() -> vec4
 			{
-				return XYZ_TO_LAB(SRGB_TO_XYZ(), false);
+				return XYZ_TO_LAB(LINEAR_TO_XYZ(), false);
 			};
-		auto SRGB_TO_OKLAB = [&]() -> vec4
+		auto LINEAR_TO_OKLAB = [&](
+			const vec4& inColor{},
+			bool useOriginal = true) -> vec4
 			{
-				//convert srgb to linear
-				
-				f32 R = to_linear(r);
-				f32 G = to_linear(g);
-				f32 B = to_linear(b);
+				f32 R = useOriginal ? r : inColor.x;
+				f32 G = useOriginal ? g : inColor.y;
+				f32 B = useOriginal ? b : inColor.z;
+				f32 A_ = useOriginal ? a : inColor.w;
 				
 				//convert linear to LMS
 				
@@ -2845,122 +2988,25 @@ namespace KalaHeaders
 				f32 A = 1.9779984951f * l_ - 2.4285922050f * m_ + 0.4505937099f * s_;
 				f32 Bc = 0.0259040371f * l_ + 0.7827717662f * m_ - 0.8086757660f * s_;
 				
-				return vec4(L, A, Bc, a);
+				return vec4(L, A, Bc, A_);
 			};
-		auto SRGB_TO_RGB8 = [&]() -> vec4
+		auto LINEAR_TO_OKLCH = [&]() -> vec4
 			{
-				auto to_rgb8 = [](f32 c) -> f32
-					{
-						return clamp(c * 255.0f, 0.0f, 255.0f);
-					};
-					
-				return vec4(
-					to_rgb8(r),
-					to_rgb8(g),
-					to_rgb8(b),
-					to_rgb8(a));
-			};
-		auto SRGB_TO_CMYK = [&]() -> vec4
-			{
-				f32 k = 1.0f - max(r, max(g, b));
+				vec4 oklab = LINEAR_TO_OKLAB(vec4(r, g, b, a), false);
 				
-				//pure black shortcut
-				if (k >= 1.0f - epsilon) return vec4(vec3(0.0f), 1.0f);
+				f32 L = oklab.x;
+				f32 A = oklab.y;
+				f32 Bc = oklab.z;
+				f32 A_ = oklab.a;
 				
-				f32 c = (1.0f - r - k) / (1.0f - k);
-				f32 m = (1.0f - g - k) / (1.0f - k);
-				f32 y = (1.0f - b - k) / (1.0f - k);
+				float C = sqrtf(A * A + Bc * Bc);
+				float h = atan2f(Bc, A) / (2.0f * PI);
+				if (h < 0.0f) h += 1.0f;
 				
-				//r = C, g = M, b = Y, a = K
-				return vec4(c, m, y, k);
-			};
-		auto SRGB_TO_GREYSCALE = [&]() -> vec4
-			{
-				//modern sRGB luminance coefficients
-				
-				constexpr f32 wr = 0.2126f;
-				constexpr f32 wg = 0.7152f;
-				constexpr f32 wb = 0.0722f;
-				
-				//weighted luminance
-				
-				f32 grey = (r * wr) + (g * wg) + (b * wb);
-				
-				return vec4(vec3(grey), a);
+				return vec4(L, C, h, A_);
 			};
 			
-		auto HSV_TO_SRGB = [&]() -> vec4
-			{
-				f32 h = r;
-				f32 s = g;
-				f32 v = b;
-				
-				if (s <= epsilon) return vec4(v, v, v, a);
-				
-				h = fmodf(h, 1.0f) * 6.0f;
-				f32 i = floorf(h);
-				f32 f = h - i;
-				
-				f32 p = v * (1.0f - s);
-				f32 q = v * (1.0f - s * f);
-				f32 t = v * (1.0f - s * (1.0f - f));
-				
-				f32 R{};
-				f32 G{};
-				f32 B{};
-				
-				switch (static_cast<int>(i))
-				{
-					default:
-					case 0: R = v; G = t; B = p; break;
-					case 1: R = q; G = v; B = p; break;
-					case 2: R = p; G = v; B = t; break;
-					case 3: R = p; G = q; B = v; break;
-					case 4: R = t; G = p; B = v; break;
-					case 5: R = v; G = p; B = q; break;
-				}
-				
-				return vec4(R, G, B, a);
-			};
-		auto HSL_TO_SRGB = [&]() -> vec4
-			{
-				f32 h = r;
-				f32 s = g;
-				f32 l = b;
-				
-				f32 R{};
-				f32 G{};
-				f32 B{};
-				
-				if (s <= epsilon) R = G = B = l;
-				else
-				{
-					auto hue_to_srgb = [](f32 p, f32 q, f32 t) -> f32
-						{
-							if (t < 0.0f) t += 1.0f;
-							if (t > 1.0f) t -= 1.0f;
-							
-							if (t < 1.0f / 6.0f) return p + (q - p) * 6.0f * t;
-							if (t < 1.0f / 2.0f) return q;
-							if (t < 2.0f / 3.0f) return p + (q - p) * (2.0f / 3.0f - t) * 6.0f;
-							
-							return p;
-						};
-						
-					f32 q = (l < 0.5f)
-						? (l * (1.0f + s))
-						: (l + s - l * s);
-						
-					f32 p = 2.0f * l - q;
-					
-					R = hue_to_srgb(p, q, h + 1.0f / 3.0f);
-					G = hue_to_srgb(p, q, h);
-					B = hue_to_srgb(p, q, h - 1.0f / 3.0f);
-				}
-				
-				return vec4(R, G, B, a);
-			};
-		auto XYZ_TO_SRGB = [&](
+		auto XYZ_TO_LINEAR = [&](
 			const vec4& inColor{},
 			bool useOriginal = true) -> vec4 
 		{ 
@@ -2977,20 +3023,23 @@ namespace KalaHeaders
 			vec3 rgb_linear = M * vec3(X, Y, Z);
 			
 			return vec4(
-				to_srgb(rgb_linear.x),
-				to_srgb(rgb_linear.y),
-				to_srgb(rgb_linear.z),
+				rgb_linear.x,
+				rgb_linear.y,
+				rgb_linear.z,
 				W);
 		};
-		auto LAB_TO_SRGB = [&]() -> vec4
+		auto LAB_TO_LINEAR = [&]() -> vec4
 			{
-				return XYZ_TO_SRGB(LAB_TO_XYZ(), false);
+				return XYZ_TO_LINEAR(LAB_TO_XYZ(), false);
 			};
-		auto OKLAB_TO_SRGB = [&]() -> vec4
+		auto OKLAB_TO_LINEAR = [&](
+			const vec4& inColor{},
+			bool useOriginal = true) -> vec4
 			{
-				f32 L = r;
-				f32 A = g;
-				f32 Bc = b;
+				f32 L  = useOriginal ? r : inColor.x;
+				f32 A  = useOriginal ? g : inColor.y;
+				f32 Bc = useOriginal ? b : inColor.z;
+				f32 A_ = useOriginal ? a : inColor.w;
 				
 				//convert oklab to LMS
 				
@@ -3010,54 +3059,29 @@ namespace KalaHeaders
 				f32 G_lin = -1.2684380046f * l + 2.6097574011f * m - 0.3413193965f * s;
 				f32 B_lin = -0.0041960863f * l - 0.7034186147f * m + 1.7076147010f * s;
 				
-				//convert linear to srgb
-				
 				return vec4(
-					to_srgb(R_lin),
-					to_srgb(G_lin),
-					to_srgb(B_lin),
-					a);
+					R_lin,
+					G_lin,
+					B_lin,
+					A_);
 			};
-		auto RGB8_TO_SRGB = [&]() -> vec4 
-		{ 
-			return vec4(
-				r / 255.0f, 
-				g / 255.0f, 
-				b / 255.0f, 
-				a); 
-		};
-		auto CMYK_TO_SRGB = [&]() -> vec4
+		auto OKLCH_TO_LINEAR = [&]() -> vec4
 			{
-				f32 C = r;
-				f32 M = g;
-				f32 Y = b;
-				f32 K = a;
+				f32 L = r;
+				f32 C = g;
+				f32 h = b;
+				f32 A_ = a;
 				
-				if (K >= 1.0f - epsilon) return vec4(vec3(0.0f), 1.0f);
+				//convert hue to radians
 				
-				f32 R = (1.0f - C) * (1.0f - K);
-				f32 G = (1.0f - M) * (1.0f - K);
-				f32 B = (1.0f - Y) * (1.0f - K);
+				f32 angle = h * (2.0f * PI);
 				
-				//alpha as 1.0f because CMYK has no alpha channel
-				return vec4(R, G, B, 1.0f);
-			};
-		auto GREYSCALE_TO_SRGB = [&]() -> vec4
-			{
-				f32 grey = r;
-				return vec4(vec3(grey), a);
-			};
-			
-		auto SRGB_TO_PREMULTIPLIED = [&]() -> vec4
-			{
-				return vec4(r * a, g * a, b * a, a);
-			};
-		auto SRGB_FROM_PREMULTIPLIED = [&]() -> vec4
-			{
-				//completely transparent, no color information
-				if (a <= epsilon) return vec4(0.0f);
+				//convert polar to cartesian
 				
-				return vec4(r / a, g / a, b / a, a);
+				f32 A = C * cosf(angle);
+				f32 Bc = C * sinf(angle);
+				
+				return OKLAB_TO_LINEAR(vec4(L, A, Bc, A_), false);
 			};
 			
 		switch (type)
@@ -3068,35 +3092,41 @@ namespace KalaHeaders
 		case ColorConvertType::COLOR_SRGB_TO_LINEAR: return SRGB_TO_LINEAR();
 		case ColorConvertType::COLOR_LINEAR_TO_SRGB: return LINEAR_TO_SRGB();
 		
+		//srgb conversion
+		
 		case ColorConvertType::COLOR_HSL_TO_HSV: return HSL_TO_HSV();
 		case ColorConvertType::COLOR_HSV_TO_HSL: return HSV_TO_HSL();
+		
+		case ColorConvertType::COLOR_SRGB_TO_HSV:  return SRGB_TO_HSV();
+		case ColorConvertType::COLOR_SRGB_TO_HSL:  return SRGB_TO_HSL();
+		case ColorConvertType::COLOR_SRGB_TO_RGB8: return SRGB_TO_RGB8();
+		case ColorConvertType::COLOR_SRGB_TO_CMYK: return SRGB_TO_CMYK();
+		
+		case ColorConvertType::COLOR_HSV_TO_SRGB:  return HSV_TO_SRGB();
+		case ColorConvertType::COLOR_HSL_TO_SRGB:  return HSL_TO_SRGB();
+		case ColorConvertType::COLOR_RGB8_TO_SRGB: return RGB8_TO_SRGB();
+		case ColorConvertType::COLOR_CMYK_TO_SRGB: return CMYK_TO_SRGB();
+		
+		case ColorConvertType::COLOR_SRGB_TO_PREMULTIPLIED:   return SRGB_TO_PREMULTIPLIED();
+		case ColorConvertType::COLOR_SRGB_FROM_PREMULTIPLIED: return SRGB_FROM_PREMULTIPLIED();
+		
+		//linear conversion
 		
 		case ColorConvertType::COLOR_XYZ_TO_LAB: return XYZ_TO_LAB();
 		case ColorConvertType::COLOR_LAB_TO_XYZ: return LAB_TO_XYZ();
 		
 		case ColorConvertType::COLOR_OKLAB_TO_OKLCH: return OKLAB_TO_OKLCH();
 		case ColorConvertType::COLOR_OKLCH_TO_OKLAB: return OKLCH_TO_OKLAB();
-			
-		case ColorConvertType::COLOR_SRGB_TO_HSV:         return SRGB_TO_HSV();
-		case ColorConvertType::COLOR_SRGB_TO_HSL:         return SRGB_TO_HSL();
-		case ColorConvertType::COLOR_SRGB_TO_XYZ:         return SRGB_TO_XYZ();
-		case ColorConvertType::COLOR_SRGB_TO_LAB:         return SRGB_TO_LAB();
-		case ColorConvertType::COLOR_SRGB_TO_OKLAB:       return SRGB_TO_OKLAB();
-		case ColorConvertType::COLOR_SRGB_TO_RGB8:        return SRGB_TO_RGB8();
-		case ColorConvertType::COLOR_SRGB_TO_CMYK:        return SRGB_TO_CMYK();
-		case ColorConvertType::COLOR_SRGB_TO_GREYSCALE:   return SRGB_TO_GREYSCALE();
 		
-		case ColorConvertType::COLOR_HSV_TO_SRGB:         return HSV_TO_SRGB();
-		case ColorConvertType::COLOR_HSL_TO_SRGB:         return HSL_TO_SRGB();
-		case ColorConvertType::COLOR_XYZ_TO_SRGB:         return XYZ_TO_SRGB();
-		case ColorConvertType::COLOR_LAB_TO_SRGB:         return LAB_TO_SRGB();
-		case ColorConvertType::COLOR_OKLAB_TO_SRGB:       return OKLAB_TO_SRGB();
-		case ColorConvertType::COLOR_RGB8_TO_SRGB:        return RGB8_TO_SRGB();
-		case ColorConvertType::COLOR_CMYK_TO_SRGB:        return CMYK_TO_SRGB();
-		case ColorConvertType::COLOR_GREYSCALE_TO_SRGB:   return GREYSCALE_TO_SRGB();
+		case ColorConvertType::COLOR_XYZ_TO_LINEAR:   return XYZ_TO_LINEAR();
+		case ColorConvertType::COLOR_LAB_TO_LINEAR:   return LAB_TO_LINEAR();
+		case ColorConvertType::COLOR_OKLAB_TO_LINEAR: return OKLAB_TO_LINEAR();
+		case ColorConvertType::COLOR_OKLCH_TO_LINEAR: return OKLCH_TO_LINEAR();
 		
-		case ColorConvertType::COLOR_SRGB_TO_PREMULTIPLIED:   return SRGB_TO_PREMULTIPLIED();
-		case ColorConvertType::COLOR_SRGB_FROM_PREMULTIPLIED: return SRGB_FROM_PREMULTIPLIED();
+		case ColorConvertType::COLOR_LINEAR_TO_XYZ:   return LINEAR_TO_XYZ();
+		case ColorConvertType::COLOR_LINEAR_TO_LAB:   return LINEAR_TO_LAB();
+		case ColorConvertType::COLOR_LINEAR_TO_OKLAB: return LINEAR_TO_OKLAB();
+		case ColorConvertType::COLOR_LINEAR_TO_OKLCH: return LINEAR_TO_OKLCH();
 		}
 	}
 	
@@ -3188,72 +3218,85 @@ namespace KalaHeaders
 	// COLOR OPERATORS
 	//
 	
-	//Controls how colorful something looks, 0 means grayscale, clamped internally from 0 to 10.
-	//Display-referred: needs to be range-normalized.
+	enum class ColorEncodeType : u8
+	{
+		//Nonlinear, gamma-encoded sRGB transfer function.
+		//Values must be range-normalized before use.
+		COLORENCODE_SRGB = 0,
+		
+		//Linear-light RGB (no gamma curve).
+		//Scene-referred or linear SDR.
+		//Values must not be range-normalized or gamma-decoded.
+		COLORENCODE_LINEAR = 1
+	};
+	
+	//Controls how colorful something looks.
+	//Clamped internally from 0.0 to 10.
 	//  amount = 0 - grayscale,
 	//  amount = 1 - unchanged,
 	//  amount > 1 - oversaturated
 	inline vec3 saturation(
+		ColorEncodeType type,
 		const vec3& c,
 		f32 amount)
 	{
-		//always range-normalize up front
-		vec3 nc = normalize_r(c);
-		
 		f32 clamped = clamp(amount, 0.0f, 10.0f);
 		
-		constexpr f32 wr = 0.2126f;
-		constexpr f32 wg = 0.7152f;
-		constexpr f32 wb = 0.0722f;
-		
-		f32 grey = nc.x * wr + nc.y * wg + nc.z * wb;
-		
-		return vec3(
-			grey + (nc.x - grey) * clamped,
-			grey + (nc.y - grey) * clamped,
-			grey + (nc.z - grey) * clamped);
+		switch (type)
+		{
+		case ColorEncodeType::COLORENCODE_SRGB:
+		{
+			//always range-normalize up front
+			vec3 nc = normalize_r(c);
+			
+			constexpr f32 wr = 0.2126f;
+			constexpr f32 wg = 0.7152f;
+			constexpr f32 wb = 0.0722f;
+			
+			f32 grey = nc.x * wr + nc.y * wg + nc.z * wb;
+			
+			return vec3(
+				grey + (nc.x - grey) * clamped,
+				grey + (nc.y - grey) * clamped,
+				grey + (nc.z - grey) * clamped);
+		}
+		case ColorEncodeType::COLORENCODE_LINEAR:
+		{
+			
+		}
+		}
 	}
 	
-	//Controls how colorful something looks via HDR-safe saturation using LAB.
+	//Controls how far colors are pushed away from mid-grey.
 	//Clamped internally from 0.0 to 10.
-	//Scene-referred: does not need to be range-normalized.
-	//  amount = 0 - grayscale
-	//  amount = 1 - unchanged
-	//  amount > 1 - oversaturated
-	inline vec3 saturation_hdr(
-		const vec3& c,
-		f32 amount)
-	{
-		
-	}
-	
-	//Controls how far colors are pushed away from mid-grey, clamped internally from 0.0 to 10.
-	//Display-referred: needs to be range-normalized.
 	//  amount = 0 - grayscale
 	//  amount = 1 - unchanged
 	//  amount > 1 - higher contrast
 	inline vec3 contrast(
+		ColorEncodeType type,
 		const vec3& c,
 		f32 amount)
 	{
-		//always range-normalize up front
-		vec3 nc = normalize_r(c);
-		
 		f32 clamped = clamp(amount, 0.0f, 10.0f);
 		
-		return (nc - vec3(0.5f)) * clamped + vec3(0.5f);
-	}
-	
-	inline vec3 contrast_hdr(
-		const vec3& c,
-		f32 amount)
-	{
-		
+		switch (type)
+		{
+		case ColorEncodeType::COLORENCODE_SRGB:
+		{
+			//always range-normalize up front
+			vec3 nc = normalize_r(c);
+			
+			return (nc - vec3(0.5f)) * clamped + vec3(0.5f);
+		}
+		case ColorEncodeType::COLORENCODE_LINEAR:
+		{
+			
+		}
+		}
 	}
 	
 	//Change the exposure of the input color with the HDR exposure adjustment,
 	//clamped internally from -10 to 10.
-	//Scene-referred: does not need to be range-normalized.
 	inline vec3 exposure(
 		const vec3& c,
 		f32 ev)
@@ -3264,8 +3307,8 @@ namespace KalaHeaders
 		return c * scale;
 	}
 	
-	//Brightens shadows and compresses highlights, clamped internally from 0.01 to 10.
-	//Display-referred: needs to be range-normalized.
+	//Brightens shadows and compresses highlights.
+	//Clamped internally from 0.01 to 10.
 	inline vec3 gamma(
 		const vec3& c,
 		f32 gammaValue)
@@ -3281,8 +3324,8 @@ namespace KalaHeaders
 			powf(nc.y, inv),
 			powf(nc.z, inv));
 	}
-	//Darkens shadows and expands highlights. Clamped internally from 0.01 to 10.
-	//Display-referred: needs to be range-normalized.
+	//Darkens shadows and expands highlights.
+	//Clamped internally from 0.01 to 10.
 	inline vec3 degamma(
 		const vec3& c,
 		f32 gammaValue)
@@ -3299,7 +3342,6 @@ namespace KalaHeaders
 	}
 	
 	//Adds or removes light uniformly across all channels.
-	//Scene-referred: does not need to be range-normalized.
 	//  amount = 0 - unchanged
 	//  amount < 0 - darker
 	//  amount > 0 - brighter
@@ -3314,53 +3356,59 @@ namespace KalaHeaders
 	//Display-referred: needs to be range-normalized.
 	//  shift = 0-1, where 1 wraps back to 0
 	inline vec3 hue_shift(
+		ColorEncodeType type,
 		const vec3& c,
 		f32 shift)
 	{
-		//always range-normalize up front
-		vec3 nc = normalize_r(c);
-		
-		f32 h = shift - floorf(shift);
-		
-		//convert to hsv
-		
-		vec4 hsv = convert_color(ColorConvertType::COLOR_SRGB_TO_HSV, vec4(nc, 1.0f));
-		
-		hsv.x = hsv.x + h;
-		if (hsv.x >= 1.0f) hsv.x -= 1.0f;
-		
-		//back to rgb
-		
-		return convert_color(ColorConvertType::COLOR_HSV_TO_SRGB, hsv);
-	}
-	
-	inline vec3 hue_shift_hdr(
-		const vec3& c,
-		f32 shift)
-	{
-		
+		switch (type)
+		{
+		case ColorEncodeType::COLORENCODE_SRGB:
+		{
+			//always range-normalize up front
+			vec3 nc = normalize_r(c);
+			
+			f32 h = shift - floorf(shift);
+			
+			//convert to hsv
+			
+			vec4 hsv = convert_color(ColorConvertType::COLOR_SRGB_TO_HSV, vec4(nc, 1.0f));
+			
+			hsv.x = hsv.x + h;
+			if (hsv.x >= 1.0f) hsv.x -= 1.0f;
+			
+			//back to rgb
+			
+			return convert_color(ColorConvertType::COLOR_HSV_TO_SRGB, hsv);
+		}
+		case ColorEncodeType::COLORENCODE_LINEAR:
+		{
+			
+		}
+		}
 	}
 	
 	//Rotates hue in degrees instead of normalized units.
-	//Display-referred: needs to be range-normalized (already normalized in hue_shift).
 	//  degrees wraps automatically, 0-360 is one full rotation
 	inline vec3 hue_rotate(
+		ColorEncodeType type,
 		const vec3& c,
 		f32 degrees)
 	{
-		f32 shift = degrees / 360.0f;
-		return hue_shift(c, shift);
-	}
-	
-	inline vec3 hue_rotate_hdr(
-		const vec3& c,
-		f32 shift)
-	{
-		
+		switch (type)
+		{
+		case ColorEncodeType::COLORENCODE_SRGB:
+		{
+			f32 shift = degrees / 360.0f;
+			return hue_shift(c, shift);
+		}
+		case ColorEncodeType::COLORENCODE_LINEAR:
+		{
+			
+		}
+		}
 	}
 	
 	//Multiplies the color by a tint color, preserving brightness.
-	//Scene-referred: does not need to be range-normalized.
 	//  tintColor = vec3(r, g, b) where 1 = no change
 	inline vec3 tint(
 		const vec3& c,
@@ -3369,89 +3417,100 @@ namespace KalaHeaders
 		return c * tintColor;
 	}
 	
-	//Applies a warm/cool color temperature bias. Clamped internally from -1 to 1.
-	//Display-referred: needs to be range-normalized.
+	//Applies a warm/cool color temperature bias.
+	//Clamped internally from -1 to 1.
 	//  amount = -1 - cool
 	//  amount = +1 - warm
 	inline vec3 temperature(
+		ColorEncodeType type,
 		const vec3& c,
 		f32 amount)
 	{
-		//always range-normalize up front
-		vec3 nc = normalize_r(c);
-		
 		f32 t = clamp(amount, -1.0f, 1.0f);
 		
-		vec3 warm = vec3(1.0f, 0.9f, 0.8f);
-		vec3 cool = vec3(0.8f, 0.9f, 1.0f);
-		
-		vec3 tintColor = (t >= 0.0f)
-			? lerp(vec3(1.0f), warm,  t)
-			: lerp(vec3(1.0f), cool, -t);
+		switch (type)
+		{
+		case ColorEncodeType::COLORENCODE_SRGB:
+		{
+			//always range-normalize up front
+			vec3 nc = normalize_r(c);
 			
-		return nc * tintColor;
-	}
-	
-	inline vec3 temperature_hdr(
-		const vec3& c,
-		f32 amount)
-	{
-		
+			vec3 warm = vec3(1.0f, 0.9f, 0.8f);
+			vec3 cool = vec3(0.8f, 0.9f, 1.0f);
+			
+			vec3 tintColor = (t >= 0.0f)
+				? lerp(vec3(1.0f), warm,  t)
+				: lerp(vec3(1.0f), cool, -t);
+				
+			return nc * tintColor;
+		}
+		case ColorEncodeType::COLORENCODE_LINEAR:
+		{
+			
+		}
+		}
 	}
 	
 	//Shifts the color toward a target white point.
-	//Display-referred: needs to be range-normalized.
 	//  whitePoint - vec3 defining desired neutral color (1 = no shift)
 	inline vec3 white_balance(
+		ColorEncodeType type,
 		const vec3& c,
 		const vec3& whitePoint)
 	{
-		//always range-normalize up front
-		vec3 nc = normalize_r(c);
-		
-		return nc * whitePoint;
+		switch (type)
+		{
+		case ColorEncodeType::COLORENCODE_SRGB:
+		{
+			//always range-normalize up front
+			vec3 nc = normalize_r(c);
+			
+			return nc * whitePoint;
+		}
+		case ColorEncodeType::COLORENCODE_LINEAR:
+		{
+			
+		}
+		}
 	}
 	
-	inline vec3 white_balance_hdr(
-		const vec3& c,
-		const vec3& whitePoint)
-	{
-		
-	}
-	
-	//Increases saturation while protecting already-saturated colors. Clamped internally from 0 to 10.
-	//Display-referred: needs to be range-normalized.
+	//Increases saturation while protecting already-saturated colors.
+	//Clamped internally from 0 to 10.
 	//  amount = 0 - unchanged
 	//  amount > 0 - more vibrant
 	inline vec3 vibrance(
+		ColorEncodeType type,
 		const vec3& c,
 		f32 amount)
 	{
-		//always range-normalize up front
-		vec3 nc = normalize_r(c);
-		
 		f32 a = clamp(amount, 0.0f, 10.0f);
 		
-		//convert to hsv
-		
-		vec4 hsv = convert_color(ColorConvertType::COLOR_SRGB_TO_HSV, vec4(nc, 1.0f));
-		
-		//vibrance protects already-saturated colors:
-		//higher effect for lower-saturation pixels
-		
-		f32 vibranceFactor = a * (1.0f - hsv.y);
-		
-		hsv.y = clamp(hsv.y + vibranceFactor, 0.0f, 1.0f);
-		
-		//back to rgb
-		
-		return convert_color(ColorConvertType::COLOR_HSV_TO_SRGB, hsv);
-	}
-	
-	inline vec3 vibrance_hdr(
-		const vec3& c,
-		f32 amount)
-	{
-		
+		switch (type)
+		{
+		case ColorEncodeType::COLORENCODE_SRGB:
+		{
+			//always range-normalize up front
+			vec3 nc = normalize_r(c);
+			
+			//convert to hsv
+			
+			vec4 hsv = convert_color(ColorConvertType::COLOR_SRGB_TO_HSV, vec4(nc, 1.0f));
+			
+			//vibrance protects already-saturated colors:
+			//higher effect for lower-saturation pixels
+			
+			f32 vibranceFactor = a * (1.0f - hsv.y);
+			
+			hsv.y = clamp(hsv.y + vibranceFactor, 0.0f, 1.0f);
+			
+			//back to rgb
+			
+			return convert_color(ColorConvertType::COLOR_HSV_TO_SRGB, hsv);
+		}
+		case ColorEncodeType::COLORENCODE_LINEAR:
+		{
+			
+		}
+		}
 	}
 }
