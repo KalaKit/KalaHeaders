@@ -1608,12 +1608,6 @@ namespace KalaHeaders
 		f32 len2 = dot(v, v);
 		return abs(len2 - 1.0f) <= epsilon;
 	}
-	//Returns true if quat is unit-length normalized
-	inline bool isnormalized(const quat& q)
-	{
-		f32 len2 = dot(q, q);
-		return abs(len2 - 1.0f) <= epsilon;
-	}
 
 	//Returns unit-length normalized vec2
 	inline vec2 normalize(const vec2 v)
@@ -1647,17 +1641,6 @@ namespace KalaHeaders
 		return (len == 0.0f) 
 			? vec4{}
 			: v / len;
-	}
-	//Returns unit-length normalized quat
-	inline quat normalize(const quat& q)
-	{
-		//skip normalize if already normalized
-		if (isnormalized(q)) return q;
-
-		f32 len = length(q);
-		return (len == 0.0f) 
-			? identity_quat()
-			: q / len;
 	}
 
 	//Convert degrees to radians
@@ -2447,8 +2430,6 @@ namespace KalaHeaders
 	{
 		return (dot(a, b) / dot(b, b)) * b;
 	}
-	
-	constexpr quat identity_quat() return quat(vec3(0.0f), 1.0f);
 
 	//Returns neutral matrix of a mat2 (no transform)
 	constexpr mat2 identity_mat2()
@@ -2480,8 +2461,6 @@ namespace KalaHeaders
 			0.0f, 0.0f, 0.0f, 1.0f
 		};
 	}
-
-	constexpr quat identity_quat() { return { 0, 0, 0, 1 }; }
 	
 	//
 	// CONVERT COLOR
@@ -2529,7 +2508,7 @@ namespace KalaHeaders
 		COLOR_LAB_TO_LINEAR   = 26,
 		COLOR_OKLAB_TO_LINEAR = 27,
 		COLOR_OKLCH_TO_LINEAR = 28
-	}
+	};
 	
 	//Converts input color to returned color with chosen ColorConvertType
 	//  x = R,
@@ -2541,15 +2520,15 @@ namespace KalaHeaders
 		const vec4& c)
 	{		
 		bool canNormalize = 
-			type == COLOR_SRGB_TO_LINEAR
-			|| type == COLOR_SRGB_TO_HSV
-			|| type == COLOR_SRGB_TO_HSL
-			|| type == COLOR_SRGB_TO_RGB8
-			|| type == COLOR_SRGB_TO_CMYK;
+			type == ColorConvertType::COLOR_SRGB_TO_LINEAR
+			|| type == ColorConvertType::COLOR_SRGB_TO_HSV
+			|| type == ColorConvertType::COLOR_SRGB_TO_HSL
+			|| type == ColorConvertType::COLOR_SRGB_TO_RGB8
+			|| type == ColorConvertType::COLOR_SRGB_TO_CMYK;
 			
 		//always range-normalize if non-linear
 		vec4 nc = canNormalize
-			? vec4(normalize_r(rgb(c)), c.a)
+			? vec4(normalize_r(rgb(c)), c.w)
 			: c;
 	
 		f32 r = nc.x;
@@ -2822,7 +2801,7 @@ namespace KalaHeaders
 		//linear conversion
 			
 		auto XYZ_TO_LAB = [&](
-			const vec4& inColor{},
+			const vec4& inColor = vec4(),
 			bool useOriginal = true) -> vec4
 			{
 				//reference white (D65)
@@ -2962,7 +2941,7 @@ namespace KalaHeaders
 				return XYZ_TO_LAB(LINEAR_TO_XYZ(), false);
 			};
 		auto LINEAR_TO_OKLAB = [&](
-			const vec4& inColor{},
+			const vec4& inColor = vec4(),
 			bool useOriginal = true) -> vec4
 			{
 				f32 R = useOriginal ? r : inColor.x;
@@ -2997,7 +2976,7 @@ namespace KalaHeaders
 				f32 L = oklab.x;
 				f32 A = oklab.y;
 				f32 Bc = oklab.z;
-				f32 A_ = oklab.a;
+				f32 A_ = oklab.w;
 				
 				float C = sqrtf(A * A + Bc * Bc);
 				float h = atan2f(Bc, A) / (2.0f * PI);
@@ -3007,7 +2986,7 @@ namespace KalaHeaders
 			};
 			
 		auto XYZ_TO_LINEAR = [&](
-			const vec4& inColor{},
+			const vec4& inColor = vec4(),
 			bool useOriginal = true) -> vec4 
 		{ 
 			constexpr mat3 M(
@@ -3033,7 +3012,7 @@ namespace KalaHeaders
 				return XYZ_TO_LINEAR(LAB_TO_XYZ(), false);
 			};
 		auto OKLAB_TO_LINEAR = [&](
-			const vec4& inColor{},
+			const vec4& inColor = vec4(),
 			bool useOriginal = true) -> vec4
 			{
 				f32 L  = useOriginal ? r : inColor.x;
@@ -3165,7 +3144,7 @@ namespace KalaHeaders
 		//neutral, saturation-preserving modern curve with clean, predictable highlights.
 		//medium cost - similar to Hable, especially if gamut mapping is included
 		TONEMAP_LINEAR_TO_AGX               = 7
-	}
+	};
 	
 	//Converts inserted color (linear) to returned tonemap color (linear) with chosen ToneMapConvertType
 	//  x = R,
@@ -3197,6 +3176,36 @@ namespace KalaHeaders
 					to_aces_filmic(r),
 					to_aces_filmic(g),
 					to_aces_filmic(b));
+			};
+			
+		auto LINEAR_TO_REINHARD_BASIC = [&]() -> vec3
+			{
+				
+			};
+			
+		auto LINEAR_TO_REINHARD_EXTENDED = [&]() -> vec3
+			{
+				
+			};
+			
+		auto LINEAR_TO_HABLE_FILMIC = [&]() -> vec3
+			{
+				
+			};
+			
+		auto LINEAR_TO_LOTTES = [&]() -> vec3
+			{
+				
+			};
+			
+		auto LINEAR_TO_HEJL = [&]() -> vec3
+			{
+				
+			};
+			
+		auto LINEAR_TO_AGX = [&]() -> vec3
+			{
+				
 			};
 			
 		switch (type)
@@ -3399,7 +3408,10 @@ namespace KalaHeaders
 		case ColorEncodeType::COLORENCODE_SRGB:
 		{
 			f32 shift = degrees / 360.0f;
-			return hue_shift(c, shift);
+			return hue_shift(
+				ColorEncodeType::COLORENCODE_SRGB,
+				c,
+				shift);
 		}
 		case ColorEncodeType::COLORENCODE_LINEAR:
 		{
