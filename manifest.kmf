@@ -32,6 +32,11 @@ origin: math_utils.hpp
 target: ..@KalaWindow@_external_shared@KalaHeaders@math_utils.hpp, ..@KalaGraphics@_external_shared@KalaHeaders@math_utils.hpp, ..@Elypso-engine@_external_shared@KalaHeaders@math_utils.hpp, ..@Elypso-hub@_external_shared@KalaHeaders@math_utils.hpp, ..@KalaServer@_external_shared@KalaHeaders@math_utils.hpp, ..@KalaAudio@_external_shared@KalaHeaders@math_utils.hpp, ..@KalaMove@_external_shared@KalaHeaders@math_utils.hpp, ..@KalaData@_external_shared@KalaHeaders@math_utils.hpp, ..@KalaFont@_external_shared@KalaHeaders@math_utils.hpp, ..@KalaCLI@_external_shared@KalaHeaders@math_utils.hpp, ..@Circuit-chan@_external_shared@KalaHeaders@math_utils.hpp, ..@Solin@_external_shared@KalaHeaders@math_utils.hpp
 action: forcecopy
 
+//copy thread_utils
+origin: thread_utils.hpp
+target: ..@KalaWindow@_external_shared@KalaHeaders@thread_utils.hpp, ..@KalaGraphics@_external_shared@KalaHeaders@thread_utils.hpp, ..@Elypso-engine@_external_shared@KalaHeaders@thread_utils.hpp, ..@Elypso-hub@_external_shared@KalaHeaders@thread_utils.hpp, ..@KalaServer@_external_shared@KalaHeaders@thread_utils.hpp, ..@KalaAudio@_external_shared@KalaHeaders@thread_utils.hpp, ..@KalaMove@_external_shared@KalaHeaders@thread_utils.hpp, ..@KalaData@_external_shared@KalaHeaders@thread_utils.hpp, ..@KalaFont@_external_shared@KalaHeaders@thread_utils.hpp, ..@KalaCLI@_external_shared@KalaHeaders@thread_utils.hpp, ..@Circuit-chan@_external_shared@KalaHeaders@thread_utils.hpp, ..@Solin@_external_shared@KalaHeaders@thread_utils.hpp
+action: forcecopy
+
 //copy log_utils
 origin: log_utils.hpp
 target: ..@KalaWindow@_external_shared@KalaHeaders@log_utils.hpp, ..@KalaGraphics@_external_shared@KalaHeaders@log_utils.hpp, ..@Elypso-engine@_external_shared@KalaHeaders@log_utils.hpp, ..@Elypso-hub@_external_shared@KalaHeaders@log_utils.hpp, ..@KalaServer@_external_shared@KalaHeaders@log_utils.hpp, ..@KalaAudio@_external_shared@KalaHeaders@log_utils.hpp, ..@KalaMove@_external_shared@KalaHeaders@log_utils.hpp, ..@KalaData@_external_shared@KalaHeaders@log_utils.hpp, ..@KalaFont@_external_shared@KalaHeaders@log_utils.hpp, ..@KalaCLI@_external_shared@KalaHeaders@log_utils.hpp, ..@Circuit-chan@_external_shared@KalaHeaders@log_utils.hpp, ..@Solin@_external_shared@KalaHeaders@log_utils.hpp

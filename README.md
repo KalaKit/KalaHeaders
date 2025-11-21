@@ -35,6 +35,18 @@ Provides:
 - mat containers as column-major and scalar form
 - color conversion, tonemap conversion, color operators for sdr and hdr
 
+---
+
+## thread_utils.hpp
+
+Provides:
+- lock, lockwait and unlock overrides for handling safe access to variables
+- lock_m, lockwait_m (where applicable) and unlock_m for mutexes
+- jthread (joinable thread) which returns the created thread so it can be joined
+- dthread (self-exiting thread)
+
+---
+
 ## string_utils.hpp
 
 Various string conversions and functions to improve workflow with string operations
