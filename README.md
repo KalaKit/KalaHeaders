@@ -163,9 +163,9 @@ Comprehensive logger header for any logging needs - sends stdout and stderr mess
 
 ---
 
-## import_ktf.hpp
+## import_kfd.hpp
 
-This header is solely responsible for parsing and importing data from ktf (KalaText File) files. Use the 'ImportKTF' function to import a new ktf file.
+This header is solely responsible for parsing and importing data from ktf (KalaText File) files. Use the 'ImportKFD' function to import a new kfd file.
 
 ---
 
