@@ -169,7 +169,7 @@ This header is solely responsible for parsing and importing data from ktf (KalaT
 
 ---
 
-## import_ktf.hpp
+## import_kmd.hpp
 
 This header is solely responsible for parsing and importing data from kmd (KalaModelData file) files. Use the 'ImportKMD' function to import a new kmd file.
 
