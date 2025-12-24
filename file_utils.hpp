@@ -15,6 +15,13 @@
 
 #pragma once
 
+#ifdef __linux__
+	#ifndef _POSIX_C_SOURCE
+		#pragma message("[KALAKIT] Assigning _POSIX_C_SOURCE to '200112L'")
+		#define _POSIX_C_SOURCE 200112L
+	#endif
+#endif
+
 #include <string>
 #include <vector>
 #include <sstream>
@@ -53,7 +60,6 @@ namespace KalaHeaders::KalaFile
 	using std::ios;
 	using std::search;
 	using std::distance;
-	using std::strerror;
 	using std::min;
 	using std::filesystem::exists;
 	using std::filesystem::path;
@@ -71,6 +77,7 @@ namespace KalaHeaders::KalaFile
 	using std::filesystem::directory_iterator;
 	using std::filesystem::status;
 	using std::filesystem::perms;
+	using std::strerror;
 	
 	using u8 = uint8_t;
 	using u16 = uint16_t;
@@ -105,6 +112,19 @@ namespace KalaHeaders::KalaFile
 		size_t start{};
 		size_t end{};
 	};
+
+	//
+	// OS-AGNOSTIC HELPERS
+	//
+
+	inline int kstrerror(char* buffer, size_t bytes, int errorNumber)
+	{
+#ifdef _WIN32
+		return strerror_s(buffer, bytes, errorNumber);
+#else
+		return strerror_r(errorNumber, buffer, bytes);
+#endif
+	}
 
 	//
 	// FILE MANAGEMENT
@@ -857,7 +877,7 @@ namespace KalaHeaders::KalaFile
 					<< "' line count because it couldn't be opened! "
 					<< "Reason: (errno " << err << "): ";
 
-				if (strerror_s(buf, sizeof(buf), err) == 0) oss << buf;
+				if (kstrerror(buf, sizeof(buf), err) == 0) oss << buf;
 				else oss << " Unknown error";
 
 				return oss.str();
@@ -1028,7 +1048,7 @@ namespace KalaHeaders::KalaFile
 					<< "' because it couldn't be opened! "
 					<< "Reason: (errno " << err << "): ";
 
-				if (strerror_s(buf, sizeof(buf), err) == 0) oss << buf;
+				if (kstrerror(buf, sizeof(buf), err) == 0) oss << buf;
 				else oss << " Unknown error";
 
 				return oss.str();
@@ -1100,7 +1120,7 @@ namespace KalaHeaders::KalaFile
 					<< "' because it couldn't be opened! "
 					<< "Reason: (errno " << err << "): ";
 
-				if (strerror_s(buf, sizeof(buf), err) == 0) oss << buf;
+				if (kstrerror(buf, sizeof(buf), err) == 0) oss << buf;
 				else oss << " Unknown error";
 
 				return oss.str();
@@ -1201,7 +1221,7 @@ namespace KalaHeaders::KalaFile
 					<< "' because it couldn't be opened! "
 					<< "Reason: (errno " << err << "): ";
 
-				if (strerror_s(buf, sizeof(buf), err) == 0) oss << buf;
+				if (kstrerror(buf, sizeof(buf), err) == 0) oss << buf;
 				else oss << " Unknown error";
 
 				return oss.str();
@@ -1280,7 +1300,7 @@ namespace KalaHeaders::KalaFile
 					<< "' because it couldn't be opened! "
 					<< "Reason: (errno " << err << "): ";
 
-				if (strerror_s(buf, sizeof(buf), err) == 0) oss << buf;
+				if (kstrerror(buf, sizeof(buf), err) == 0) oss << buf;
 				else oss << " Unknown error";
 
 				return oss.str();
@@ -1460,7 +1480,7 @@ namespace KalaHeaders::KalaFile
 					<< "' because it couldn't be opened! "
 					<< "Reason: (errno " << err << "): ";
 
-				if (strerror_s(buf, sizeof(buf), err) == 0) oss << buf;
+				if (kstrerror(buf, sizeof(buf), err) == 0) oss << buf;
 				else oss << " Unknown error";
 
 				return oss.str();
@@ -1480,7 +1500,7 @@ namespace KalaHeaders::KalaFile
 					<< "' because it couldn't be opened! "
 					<< "Reason: (errno " << err << "): ";
 
-				if (strerror_s(buf, sizeof(buf), err) == 0) oss << buf;
+				if (kstrerror(buf, sizeof(buf), err) == 0) oss << buf;
 				else oss << " Unknown error";
 
 				return oss.str();
@@ -1555,7 +1575,7 @@ namespace KalaHeaders::KalaFile
 					<< "' because it couldn't be opened! "
 					<< "Reason: (errno " << err << "): ";
 
-				if (strerror_s(buf, sizeof(buf), err) == 0) oss << buf;
+				if (kstrerror(buf, sizeof(buf), err) == 0) oss << buf;
 				else oss << " Unknown error";
 
 				return oss.str();
@@ -1630,7 +1650,7 @@ namespace KalaHeaders::KalaFile
 					<< "' because it couldn't be opened! "
 					<< "Reason: (errno " << err << "): ";
 
-				if (strerror_s(buf, sizeof(buf), err) == 0) oss << buf;
+				if (kstrerror(buf, sizeof(buf), err) == 0) oss << buf;
 				else oss << " Unknown error";
 
 				return oss.str();
@@ -1964,7 +1984,7 @@ namespace KalaHeaders::KalaFile
 					<< "' because it couldn't be opened! "
 					<< "Reason: (errno " << err << "): ";
 
-				if (strerror_s(buf, sizeof(buf), err) == 0) oss << buf;
+				if (kstrerror(buf, sizeof(buf), err) == 0) oss << buf;
 				else oss << " Unknown error";
 
 				return oss.str();
@@ -2035,7 +2055,7 @@ namespace KalaHeaders::KalaFile
 						<< "' because it couldn't be opened! "
 						<< "Reason: (errno " << err << "): ";
 
-					if (strerror_s(buf, sizeof(buf), err) == 0) oss << buf;
+					if (kstrerror(buf, sizeof(buf), err) == 0) oss << buf;
 					else oss << " Unknown error";
 
 					return oss.str();
@@ -2140,7 +2160,7 @@ namespace KalaHeaders::KalaFile
 					<< "' because it couldn't be opened! "
 					<< "Reason: (errno " << err << "): ";
 
-				if (strerror_s(buf, sizeof(buf), err) == 0) oss << buf;
+				if (kstrerror(buf, sizeof(buf), err) == 0) oss << buf;
 				else oss << " Unknown error";
 
 				return oss.str();
@@ -2211,7 +2231,7 @@ namespace KalaHeaders::KalaFile
 						<< "' because it couldn't be opened! "
 						<< "Reason: (errno " << err << "): ";
 
-					if (strerror_s(buf, sizeof(buf), err) == 0) oss << buf;
+					if (kstrerror(buf, sizeof(buf), err) == 0) oss << buf;
 					else oss << " Unknown error";
 
 					return oss.str();
