@@ -15,13 +15,6 @@
 
 #pragma once
 
-#ifdef __linux__
-	#ifndef _POSIX_C_SOURCE
-		#pragma message("[KALAKIT] Assigning _POSIX_C_SOURCE to '200112L'")
-		#define _POSIX_C_SOURCE 200112L
-	#endif
-#endif
-
 #include <string>
 #include <vector>
 #include <sstream>
@@ -112,19 +105,6 @@ namespace KalaHeaders::KalaFile
 		size_t start{};
 		size_t end{};
 	};
-
-	//
-	// OS-AGNOSTIC HELPERS
-	//
-
-	inline int kstrerror(char* buffer, size_t bytes, int errorNumber)
-	{
-#ifdef _WIN32
-		return strerror_s(buffer, bytes, errorNumber);
-#else
-		return strerror_r(errorNumber, buffer, bytes);
-#endif
-	}
 
 	//
 	// FILE MANAGEMENT
@@ -871,14 +851,10 @@ namespace KalaHeaders::KalaFile
 				&& errno != 0)
 			{
 				int err = errno;
-				char buf[256]{};
 
 				oss << "Failed to get target '" << target
 					<< "' line count because it couldn't be opened! "
-					<< "Reason: (errno " << err << "): ";
-
-				if (kstrerror(buf, sizeof(buf), err) == 0) oss << buf;
-				else oss << " Unknown error";
+					<< "Reason: (errno " << err << "): " << strerror(err);
 
 				return oss.str();
 			}
@@ -1042,14 +1018,10 @@ namespace KalaHeaders::KalaFile
 				&& errno != 0)
 			{
 				int err = errno;
-				char buf[256]{};
 
 				oss << "Failed to write text to target '" << target
 					<< "' because it couldn't be opened! "
-					<< "Reason: (errno " << err << "): ";
-
-				if (kstrerror(buf, sizeof(buf), err) == 0) oss << buf;
-				else oss << " Unknown error";
+					<< "Reason: (errno " << err << "): " << strerror(err);
 
 				return oss.str();
 			}
@@ -1114,14 +1086,10 @@ namespace KalaHeaders::KalaFile
 				&& errno != 0)
 			{
 				int err = errno;
-				char buf[256]{};
 
 				oss << "Failed to read text from target '" << target
 					<< "' because it couldn't be opened! "
-					<< "Reason: (errno " << err << "): ";
-
-				if (kstrerror(buf, sizeof(buf), err) == 0) oss << buf;
-				else oss << " Unknown error";
+					<< "Reason: (errno " << err << "): " << strerror(err);
 
 				return oss.str();
 			}
@@ -1215,14 +1183,10 @@ namespace KalaHeaders::KalaFile
 				&& errno != 0)
 			{
 				int err = errno;
-				char buf[256]{};
 
 				oss << "Failed to write lines to target '" << target
 					<< "' because it couldn't be opened! "
-					<< "Reason: (errno " << err << "): ";
-
-				if (kstrerror(buf, sizeof(buf), err) == 0) oss << buf;
-				else oss << " Unknown error";
+					<< "Reason: (errno " << err << "): " << strerror(err);
 
 				return oss.str();
 			}
@@ -1294,14 +1258,10 @@ namespace KalaHeaders::KalaFile
 				&& errno != 0)
 			{
 				int err = errno;
-				char buf[256]{};
 
 				oss << "Failed to read lines from target '" << target
 					<< "' because it couldn't be opened! "
-					<< "Reason: (errno " << err << "): ";
-
-				if (kstrerror(buf, sizeof(buf), err) == 0) oss << buf;
-				else oss << " Unknown error";
+					<< "Reason: (errno " << err << "): " << strerror(err);
 
 				return oss.str();
 			}
@@ -1474,14 +1434,10 @@ namespace KalaHeaders::KalaFile
 				&& errno != 0)
 			{
 				int err = errno;
-				char buf[256]{};
 
 				oss << "Failed to write binary lines to target '" << target
 					<< "' because it couldn't be opened! "
-					<< "Reason: (errno " << err << "): ";
-
-				if (kstrerror(buf, sizeof(buf), err) == 0) oss << buf;
-				else oss << " Unknown error";
+					<< "Reason: (errno " << err << "): " << strerror(err);
 
 				return oss.str();
 			}
@@ -1494,14 +1450,10 @@ namespace KalaHeaders::KalaFile
 				&& errno != 0)
 			{
 				int err = errno;
-				char buf[256]{};
 
 				oss << "Failed to write binary lines to target '" << target
 					<< "' because it couldn't be opened! "
-					<< "Reason: (errno " << err << "): ";
-
-				if (kstrerror(buf, sizeof(buf), err) == 0) oss << buf;
-				else oss << " Unknown error";
+					<< "Reason: (errno " << err << "): " << strerror(err);
 
 				return oss.str();
 			}
@@ -1569,14 +1521,10 @@ namespace KalaHeaders::KalaFile
 				&& errno != 0)
 			{
 				int err = errno;
-				char buf[256]{};
 
 				oss << "Failed to read binary lines from target '" << target
 					<< "' because it couldn't be opened! "
-					<< "Reason: (errno " << err << "): ";
-
-				if (kstrerror(buf, sizeof(buf), err) == 0) oss << buf;
-				else oss << " Unknown error";
+					<< "Reason: (errno " << err << "): " << strerror(err);
 
 				return oss.str();
 			}
@@ -1644,14 +1592,10 @@ namespace KalaHeaders::KalaFile
 				&& errno != 0)
 			{
 				int err = errno;
-				char buf[256]{};
 
 				oss << "Failed to read binary lines from target '" << target
 					<< "' because it couldn't be opened! "
-					<< "Reason: (errno " << err << "): ";
-
-				if (kstrerror(buf, sizeof(buf), err) == 0) oss << buf;
-				else oss << " Unknown error";
+					<< "Reason: (errno " << err << "): " << strerror(err);
 
 				return oss.str();
 			}
@@ -1978,14 +1922,10 @@ namespace KalaHeaders::KalaFile
 				&& errno != 0)
 			{
 				int err = errno;
-				char buf[256]{};
 
 				oss << "Failed to get ragge by value from target '" << target
 					<< "' because it couldn't be opened! "
-					<< "Reason: (errno " << err << "): ";
-
-				if (kstrerror(buf, sizeof(buf), err) == 0) oss << buf;
-				else oss << " Unknown error";
+					<< "Reason: (errno " << err << "): " << strerror(err);
 
 				return oss.str();
 			}
@@ -2049,14 +1989,10 @@ namespace KalaHeaders::KalaFile
 					&& errno != 0)
 				{
 					int err = errno;
-					char buf[256]{};
 
 					oss << "Failed to get range by value from target '" << target
 						<< "' because it couldn't be opened! "
-						<< "Reason: (errno " << err << "): ";
-
-					if (kstrerror(buf, sizeof(buf), err) == 0) oss << buf;
-					else oss << " Unknown error";
+						<< "Reason: (errno " << err << "): " << strerror(err);
 
 					return oss.str();
 				}
@@ -2154,14 +2090,10 @@ namespace KalaHeaders::KalaFile
 				&& errno != 0)
 			{
 				int err = errno;
-				char buf[256]{};
 
 				oss << "Failed to get range by value from target '" << target
 					<< "' because it couldn't be opened! "
-					<< "Reason: (errno " << err << "): ";
-
-				if (kstrerror(buf, sizeof(buf), err) == 0) oss << buf;
-				else oss << " Unknown error";
+					<< "Reason: (errno " << err << "): " << strerror(err);
 
 				return oss.str();
 			}
@@ -2225,14 +2157,10 @@ namespace KalaHeaders::KalaFile
 					&& errno != 0)
 				{
 					int err = errno;
-					char buf[256]{};
 
 					oss << "Failed to get range by value from target '" << target
 						<< "' because it couldn't be opened! "
-						<< "Reason: (errno " << err << "): ";
-
-					if (kstrerror(buf, sizeof(buf), err) == 0) oss << buf;
-					else oss << " Unknown error";
+						<< "Reason: (errno " << err << "): " << strerror(err);
 
 					return oss.str();
 				}
