@@ -34,7 +34,13 @@ Header-only scripts made in C++ 20 for various purposes. Completely self-dependa
 
 ## KalaMove
 
-Uses a manifest system with the .kmf extension and a custom syntax to control how do move, copy, delete and rename files and folders and how to create new dirs where needed.
+**KalaMove** is an executable that uses `.kmf` files that are designed as a lightweight, strict, and repeatable alternative to batch/shell scripts, CMake commands, or even full installers when all you need is reliable file movement.
+
+---
+
+## KalaMove
+
+**KalaMake** is an executable that uses `.kma` files that are designed as my own take for an alternative to CMake, Make and others of its kind with my own syntax. The core idea is the same - compile your set of code into a runtime-ready binary.
 
 ---
 
