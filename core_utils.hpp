@@ -19,29 +19,38 @@
 
 #pragma once
 
-#include <cstdint>
-#include <type_traits>
-#include <bit>
+#include <string>
 #include <unordered_set>
 #include <vector>
 #include <unordered_map>
 #include <map>
+#include <array>
+#include <tuple>
+#include <cstdint>
+#include <bit>
+#include <type_traits>
 #include <concepts>
-#include <functional>
 
-using std::is_pointer_v;
-using std::is_integral_v;
-using std::is_enum_v;
-using std::underlying_type_t;
-using std::uint64_t;
-using std::bit_cast;
+using std::string_view;
 using std::unordered_set;
 using std::vector;
+using std::array;
 using std::unordered_map;
 using std::map;
-using std::equality_comparable;
-using std::hash;
+using std::tuple_size;
+using std::is_pointer_v;
+using std::is_integral_v;
+using std::is_array_v;
+using std::is_enum_v;
 using std::convertible_to;
+using std::equality_comparable;
+using std::same_as;
+using std::remove_cvref_t;
+using std::remove_reference_t;
+using std::remove_extent_t;
+using std::underlying_type_t;
+using std::hash;
+using std::bit_cast;
 
 //
 // CROSS-PLATFORM IMPORT/EXPORT
@@ -140,6 +149,58 @@ inline constexpr T bcast(const U& v) noexcept
 
 namespace KalaHeaders::KalaCore
 {
+#if defined(KC_CONTAINER_CONCEPTS) && !defined(KS_CONTAINER_CONCEPTS)
+
+	//
+	// CONCEPTS FOR COMMON CONTAINERS
+	//
+
+	//This value is T arrayName[N]
+	template<typename A>
+	concept TargetIsBasicArray = is_array_v<remove_reference_t<A>>;
+
+	//Element type of an array T[N]
+	template<typename A>
+	using BasicArrayElement = remove_extent_t<remove_reference_t<A>>;
+
+	//This value is array<T, N>
+	template<typename A>
+	concept TargetIsArray =
+		requires
+	{
+		typename remove_cvref_t<A>::value_type;
+		tuple_size<remove_cvref_t<A>>::value;
+	}&& same_as
+		<
+		remove_cvref_t<A>,
+		array
+		<
+		typename remove_cvref_t<A>::value_type,
+		tuple_size<remove_cvref_t<A>>::value
+		>
+		>;
+
+	//This value is vector<T>
+	template<typename V>
+	concept TargetIsVector =
+		same_as<remove_cvref_t<V>,
+		vector<typename remove_cvref_t<V>::value_type>>;
+
+	//This value is map<K, V> or unordered_map<K, V>
+	template<typename M>
+	concept TargetIsAnyMap =
+		requires(M& m, typename M::key_type k)
+	{
+		typename M::key_type;
+		typename M::mapped_type;
+
+		{ m.find(k) };
+		{ m.end() };
+
+		{ m.begin()->second };
+	};
+#endif
+
 	//
 	// REMOVE DUPLICATES FROM CONTAINER
 	//
