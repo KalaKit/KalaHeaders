@@ -171,12 +171,6 @@ namespace KalaHeaders::KalaCore
 		{ hash<T>{}(v) } -> convertible_to<size_t>;
 	};
 
-	template<typename T>
-	struct IsUnorderedMap : false_type{};
-
-	template<typename K, typename V, typename H, typename E, typename A>
-	struct IsUnorderedMap<unordered_map<K, V, H, E, A>> : true_type{};
-
 	//Raw array of type T and size N (T arrayName[N])
 	template<typename T>
 	concept AnyRawArray = is_array_v<remove_reference_t<T>>;
@@ -207,6 +201,12 @@ namespace KalaHeaders::KalaCore
 	concept AnyVector =
 		same_as<remove_cvref_t<T>,
 		vector<typename remove_cvref_t<T>::value_type>>;
+
+	template<typename T>
+	struct IsUnorderedMap : false_type {};
+
+	template<typename K, typename V, typename H, typename E, typename A>
+	struct IsUnorderedMap<unordered_map<K, V, H, E, A>> : true_type {};
 
 	//Map or unordered map with key of type K and value of type V (map<K, V>/unordered_map<K, V>)
 	template<typename T>
