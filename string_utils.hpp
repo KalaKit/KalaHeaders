@@ -16,10 +16,6 @@
 #include <cstring>
 #include <algorithm>
 #include <vector>
-#include <unordered_map>
-#include <map>
-#include <array>
-#include <tuple>
 
 //static_cast
 #ifndef scast
@@ -54,10 +50,6 @@ namespace KalaHeaders::KalaString
 	using std::remove_reference_t;
 	using std::remove_extent_t;
 	using std::vector;
-	using std::array;
-	using std::unordered_map;
-	using std::map;
-	using std::tuple_size;
 
 	//
 	// CONVERSION FUNCTIONS
@@ -84,47 +76,14 @@ namespace KalaHeaders::KalaString
 	template<> inline double             FromString<double>(string_view s) { return stod(string(s)); }               //Convert string to double
 	template<> inline long double        FromString<long double>(string_view s) { return stold(string(s)); }         //Convert string to long double
 
-#if defined(KS_CONTAINER_CONCEPTS) && !defined(KC_CONTAINER_CONCEPTS)
-
 	//
-	// CONCEPTS FOR COMMON CONTAINERS
+	// STRING-ENUM GETTERS
 	//
-
-	//This value is T arrayName[N]
-	template<typename A>
-	concept TargetIsBasicArray = is_array_v<remove_reference_t<A>>;
-
-	//Element type of an array T[N]
-	template<typename A>
-	using BasicArrayElement = remove_extent_t<remove_reference_t<A>>;
-
-	//This value is array<T, N>
-	template<typename A>
-	concept TargetIsArray =
-		requires
-	{
-		typename remove_cvref_t<A>::value_type;
-		tuple_size<remove_cvref_t<A>>::value;
-	} && same_as
-		<
-			remove_cvref_t<A>,
-			array
-			<
-				typename remove_cvref_t<A>::value_type,
-				tuple_size<remove_cvref_t<A>>::value
-			>
-		>;
-
-	//This value is vector<T>
-	template<typename V>
-	concept TargetIsVector =
-		same_as<remove_cvref_t<V>,
-		vector<typename remove_cvref_t<V>::value_type>>;
 
 	//This value is map<K, V> or unordered_map<K, V>
 	template<typename M>
 	concept TargetIsAnyMap =
-		requires(M& m, typename M::key_type k)
+		requires(M & m, typename M::key_type k)
 	{
 		typename M::key_type;
 		typename M::mapped_type;
@@ -134,9 +93,6 @@ namespace KalaHeaders::KalaString
 
 		{ m.begin()->second };
 	};
-#endif
-
-#if defined(KS_CONTAINER_CONCEPTS) || defined(KC_CONTAINER_CONCEPTS)
 
 	//This value is string, string_view, const char* or const charArrayName[N]
 	template<typename T>
@@ -146,10 +102,6 @@ namespace KalaHeaders::KalaString
 		|| same_as<remove_cvref_t<T>, const char*>
 		|| (is_array_v<remove_reference_t<T>>
 		&& same_as<remove_extent_t<remove_reference_t<T>>, const char>);
-
-	//
-	// STRING TO ENUM
-	//
 
 	//This value is map<K, V> or unordered_map<K, V> that stores enums in K and string types in V
 	template<typename M>
@@ -196,7 +148,6 @@ namespace KalaHeaders::KalaString
 		out = it->second;
 		return true;
 	}
-#endif
 
 	//
 	// GENERAL FUNCTIONS
@@ -280,43 +231,8 @@ namespace KalaHeaders::KalaString
 		return it != origin.end();
 	}
 
-	//Returns true if origin vector contains target string
-	inline constexpr bool ContainsString(
-		const vector<string>& origin,
-		string_view target)
-	{
-		return find(origin.begin(), origin.end(), target) != origin.end();
-	}
-
-	//Returns true if origin array contains target string
-	template <typename T, size_t S>
-	inline constexpr bool ContainsString(
-		const array<T, S>& origin,
-		string_view target)
-	{
-		return find(origin.begin(), origin.end(), target) != origin.end();
-	}
-
-	//Returns true if origin unordered map contains target string
-	template <typename K, typename V>
-	inline constexpr bool ContainsString(
-		const unordered_map<K, V>& origin,
-		string_view target)
-	{
-		return origin.contains(target);
-	}
-
-	//Returns true if origin map contains target string
-	template <typename K, typename V>
-	inline constexpr bool ContainsString(
-		const map<K, V>& origin,
-		string_view target)
-	{
-		return origin.contains(target);
-	}
-
 	//Check if origin is the same as target, with optional case sensitivity flag
-	inline constexpr bool CompareStrings(
+	inline constexpr bool StringsMatch(
 		string_view origin,
 		string_view target,
 		bool ignoreCase = true)

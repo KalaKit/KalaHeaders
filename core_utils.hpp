@@ -13,6 +13,8 @@
 //   - Deprecation marker (DEPRECATED)
 //   - Debug-only assertion (DEBUG_ASSERT)
 //   - Shorthands for casters
+//   - Common container concepts
+//   - Helpers for checking if raw array, array, vector, map or unordered map contains key or value
 //   - Helpers for removing duplicates from vector, map and unordered_map
 //   - Safe conversions between uintptr_t and pointers, integrals, enums
 //------------------------------------------------------------------------------
@@ -38,12 +40,15 @@ using std::array;
 using std::unordered_map;
 using std::map;
 using std::tuple_size;
+using std::false_type;
+using std::true_type;
 using std::is_pointer_v;
 using std::is_integral_v;
 using std::is_array_v;
 using std::is_enum_v;
 using std::convertible_to;
 using std::equality_comparable;
+using std::equality_comparable_with;
 using std::same_as;
 using std::remove_cvref_t;
 using std::remove_reference_t;
@@ -149,77 +154,154 @@ inline constexpr T bcast(const U& v) noexcept
 
 namespace KalaHeaders::KalaCore
 {
-#if defined(KC_CONTAINER_CONCEPTS) && !defined(KS_CONTAINER_CONCEPTS)
-
 	//
 	// CONCEPTS FOR COMMON CONTAINERS
 	//
 
-	//This value is T arrayName[N]
-	template<typename A>
-	concept TargetIsBasicArray = is_array_v<remove_reference_t<A>>;
+	//Type X and Y can be compared with each other
+	template<typename X, typename Y>
+	concept IsComparable = equality_comparable_with<X, Y>;
 
-	//Element type of an array T[N]
-	template<typename A>
-	using BasicArrayElement = remove_extent_t<remove_reference_t<A>>;
+	//Type T supports equality comparison and hashing
+	template<typename T>
+	concept IsHashable =
+		IsComparable<T, T>
+		&& requires (T v)
+	{
+		{ hash<T>{}(v) } -> convertible_to<size_t>;
+	};
 
-	//This value is array<T, N>
+	template<typename T>
+	struct IsUnorderedMap : false_type{};
+
+	template<typename K, typename V, typename H, typename E, typename A>
+	struct IsUnorderedMap<unordered_map<K, V, H, E, A>> : true_type{};
+
+	//Raw array of type T and size N (T arrayName[N])
+	template<typename T>
+	concept AnyRawArray = is_array_v<remove_reference_t<T>>;
+
+	//Element of type T of a raw array and size N (T arrayName[N])
 	template<typename A>
-	concept TargetIsArray =
+	using AnyRawArrayElement = remove_extent_t<remove_reference_t<A>>;
+
+	//Regular array of type T and size N (arrayName array<T, N>)
+	template<typename T>
+	concept AnyArray =
 		requires
 	{
-		typename remove_cvref_t<A>::value_type;
-		tuple_size<remove_cvref_t<A>>::value;
+		typename remove_cvref_t<T>::value_type;
+		tuple_size<remove_cvref_t<T>>::value;
 	}&& same_as
 		<
-		remove_cvref_t<A>,
-		array
-		<
-		typename remove_cvref_t<A>::value_type,
-		tuple_size<remove_cvref_t<A>>::value
-		>
+			remove_cvref_t<T>,
+			array
+			<
+				typename remove_cvref_t<T>::value_type,
+				tuple_size<remove_cvref_t<T>>::value
+			>
 		>;
 
-	//This value is vector<T>
-	template<typename V>
-	concept TargetIsVector =
-		same_as<remove_cvref_t<V>,
-		vector<typename remove_cvref_t<V>::value_type>>;
+	//Vector of type T (vector<T>)
+	template<typename T>
+	concept AnyVector =
+		same_as<remove_cvref_t<T>,
+		vector<typename remove_cvref_t<T>::value_type>>;
 
-	//This value is map<K, V> or unordered_map<K, V>
-	template<typename M>
-	concept TargetIsAnyMap =
-		requires(M& m, typename M::key_type k)
+	//Map or unordered map with key of type K and value of type V (map<K, V>/unordered_map<K, V>)
+	template<typename T>
+	concept AnyMap =
+		requires(
+			remove_cvref_t<T>& m, 
+			typename remove_cvref_t<T>::key_type k)
 	{
-		typename M::key_type;
-		typename M::mapped_type;
+		typename remove_cvref_t<T>::key_type;
+		typename remove_cvref_t<T>::mapped_type;
 
 		{ m.find(k) };
 		{ m.end() };
 
 		{ m.begin()->second };
 	};
-#endif
 
 	//
-	// REMOVE DUPLICATES FROM CONTAINER
+	// CHECK IF CONTAINER CONTAINS VALUE
 	//
 
-	template<typename T>
-	concept Hashable =
-		requires(T v)
+	//Returns true if raw array of type T contains the requested value 
+	template<AnyRawArray A, typename T>
+		requires IsComparable<AnyRawArrayElement<A>, T>
+	bool ContainsValue(const A& container, const T& value)
+	{
+		using Element = AnyRawArrayElement<A>;
+
+		for (const Element& e : container)
 		{
-			{ hash<T>{}(v) } -> convertible_to<size_t>;
-		};
+			if (e == value) return true;
+		}
+		return false;
+	}
+
+	//Returns true if array of type T contains the requested value 
+	template<AnyArray A, typename T>
+		requires IsComparable<typename A::value_type, T>
+	bool ContainsValue(const A& container, const T& value)
+	{
+		using Element = A::value_type;
+
+		for (const Element& e : container)
+		{
+			if (e == value) return true;
+		}
+		return false;
+	}
+
+	//Returns true if vector of type T contains the requested value 
+	template<AnyVector V, typename T>
+		requires IsComparable<typename V::value_type, T>
+	bool ContainsValue(const V& container, const T& value)
+	{
+		using Element = V::value_type;
+
+		for (const Element& e : container)
+		{
+			if (e == value) return true;
+		}
+		return false;
+	}
+
+	//Returns true if map or unordered map with value of type T contains the requested key 
+	template<AnyMap M, typename T>
+		requires IsComparable<typename M::key_type, T>
+	bool ContainsKey(const M& container, const T& key)
+	{
+		return container.contains(key);
+	}
+
+	//Returns true if map or unordered map with value of type T contains the requested value 
+	template<AnyMap M, typename T>
+		requires IsComparable<typename M::mapped_type, T>
+	bool ContainsValue(const M& container, const T& value)
+	{
+		for (const auto& [k, v] : container)
+		{
+			if (v == value) return true;
+		}
+		return false;
+	}
+
+	//
+	// CHECK IF CONTAINER HAS DUPLICATES
+	//
 
 	//Returns true if any value appears more than once in the vector
-	template <typename T>
-		requires equality_comparable<T> && Hashable<T>
-	inline constexpr bool ContainsDuplicates(const vector<T>& v)
+	template <AnyVector T>
+		requires IsHashable<typename T::value_type>
+	inline constexpr bool ContainsDuplicates(const T& v)
 	{
 		if (v.size() < 2) return false;
 
-		unordered_set<T> seen{};
+		unordered_set<typename T::value_type> seen{};
 		seen.reserve(v.size());
 
 		for (const auto& x : v)
@@ -230,14 +312,14 @@ namespace KalaHeaders::KalaCore
 		return false;
 	}
 
-	//Returns true if any value appears more than once in the map
-	template <typename K, typename T>
-		requires equality_comparable<T> && Hashable<T>
-	inline constexpr bool ContainsDuplicates(const map<K, T>& m)
+	//Returns true if any value appears more than once in the map or unordered map
+	template <AnyMap T>
+		requires IsHashable<typename T::mapped_type>
+	inline constexpr bool ContainsDuplicates(const T& m)
 	{
 		if (m.size() < 2) return false;
 
-		unordered_set<T> seen{};
+		unordered_set<typename T::mapped_type> seen{};
 		seen.reserve(m.size());
 
 		for (const auto& [key, value] : m)
@@ -248,36 +330,23 @@ namespace KalaHeaders::KalaCore
 		return false;
 	}
 
-	//Returns true if any value appears more than once in the unordered map
-	template <typename K, typename T>
-		requires equality_comparable<T> && Hashable<T>
-	inline constexpr bool ContainsDuplicates(const unordered_map<K, T>& m)
-	{
-		if (m.size() < 2) return false;
+	//
+	// REMOVE DUPLICATES FROM CONTAINER
+	//
 
-		unordered_set<T> seen{};
-		seen.reserve(m.size());
-
-		for (const auto& [key, value] : m)
-		{
-			if (!seen.insert(value).second) return true;
-		}
-
-		return false;
-	}
-
-	//Remove all duplicates from vector that appear more than once, order is preserved
-	template <typename T>
-		requires equality_comparable<T> && Hashable<T>
-	inline constexpr void RemoveDuplicates(vector<T>& v)
+	//Remove all duplicate values the from vector that appear more than once, order is preserved
+	template <AnyVector T>
+		requires IsHashable<typename T::value_type>
+	inline constexpr void RemoveDuplicates(T& v)
 	{
 		if (v.size() < 2) return;
 
-		unordered_map<T, size_t> counts{};
+		unordered_map<typename T::value_type, typename T::size_type> counts{};
+		counts.reserve(v.size());
 
 		for (const auto& x : v) ++counts[x];
 
-		vector<T> result{};
+		vector<typename T::value_type> result{};
 		result.reserve(v.size());
 
 		for (const auto& x : v) if (counts[x] == 1) result.push_back(x);
@@ -285,41 +354,39 @@ namespace KalaHeaders::KalaCore
 		v = std::move(result);
 	}
 
-	//Remove all duplicates from map that appear more than once, key order is preserved
-	template <typename K, typename T>
-		requires equality_comparable<T> && Hashable<T>
-	inline constexpr void RemoveDuplicates(map<K, T>& m)
+	//Remove all duplicate values from the map or unordered map that appear more than once, key order is preserved for maps
+	template <AnyMap T>
+		requires IsHashable<typename T::mapped_type>
+	inline constexpr void RemoveDuplicates(T& m)
 	{
 		if (m.size() < 2) return;
 
-		unordered_map<T, size_t> counts{};
-		counts.reserve(m.size());
+		using Value = typename T::mapped_type;
+		using Count = typename T::size_type;
 
-		for (const auto& [key, value] : m) ++counts[value];
-
-		for (auto it = m.begin(); it != m.end();)
+		if constexpr (IsUnorderedMap<remove_cvref_t<T>>::value)
 		{
-			if (counts[it->second] > 1) it = m.erase(it);
-			else ++it;
+			unordered_map<Value, Count> counts{};
+
+			for (const auto& [k, v] : m) ++counts[v];
+
+			for (auto it = m.begin(); it != m.end();)
+			{
+				if (counts[it->second] > 1) it = m.erase(it);
+				else ++it;
+			}
 		}
-	}
-
-	//Remove all duplicates from unordered map that appear more than once
-	template <typename K, typename T>
-		requires equality_comparable<T> && Hashable<T>
-	inline constexpr void RemoveDuplicates(unordered_map<K, T>& m)
-	{
-		if (m.size() < 2) return;
-
-		unordered_map<T, size_t> counts{};
-		counts.reserve(m.size());
-
-		for (const auto& [key, value] : m) ++counts[value];
-
-		for (auto it = m.begin(); it != m.end();)
+		else
 		{
-			if (counts[it->second] > 1) it = m.erase(it);
-			else ++it;
+			map<Value, Count> counts{};
+
+			for (const auto& [k, v] : m) ++counts[v];
+
+			for (auto it = m.begin(); it != m.end();)
+			{
+				if (counts[it->second] > 1) it = m.erase(it);
+				else ++it;
+			}
 		}
 	}
 
