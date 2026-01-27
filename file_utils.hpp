@@ -142,12 +142,13 @@ namespace KalaHeaders::KalaFile
 		same_as<remove_cvref_t<T>, path>
 		|| AnyString<T>;
 
-	//Returns all files relative to wildcard deep state and file path with found extension
+	//Returns all files relative to wildcard deep state and file path with found extension,
+	//if recursive is true then all subfolders are also searched
 	template<AnyPath T>
 	inline string GetFilesWithWildcard(
 		const T& filePath,
 		vector<path>& outFilePaths,
-		bool deep = false)
+		bool recursive = false)
 	{
 		auto get_extension = [](string_view f) -> string_view
 			{
@@ -187,7 +188,7 @@ namespace KalaHeaders::KalaFile
 
 		if (p.empty()) return "Failed to get files with wild card because the file path is empty!";
 
-		string fullFileName = deep
+		string fullFileName = recursive
 			? "**" + string(ext)
 			: "*" + string(ext);
 
@@ -204,7 +205,7 @@ namespace KalaHeaders::KalaFile
 			? "."
 			: p.parent_path();
 
-		if (!deep)
+		if (!recursive)
 		{
 			for (const auto& f : directory_iterator(baseDir))
 			{
@@ -233,18 +234,19 @@ namespace KalaHeaders::KalaFile
 		return{};
 	}
 
-	//Returns all directories relative to wildcard deep state and directory path
+	//Returns all directories relative to wildcard deep state and directory path,
+	//if recursive is true then all subfolders are also searched
 	template<AnyPath T>
 	inline string GetDirectoriesWithWildcard(
 		const T& dirPath,
 		vector<path>& outDirPaths,
-		bool deep = false)
+		bool recursive = false)
 	{
 		path p{ dirPath };
 
 		if (p.empty()) return "Failed to get directories with wild card because the directory path is empty!";
 
-		string fullDirName = deep
+		string fullDirName = recursive
 			? "**"
 			: "*";
 
@@ -261,7 +263,7 @@ namespace KalaHeaders::KalaFile
 			? "."
 			: p.parent_path();
 
-		if (!deep)
+		if (!recursive)
 		{
 			for (const auto& d : directory_iterator(baseDir))
 			{
