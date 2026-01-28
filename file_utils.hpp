@@ -142,7 +142,7 @@ namespace KalaHeaders::KalaFile
 		same_as<remove_cvref_t<T>, path>
 		|| AnyString<T>;
 
-	//Returns all files relative to wildcard deep state and file path with found extension,
+	//Returns all files relative to wildcard recursive state and file path with found extension,
 	//if recursive is true then all subfolders are also searched
 	template<AnyPath T>
 	inline string GetFilesWithWildcard(
@@ -234,7 +234,7 @@ namespace KalaHeaders::KalaFile
 		return{};
 	}
 
-	//Returns all directories relative to wildcard deep state and directory path,
+	//Returns all directories relative to wildcard recursive state and directory path,
 	//if recursive is true then all subfolders are also searched
 	template<AnyPath T>
 	inline string GetDirectoriesWithWildcard(
