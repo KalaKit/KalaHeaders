@@ -2,8 +2,7 @@
 out/
 build/
 .vs/
-*.kdev4
-.kdev4/
+.vscode/
 
 # Release and Debug in root folder
 /release/
