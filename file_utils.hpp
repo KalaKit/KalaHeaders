@@ -121,9 +121,12 @@ namespace KalaHeaders::KalaFile
 		size_t end{};
 	};
 
-	//Returns true if string contains any unsafe path characters,
-	//Safe: 'A-Z', 'a-z', '0-9', '_', '-', '.', '/', '\\', ':'
-	inline constexpr bool HasAnyUnsafePathChar(string_view origin)
+	//Returns true if string contains any unsafe path characters.
+	//Safe: 'A-Z', 'a-z', '0-9', '_', '-', '.', '/', '\\', ':'.
+	//If ignoreWildcards is true then '*' is also safe
+	inline constexpr bool HasAnyUnsafePathChar(
+		string_view origin, 
+		bool ignoreWildcards = false)
 	{
 		for (unsigned char c : origin)
 		{
@@ -133,7 +136,8 @@ namespace KalaHeaders::KalaFile
 				|| c == '.'
 				|| c == ':'
 				|| c == '/'
-				|| c == '\\'))
+				|| c == '\\'
+				|| (ignoreWildcards && c == '*')))
 			{
 				return true;
 			}
