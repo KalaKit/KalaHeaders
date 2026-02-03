@@ -237,7 +237,7 @@ namespace KalaHeaders::KalaFile
 					}
 					catch (const filesystem_error&)
 					{
-						return "Failed to resolve target path '" + string(p) + "'!";
+						return "Failed to resolve target path '" + p.string() + "'!";
 					}
 				}
 
