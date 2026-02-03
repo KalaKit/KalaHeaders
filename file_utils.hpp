@@ -121,6 +121,26 @@ namespace KalaHeaders::KalaFile
 		size_t end{};
 	};
 
+	//Returns true if string contains any unsafe path characters,
+	//Safe: 'A-Z', 'a-z', '0-9', '_', '-', '.', '/', '\\', ':'
+	inline constexpr bool HasAnyUnsafePathChar(string_view origin)
+	{
+		for (unsigned char c : origin)
+		{
+			if (!(isalnum(c)
+				|| c == '_'
+				|| c == '-'
+				|| c == '.'
+				|| c == ':'
+				|| c == '/'
+				|| c == '\\'))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	//
 	// COMMON CONCEPTS
 	//
