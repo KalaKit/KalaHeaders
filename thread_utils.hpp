@@ -31,6 +31,7 @@ namespace KalaHeaders::KalaThread
 	using std::is_pointer_v;
 	using std::same_as;
 	using std::thread;
+	using std::mutex;
 	using std::this_thread::yield;
 	using std::invocable;
 	using std::chrono::milliseconds;
@@ -47,14 +48,14 @@ namespace KalaHeaders::KalaThread
 	
 	//Creates, runs and returns a joinable thread
 	template <invocable F>
-    inline thread jthread(F&& func)
+    inline thread joinable_thread(F&& func)
 	{
 		return thread(std::forward<F>(func));
 	}
 	
 	//Creates, runs and detaches a non-joinable thread
 	template <invocable F>
-	inline void dthread(F&& func)
+	inline void detached_thread(F&& func)
 	{
 		thread t(std::forward<F>(func));
 		t.detach();
