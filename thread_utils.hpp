@@ -41,6 +41,7 @@ namespace KalaHeaders::KalaThread
 	using std::remove_cvref_t;
 	
 	using abool = atomic<bool>;
+	using auptr = atomic<uintptr_t>;
 	
 	//
 	// CREATE THREAD
