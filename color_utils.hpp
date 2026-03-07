@@ -1,4 +1,4 @@
-//--------------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 // color_utils.hpp
 //
 // Copyright (C) 2026 Lost Empire Entertainment
@@ -9,7 +9,7 @@
 // Provides:
 //   - custom color container as a variable for linear RGBA operations
 //   - color conversion, color operators
-//--------------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 #include <cmath>
 #include <algorithm>

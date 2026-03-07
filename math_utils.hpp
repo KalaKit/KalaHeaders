@@ -1,4 +1,4 @@
-//--------------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 // math_utils.hpp
 //
 // Copyright (C) 2026 Lost Empire Entertainment
@@ -11,7 +11,7 @@
 //   - GLM-like containers as vec2, vec3, vec4, mat2, mat3, mat4, quat
 //   - operators and helpers for vec, mat and quat types
 //   - mat containers as column-major and scalar form
-//--------------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 #pragma once
 
