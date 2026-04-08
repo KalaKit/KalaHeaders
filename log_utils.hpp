@@ -36,7 +36,6 @@ namespace KalaHeaders::KalaLog
 	using std::chrono::system_clock;
 	using std::chrono::duration_cast;
 	using std::chrono::microseconds;
-	using std::chrono::milliseconds;
 	using std::array;
 	using std::fwrite;
 	using std::fflush;
@@ -69,14 +68,16 @@ namespace KalaHeaders::KalaLog
 	};
 	enum class TimeFormat : u8
 	{
-		TIME_NONE        = 0, //No time stamp
-		TIME_DEFAULT     = 1, //Uses TIME_HMS_MS
-		TIME_HMS         = 2, //23:59:59
-		TIME_HMS_MS      = 3, //23:59:59:123
-		TIME_12H         = 4, //11:59:59 PM
-		TIME_ISO_8601    = 5, //23:59:59Z
-		TIME_FILENAME    = 6, //23-59-59
-		TIME_FILENAME_MS = 7  //23-59-59-123
+		TIME_NONE           = 0, //No time stamp
+		TIME_DEFAULT        = 1, //Uses TIME_HMS_MS_US
+		TIME_HMS            = 2, //23:59:59
+		TIME_HMS_MS         = 3, //23:59:59:123
+		TIME_HMS_MS_US      = 4, //23:59:59:123:456
+		TIME_12H            = 5, //11:59:59 PM
+		TIME_ISO_8601       = 6, //23:59:59Z
+		TIME_FILENAME       = 7, //23-59-59
+		TIME_FILENAME_MS    = 8, //23-59-59-123
+		TIME_FILENAME_MS_US = 9  //23-59-59-123-456
 	};
 	enum class DateFormat : u8
 	{
@@ -102,41 +103,30 @@ namespace KalaHeaders::KalaLog
 	{
 	public:
 		//Returns current time in chosen or default format
-		static inline const string& GetTime(TimeFormat timeFormat = TimeFormat::TIME_DEFAULT)
+		static inline string_view GetTime(TimeFormat timeFormat = TimeFormat::TIME_DEFAULT)
 		{
 			static thread_local const string empty{};
 
 			//return empty for OOB or none
 			if (timeFormat == TimeFormat::TIME_NONE
-				|| timeFormat > TimeFormat::TIME_FILENAME_MS)
+				|| timeFormat > TimeFormat::TIME_FILENAME_MS_US)
 			{
 				return empty;
 			}
 
 			if (timeFormat == TimeFormat::TIME_DEFAULT)
 			{
-				return GetTime(TimeFormat::TIME_HMS_MS);
+				return GetTime(TimeFormat::TIME_HMS_MS_US);
 			}
 
-			static thread_local string cached[scast<int>(TimeFormat::TIME_FILENAME_MS) + 1];
-			static thread_local long long last_ms = -1;
 			static thread_local tm cachedLocal{};
 			static thread_local tm cachedUTC{};
 
-			const int idx = scast<int>(timeFormat);
 			const auto now = system_clock::now();
-			if (!cached[idx].empty())
-			{
-				auto now_ms = duration_cast<milliseconds>(now.time_since_epoch()).count();
-				if (now_ms == last_ms) return cached[idx];
-			}
-
 			const auto us_since_epoch = duration_cast<microseconds>(now.time_since_epoch()).count();
-			const auto ms_since_epoch = duration_cast<milliseconds>(now.time_since_epoch()).count();
-
-			last_ms = ms_since_epoch;
 
 			const auto in_time_t = system_clock::to_time_t(now);
+			const int us = us_since_epoch % 1000;          //true microsecond precision
 			const int ms = (us_since_epoch / 1000) % 1000; //sub-millisecond precision
 
 #ifdef _WIN32
@@ -147,7 +137,7 @@ namespace KalaHeaders::KalaLog
 			gmtime_r(&in_time_t, &cachedUTC);
 #endif
 
-			char buffer[32]{};
+			static thread_local char buffer[20]{};
 			switch (timeFormat)
 			{
 			case TimeFormat::TIME_HMS:
@@ -158,7 +148,7 @@ namespace KalaHeaders::KalaLog
 			}
 			case TimeFormat::TIME_HMS_MS:
 			{
-				char tmp[16]{};
+				char tmp[20]{};
 				size_t length = strftime(tmp, sizeof(tmp), "%H:%M:%S", &cachedLocal);
 
 				memcpy(buffer, tmp, length);
@@ -166,6 +156,24 @@ namespace KalaHeaders::KalaLog
 				buffer[length++] = '0' + (ms / 100) % 10;
 				buffer[length++] = '0' + (ms / 10) % 10;
 				buffer[length++] = '0' + (ms % 10);
+				buffer[length] = '\0';
+
+				break;
+			}
+			case TimeFormat::TIME_HMS_MS_US:
+			{
+				char tmp[20]{};
+				size_t length = strftime(tmp, sizeof(tmp), "%H:%M:%S", &cachedLocal);
+
+				memcpy(buffer, tmp, length);
+				buffer[length++] = ':';
+				buffer[length++] = '0' + (ms / 100) % 10;
+				buffer[length++] = '0' + (ms / 10) % 10;
+				buffer[length++] = '0' + (ms % 10);
+				buffer[length++] = ':';
+				buffer[length++] = '0' + (us / 100) % 10;
+				buffer[length++] = '0' + (us / 10) % 10;
+				buffer[length++] = '0' + (us % 10);
 				buffer[length] = '\0';
 
 				break;
@@ -190,7 +198,7 @@ namespace KalaHeaders::KalaLog
 			}
 			case TimeFormat::TIME_FILENAME_MS:
 			{
-				char tmp[16]{};
+				char tmp[20]{};
 				size_t length = strftime(tmp, sizeof(tmp), "%H-%M-%S", &cachedLocal);
 
 				memcpy(buffer, tmp, length);
@@ -202,14 +210,31 @@ namespace KalaHeaders::KalaLog
 
 				break;
 			}
+			case TimeFormat::TIME_FILENAME_MS_US:
+			{
+				char tmp[20]{};
+				size_t length = strftime(tmp, sizeof(tmp), "%H-%M-%S", &cachedLocal);
+
+				memcpy(buffer, tmp, length);
+				buffer[length++] = '-';
+				buffer[length++] = '0' + (ms / 100) % 10;
+				buffer[length++] = '0' + (ms / 10) % 10;
+				buffer[length++] = '0' + (ms % 10);
+				buffer[length++] = '-';
+				buffer[length++] = '0' + (us / 100) % 10;
+				buffer[length++] = '0' + (us / 10) % 10;
+				buffer[length++] = '0' + (us % 10);
+				buffer[length] = '\0';
+
+				break;
+			}
 			default: return empty;
 			}
 
-			cached[scast<int>(timeFormat)] = buffer;
-			return cached[scast<int>(timeFormat)];
+			return string_view(buffer);
 		}
 		//Returns current date in chosen or default format
-		static inline const string& GetDate(DateFormat dateFormat = DateFormat::DATE_DEFAULT)
+		static inline string_view GetDate(DateFormat dateFormat = DateFormat::DATE_DEFAULT)
 		{
 			static thread_local string empty{};
 
@@ -294,10 +319,10 @@ namespace KalaHeaders::KalaLog
 
 			target = target.substr(0, MAX_TAG_LENGTH);
 
-			const string& timeStamp = GetTime(timeFormat);
-			const string& dateStamp = GetDate(dateFormat);
+			string_view timeStamp = GetTime(timeFormat);
+			string_view dateStamp = GetDate(dateFormat);
 
-			const string& prefix = GetCachedPrefix(type, target);
+			string_view prefix = GetCachedPrefix(type, target);
 
 			char* p = logBuffer().data();
 
@@ -436,7 +461,7 @@ namespace KalaHeaders::KalaLog
 			8
 		};
 
-		static inline const string& GetCachedPrefix(
+		static inline string_view GetCachedPrefix(
 			LogType type,
 			string_view target)
 		{
