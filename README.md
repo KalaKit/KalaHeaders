@@ -88,16 +88,17 @@ Provides:
 
 ### Available time format types
 
-| Enum Value       | Description                        | Example       |
-|------------------|------------------------------------|---------------|
-| TIME_NONE        | No time printed                    | *(empty)*     |
-| TIME_DEFAULT     | Globally defined default format    | depends       |
-| TIME_HMS         | Hours:Minutes:Seconds              | 23:59:59      |
-| TIME_HMS_MS      | Hours:Minutes:Seconds:Milliseconds | 23:59:59:123  |
-| TIME_12H         | 12-hour clock with AM/PM           | 11:59:59 PM   |
-| TIME_ISO_8601    | ISO 8601 UTC-style                 | 23:59:59Z     |
-| TIME_FILENAME    | Filename-safe (no colons)          | 23-59-59      |
-| TIME_FILENAME_MS | Filename-safe with milliseconds    | 23-59-59-123  |
+| Enum Value       | Description                        | Example          |
+|------------------|------------------------------------|------------------|
+| TIME_NONE        | No time printed                    | *(empty)*        |
+| TIME_DEFAULT     | Globally defined default format    | TIME_HMS_MS_US   |
+| TIME_HMS         | Hours:Minutes:Seconds              | 23:59:59         |
+| TIME_HMS_MS      | Hours:Minutes:Seconds:Milliseconds | 23:59:59:123     |
+| TIME_HMS_MS_US   | Hours:Minutes:Seconds:Milliseconds:Microseconds | 23:59:59:123:456 |
+| TIME_12H         | 12-hour clock with AM/PM           | 11:59:59 PM      |
+| TIME_ISO_8601    | ISO 8601 UTC-style                 | 23:59:59Z        |
+| TIME_FILENAME    | Filename-safe (no colons)          | 23-59-59         |
+| TIME_FILENAME_MS | Filename-safe with microseconds    | 23-59-59-123-456 |
 
 ### Available date format types
 
