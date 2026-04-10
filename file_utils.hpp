@@ -26,6 +26,7 @@
 #include <cstring>
 #include <concepts>
 #include <type_traits>
+#include <chrono>
 
 //rcast
 #ifndef rcast
@@ -81,6 +82,8 @@ namespace KalaHeaders::KalaFile
 	using std::remove_reference_t;
 	using std::remove_extent_t;
 	using std::filesystem::filesystem_error;
+	using std::filesystem::file_time_type;
+	using std::chrono::system_clock;
 	
 	using u8 = uint8_t;
 	using u16 = uint16_t;
@@ -120,6 +123,29 @@ namespace KalaHeaders::KalaFile
 		size_t start{};
 		size_t end{};
 	};
+	
+	//Converts file_time_type to local time
+	inline string TimeToString(file_time_type time)
+	{
+		auto sctp = time_point_cast<system_clock::duration>(
+			time
+			- file_time_type::clock::now()
+			+ system_clock::now());
+			
+		time_t tt = system_clock::to_time_t(sctp);
+		tm local{};
+		
+#ifdef _WIN32
+		localtime_s(&local, &tt);
+#else
+		localtime_r(&tt, &local);
+#endif
+
+		char buf[64]{};
+		strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &local);
+		
+		return string(buf);
+	}
 
 	//Returns true if string contains any unsafe path characters.
 	//Safe: 'A-Z', 'a-z', '0-9', '_', '-', '.', '/', '\\', ':'.
