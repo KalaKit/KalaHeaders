@@ -98,6 +98,18 @@
 	#define DEBUG_ASSERT(x) assert(x)
 #endif
 
+//
+// CROSS-PLATFORM DEBUG FLAG
+//
+
+#ifndef KDEBUG
+	#if defined(_MSC_VER) && defined(_DEBUG)
+		#define KDEBUG
+	#elif (defined(__GNUC__) || defined(__clang__)) && !defined(NDEBUG)
+		#define KDEBUG
+	#endif
+#endif
+
 namespace KalaHeaders::KalaCore
 {
 #ifndef rcast

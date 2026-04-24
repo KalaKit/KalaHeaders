@@ -33,9 +33,9 @@
 //Min: -9 quintillion
 //Max: 9 quintillion
 #ifdef _WIN32
-using sst = SSIZE_T;
+	using sst = SSIZE_T;
 #else
-using sst = ssize_t;
+	using sst = ssize_t;
 #endif
 
 //64-bit unsigned int

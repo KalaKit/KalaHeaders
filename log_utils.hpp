@@ -27,7 +27,19 @@
 //static_cast
 #ifndef scast
 	#define scast static_cast
-#endif	
+#endif
+
+//
+// CROSS-PLATFORM DEBUG FLAG
+//
+
+#ifndef KDEBUG
+	#if defined(_MSC_VER) && defined(_DEBUG)
+		#define KDEBUG
+	#elif (defined(__GNUC__) || defined(__clang__)) && !defined(NDEBUG)
+		#define KDEBUG
+	#endif
+#endif
 
 namespace KalaHeaders::KalaLog
 {
@@ -60,6 +72,7 @@ namespace KalaHeaders::KalaLog
 
 	enum class LogType
 	{
+		LOG_VERBOSE, //Spammy, frequent log message for detailed logs, sent to stdout
 		LOG_INFO,    //General-purpose log message, sent to stdout
 		LOG_DEBUG,   //Debugging message, only appears in debug builds, sent to stdout
 		LOG_SUCCESS, //Confirmation that an operation succeeded, sent to stdout
@@ -303,7 +316,7 @@ namespace KalaHeaders::KalaLog
 			TimeFormat timeFormat = TimeFormat::TIME_DEFAULT,
 			DateFormat dateFormat = DateFormat::DATE_DEFAULT)
 		{
-#ifndef _DEBUG
+#ifndef KDEBUG
 			if (type == LogType::LOG_DEBUG) return;
 #endif
 
@@ -446,14 +459,16 @@ namespace KalaHeaders::KalaLog
 
 		static constexpr const char* LogTypeTag[] =
 		{
+			"VERBOSE | ",
 			"",           //LOG_INFO
 			"DEBUG | ",
 			"SUCCESS | ",
 			"WARNING | ",
 			"ERROR | "
 		};
-		static constexpr array<size_t, 5> LogTypeTagLength = 
+		static constexpr array<size_t, 6> LogTypeTagLength =
 		{
+			10,
 			0, 
 			8, 
 			10, 
