@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 #include <map>
 #include <array>
 #include <tuple>
@@ -125,6 +126,7 @@ namespace KalaHeaders::KalaCore
 	using std::array;
 	using std::unordered_map;
 	using std::map;
+	using std::unordered_set;
 	using std::tuple_size;
 	using std::false_type;
 	using std::true_type;
