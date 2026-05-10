@@ -438,19 +438,13 @@ namespace KalaHeaders::KalaCore
 	{
 		if (v.size() < 2) return;
 
-		unordered_map<typename T::value_type, typename T::size_type> counts{};
-		counts.reserve(v.size());
+		unordered_set<typename T::value_type> seen{};
+		seen.reserve(v.size());
 
-		for (const auto& x : v) ++counts[x];
-
-		vector<typename T::value_type> result{};
-		result.reserve(v.size());
-
-		for (const auto& x : v) if (counts[x] == 1) result.push_back(x);
-
-		v = std::move(result);
-
-		return;
+		erase_if(v, [&](const auto& x)
+		{
+			return !seen.insert(x).second;
+		});
 	}
 
 	//Remove all duplicate values from the map or unordered map that appear more than once, key order is preserved for maps
@@ -461,33 +455,13 @@ namespace KalaHeaders::KalaCore
 		if (m.size() < 2) return;
 
 		using Value = typename T::mapped_type;
-		using Count = typename T::size_type;
+		unordered_set<Value> seen{};
+		seen.reserve(m.size());
 
-		if constexpr (IsUnorderedMap<remove_cvref_t<T>>::value)
+		for (auto it = m.begin(); it != m.end();)
 		{
-			unordered_map<Value, Count> counts{};
-			counts.reserve(m.size());
-
-			for (const auto& [k, v] : m) ++counts[v];
-
-			for (auto it = m.begin(); it != m.end();)
-			{
-				if (counts[it->second] > 1) it = m.erase(it);
-				else ++it;
-			}
-		}
-		else
-		{
-			map<Value, Count> counts{};
-			counts.reserve(m.size());
-
-			for (const auto& [k, v] : m) ++counts[v];
-
-			for (auto it = m.begin(); it != m.end();)
-			{
-				if (counts[it->second] > 1) it = m.erase(it);
-				else ++it;
-			}
+			if (!seen.insert(it->second).second) it = m.erase(it);
+			else ++it;
 		}
 	}
 
