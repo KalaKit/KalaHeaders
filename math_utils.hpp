@@ -2848,18 +2848,6 @@ namespace KalaHeaders::KalaMath
 		}
 	}
 	
-	inline constexpr vec2 getpos(
-		const Transform2D& target,
-		PosTarget type)
-	{
-		switch (type)
-		{
-		default: return{};
-		case PosTarget::POS_WORLD:    return target.pos_world; break;
-		case PosTarget::POS_LOCAL:    return target.pos_local; break;
-		case PosTarget::POS_COMBINED: return target.pos_combined; break;
-		}
-	}
 	//Incrementally update position over time,
 	//adding parent updates this position relative to parent
 	inline constexpr void addpos(
@@ -2914,6 +2902,18 @@ namespace KalaHeaders::KalaMath
 
 		combine(target, parent);
 	}
+	inline constexpr vec2 getpos(
+		const Transform2D& target,
+		PosTarget type)
+	{
+		switch (type)
+		{
+		default: return{};
+		case PosTarget::POS_WORLD:    return target.pos_world; break;
+		case PosTarget::POS_LOCAL:    return target.pos_local; break;
+		case PosTarget::POS_COMBINED: return target.pos_combined; break;
+		}
+	}
 	
 	//Returns true local right direction of this transform
 	inline constexpr vec2 getdirright(Transform2D& target)
@@ -2928,19 +2928,6 @@ namespace KalaHeaders::KalaMath
 		return vec2(-sinf(r), cosf(r));
 	}
 	
-	//Returns rotation in euler (degrees)
-	inline constexpr f32 getrot(
-		const Transform2D& target,
-		RotTarget type)
-	{
-		switch (type)
-		{
-		default: return{};
-		case RotTarget::ROT_WORLD:    return target.rot_world; break;
-		case RotTarget::ROT_LOCAL:    return target.rot_local; break;
-		case RotTarget::ROT_COMBINED: return target.rot_combined; break;
-		}
-	}
 	//Takes in rotation in euler (degrees) and incrementally rotates over time,
 	//adding parent updates this rotation relative to parent,
 	//clamps between -360 and 360, you're expected to wrap according to your needs on your end
@@ -2992,19 +2979,20 @@ namespace KalaHeaders::KalaMath
 
 		combine(target, parent);
 	}
-	
-	inline constexpr vec2 getsize(
+	//Returns rotation in euler (degrees)
+	inline constexpr f32 getrot(
 		const Transform2D& target,
-		SizeTarget type)
+		RotTarget type)
 	{
 		switch (type)
 		{
 		default: return{};
-		case SizeTarget::SIZE_WORLD:    return target.size_world;
-		case SizeTarget::SIZE_LOCAL:    return target.size_local;
-		case SizeTarget::SIZE_COMBINED: return target.size_combined;
+		case RotTarget::ROT_WORLD:    return target.rot_world; break;
+		case RotTarget::ROT_LOCAL:    return target.rot_local; break;
+		case RotTarget::ROT_COMBINED: return target.rot_combined; break;
 		}
 	}
+	
 	//Incrementally scales over time,
 	//adding parent updates this size relative to parent
 	inline constexpr void addsize(
@@ -3059,6 +3047,18 @@ namespace KalaHeaders::KalaMath
 
 		combine(target, parent);
 	}
+	inline constexpr vec2 getsize(
+		const Transform2D& target,
+		SizeTarget type)
+	{
+		switch (type)
+		{
+		default: return{};
+		case SizeTarget::SIZE_WORLD:    return target.size_world;
+		case SizeTarget::SIZE_LOCAL:    return target.size_local;
+		case SizeTarget::SIZE_COMBINED: return target.size_combined;
+		}
+	}
 	
 	//================================================================================
 	//
@@ -3068,7 +3068,7 @@ namespace KalaHeaders::KalaMath
 	
 	//Updates target combined pos, rot and size relative to target local and parent combined values,
 	//if parent is identity then target combined is target world
-	inline void combine(
+	inline void combine3d(
 		Transform3D& target,
 		const Transform3D& parent)
 	{
@@ -3127,21 +3127,9 @@ namespace KalaHeaders::KalaMath
 		}
 	}
 	
-	inline constexpr vec3 getpos(
-		const Transform3D& target,
-		PosTarget type)
-	{
-		switch (type)
-		{
-		default: return{};
-		case PosTarget::POS_WORLD:    return target.pos_world;
-		case PosTarget::POS_LOCAL:    return target.pos_local;
-		case PosTarget::POS_COMBINED: return target.pos_combined;
-		}
-	}
 	//Incrementally moves over time,
 	//if parent is identity then target combined is target world
-	inline constexpr void addpos(
+	inline constexpr void addpos3d(
 		Transform3D& target,
 		const Transform3D& parent,
 		PosTarget type,
@@ -3166,11 +3154,11 @@ namespace KalaHeaders::KalaMath
 		case PosTarget::POS_LOCAL: target.pos_local = pos_clamped; break;
 		}
 
-		combine(target, parent);
+		combine3d(target, parent);
 	}
 	//Snaps to given position,
 	//if parent is identity then target combined is target world
-	inline constexpr void setpos(
+	inline constexpr void setpos3d(
 		Transform3D& target,
 		const Transform3D& parent,
 		PosTarget type,
@@ -3191,7 +3179,19 @@ namespace KalaHeaders::KalaMath
 		case PosTarget::POS_LOCAL: target.pos_local = pos_clamped; break;
 		}
 
-		combine(target, parent);
+		combine3d(target, parent);
+	}
+	inline constexpr vec3 getpos3d(
+		const Transform3D& target,
+		PosTarget type)
+	{
+		switch (type)
+		{
+		default: return{};
+		case PosTarget::POS_WORLD:    return target.pos_world;
+		case PosTarget::POS_LOCAL:    return target.pos_local;
+		case PosTarget::POS_COMBINED: return target.pos_combined;
+		}
 	}
 	
 	//Rotate towards target position,
@@ -3240,39 +3240,13 @@ namespace KalaHeaders::KalaMath
 		case RotTarget::ROT_LOCAL: target.rot_local = q; break;
 		}
 		
-		combine(target, parent);
+		combine3d(target, parent);
 	}
 	
-	//Returns rotation in euler (degrees)
-	inline constexpr vec3 getroteuler(
-		const Transform3D& target,
-		RotTarget type)
-	{
-		switch (type)
-		{
-		default: return{};
-		case RotTarget::ROT_WORLD:    return toeuler3(target.rot_world); break;
-		case RotTarget::ROT_LOCAL:    return toeuler3(target.rot_local); break;
-		case RotTarget::ROT_COMBINED: return toeuler3(target.rot_combined); break;
-		}
-	}
-	//Returns quaternion rotation
-	inline constexpr quat getrotquat(
-		const Transform3D& target,
-		RotTarget type)
-	{
-		switch (type)
-		{
-		default: return{};
-		case RotTarget::ROT_WORLD:    return target.rot_world; break;
-		case RotTarget::ROT_LOCAL:    return target.rot_local; break;
-		case RotTarget::ROT_COMBINED: return target.rot_combined; break;
-		}
-	}
 	//Takes in rotation in euler (degrees) and incrementally rotates over time,
 	//if parent is identity then target combined is target world,
 	//clamps internally between -360 and 360, you're expected to wrap according to your needs on your end
-	inline constexpr void addrot(
+	inline constexpr void addrot3d(
 		Transform3D& target,
 		const Transform3D& parent,
 		RotTarget type,
@@ -3299,7 +3273,7 @@ namespace KalaHeaders::KalaMath
 		case RotTarget::ROT_LOCAL: target.rot_local = toquat(current); break;
 		}
 
-		combine(target, parent);
+		combine3d(target, parent);
 	}
 	//Takes in rotation in euler (degrees) and snaps to given rotation,
 	//if parent is identity then target combined is target world,
@@ -3320,7 +3294,7 @@ namespace KalaHeaders::KalaMath
 		case RotTarget::ROT_LOCAL: target.rot_local = toquat(rot_new); break;
 		}
 
-		combine(target, parent);
+		combine3d(target, parent);
 	}
 	//Takes in rotation in quaternion and snaps to given rotation,
 	//if parent is identity then target combined is target world
@@ -3342,7 +3316,33 @@ namespace KalaHeaders::KalaMath
 		case RotTarget::ROT_LOCAL: target.rot_local = rot_clamped; break;
 		}
 			
-		combine(target, parent);
+		combine3d(target, parent);
+	}
+	//Returns rotation in euler (degrees)
+	inline constexpr vec3 getroteuler(
+		const Transform3D& target,
+		RotTarget type)
+	{
+		switch (type)
+		{
+		default: return{};
+		case RotTarget::ROT_WORLD:    return toeuler3(target.rot_world); break;
+		case RotTarget::ROT_LOCAL:    return toeuler3(target.rot_local); break;
+		case RotTarget::ROT_COMBINED: return toeuler3(target.rot_combined); break;
+		}
+	}
+	//Returns quaternion rotation
+	inline constexpr quat getrotquat(
+		const Transform3D& target,
+		RotTarget type)
+	{
+		switch (type)
+		{
+		default: return{};
+		case RotTarget::ROT_WORLD:    return target.rot_world; break;
+		case RotTarget::ROT_LOCAL:    return target.rot_local; break;
+		case RotTarget::ROT_COMBINED: return target.rot_combined; break;
+		}
 	}
 	
 	//Returns true local front direction of this transform
@@ -3369,7 +3369,7 @@ namespace KalaHeaders::KalaMath
 		RotTarget type,
 		float degrees)
 	{
-		addrot(target, parent, type, {degrees, 0, 0});
+		addrot3d(target, parent, type, {degrees, 0, 0});
 	}
 	//Increments yaw over time with degrees,
 	//if parent is identity then target combined is target world
@@ -3379,7 +3379,7 @@ namespace KalaHeaders::KalaMath
 		RotTarget type,
 		float degrees)
 	{
-		addrot(target, parent, type, {0, degrees, 0});
+		addrot3d(target, parent, type, {0, degrees, 0});
 	}
 	//Increments roll over time with degrees,
 	//if parent is identity then target combined is target world
@@ -3389,7 +3389,7 @@ namespace KalaHeaders::KalaMath
 		RotTarget type,
 		float degrees)
 	{
-		addrot(target, parent, type, {0, 0, degrees});
+		addrot3d(target, parent, type, {0, 0, degrees});
 	}
 	
 	//Snaps pitch to given degrees,
@@ -3451,21 +3451,9 @@ namespace KalaHeaders::KalaMath
 		return getroteuler(target, type).z;
 	}
 	
-	inline constexpr vec3 getsize(
-		const Transform3D& target,
-		SizeTarget type)
-	{
-		switch (type)
-		{
-		default: return{};
-		case SizeTarget::SIZE_WORLD:    return target.size_world;
-		case SizeTarget::SIZE_LOCAL:    return target.size_local;
-		case SizeTarget::SIZE_COMBINED: return target.size_combined;
-		}
-	};
 	//Incrementally scales over time,
 	//if parent is identity then target combined is target world
-	inline constexpr void addsize(
+	inline constexpr void addsize3d(
 		Transform3D& target,
 		const Transform3D& parent,
 		SizeTarget type,
@@ -3490,11 +3478,11 @@ namespace KalaHeaders::KalaMath
 		case SizeTarget::SIZE_LOCAL: target.size_local = size_clamped; break;
 		}
 
-		combine(target, parent);
+		combine3d(target, parent);
 	}
 	//Snaps to given scale,
 	//if parent is identity then target combined is target world
-	inline constexpr void setsize(
+	inline constexpr void setsize3d(
 		Transform3D& target,
 		const Transform3D& parent,
 		SizeTarget type,
@@ -3515,6 +3503,18 @@ namespace KalaHeaders::KalaMath
 		case SizeTarget::SIZE_LOCAL: target.size_local = size_clamped; break;
 		}
 
-		combine(target, parent);
+		combine3d(target, parent);
 	}
+	inline constexpr vec3 getsize3d(
+		const Transform3D& target,
+		SizeTarget type)
+	{
+		switch (type)
+		{
+		default: return{};
+		case SizeTarget::SIZE_WORLD:    return target.size_world;
+		case SizeTarget::SIZE_LOCAL:    return target.size_local;
+		case SizeTarget::SIZE_COMBINED: return target.size_combined;
+		}
+	};
 }
