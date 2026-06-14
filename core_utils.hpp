@@ -62,44 +62,6 @@
 #endif
 
 //
-// FOR PERFORMANCE-CRITICAL CODE
-//
-
-#if defined(_MSC_VER)
-	#define FORCE_INLINE __forceinline
-	#define NO_INLINE    __declspec(noinline)
-#elif defined(__GNUC__) || defined(__clang__)
-	#define FORCE_INLINE inline __attribute__((always_inline))
-	#define NO_INLINE    __attribute__((noinline))
-#else
-	#define FORCE_INLINE inline
-	#define NO_INLINE
-#endif
-
-//
-// MARK FEATURE AS DEPRECATED
-//
-
-#if defined(_MSC_VER)
-	#define DEPRECATED(msg) __declspec(deprecated(msg))
-#elif defined(__GNUC__) || defined(__clang__)
-	#define DEPRECATED(msg) __attribute__((deprecated(msg)))
-#else
-	#define DEPRECATED(msg)
-#endif
-
-//
-// DEBUG-ONLY ASSERT WITHOUT ADDING RUNTIME COST IN RELEASE
-//
-
-#if defined(NDEBUG)
-	#define DEBUG_ASSERT(x) ((void)0)
-#else
-	#include <cassert>
-	#define DEBUG_ASSERT(x) assert(x)
-#endif
-
-//
 // CROSS-PLATFORM DEBUG FLAG
 //
 
