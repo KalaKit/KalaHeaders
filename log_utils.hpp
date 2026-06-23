@@ -116,7 +116,7 @@ namespace KalaHeaders::KalaLog
 	{
 	public:
 		//Returns current time in chosen or default format
-		static inline string_view GetTime(TimeFormat timeFormat = TimeFormat::TIME_DEFAULT)
+		static inline string GetTime(TimeFormat timeFormat = TimeFormat::TIME_DEFAULT)
 		{
 			static thread_local const string empty{};
 
@@ -244,10 +244,10 @@ namespace KalaHeaders::KalaLog
 			default: return empty;
 			}
 
-			return string_view(buffer);
+			return buffer;
 		}
 		//Returns current date in chosen or default format
-		static inline string_view GetDate(DateFormat dateFormat = DateFormat::DATE_DEFAULT)
+		static inline string GetDate(DateFormat dateFormat = DateFormat::DATE_DEFAULT)
 		{
 			static thread_local string empty{};
 
@@ -332,8 +332,8 @@ namespace KalaHeaders::KalaLog
 
 			target = target.substr(0, MAX_TAG_LENGTH);
 
-			string_view timeStamp = GetTime(timeFormat);
-			string_view dateStamp = GetDate(dateFormat);
+			string timeStamp = GetTime(timeFormat);
+			string dateStamp = GetDate(dateFormat);
 
 			string_view prefix = GetCachedPrefix(type, target);
 
