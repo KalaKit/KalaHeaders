@@ -29,6 +29,24 @@
 #include <type_traits>
 #include <concepts>
 
+#ifndef KDEBUG
+	#if defined(_MSC_VER) && defined(_DEBUG)
+		#define KDEBUG
+	#elif (defined(__GNUC__) || defined(__clang__)) && !defined(NDEBUG)
+		#define KDEBUG
+	#endif
+#endif
+
+#ifndef rcast
+	#define rcast reinterpret_cast
+#endif
+#ifndef scast
+	#define scast static_cast
+#endif
+#ifndef ccast
+	#define ccast const_cast
+#endif
+
 //
 // CROSS-PLATFORM IMPORT/EXPORT
 //
@@ -61,27 +79,8 @@
 	#define LIB_APIENTRY
 #endif
 
-//
-// CROSS-PLATFORM DEBUG FLAG
-//
-
-#ifndef KDEBUG
-	#if defined(_MSC_VER) && defined(_DEBUG)
-		#define KDEBUG
-	#elif (defined(__GNUC__) || defined(__clang__)) && !defined(NDEBUG)
-		#define KDEBUG
-	#endif
-#endif
-
 namespace KalaHeaders::KalaCore
 {
-#ifndef rcast
-	#define rcast reinterpret_cast
-#endif
-#ifndef scast
-	#define scast static_cast
-#endif
-
 	using std::string;
 	using std::string_view;
 	using std::vector;

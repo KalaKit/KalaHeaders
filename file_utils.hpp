@@ -28,14 +28,22 @@
 #include <type_traits>
 #include <chrono>
 
-//rcast
+#ifndef KDEBUG
+	#if defined(_MSC_VER) && defined(_DEBUG)
+		#define KDEBUG
+	#elif (defined(__GNUC__) || defined(__clang__)) && !defined(NDEBUG)
+		#define KDEBUG
+	#endif
+#endif
+
 #ifndef rcast
 	#define rcast reinterpret_cast
 #endif
-
-//static_cast
 #ifndef scast
 	#define scast static_cast
+#endif
+#ifndef ccast
+	#define ccast const_cast
 #endif
 
 namespace KalaHeaders::KalaFile

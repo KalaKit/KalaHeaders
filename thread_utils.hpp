@@ -21,6 +21,24 @@
 #include <chrono>
 #include <mutex>
 
+#ifndef KDEBUG
+	#if defined(_MSC_VER) && defined(_DEBUG)
+		#define KDEBUG
+	#elif (defined(__GNUC__) || defined(__clang__)) && !defined(NDEBUG)
+		#define KDEBUG
+	#endif
+#endif
+
+#ifndef rcast
+	#define rcast reinterpret_cast
+#endif
+#ifndef scast
+	#define scast static_cast
+#endif
+#ifndef ccast
+	#define ccast const_cast
+#endif
+
 namespace KalaHeaders::KalaThread
 {	
 	using std::atomic;

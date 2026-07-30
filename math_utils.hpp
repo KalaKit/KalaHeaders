@@ -23,6 +23,24 @@
 #include <basetsd.h>
 #endif
 
+#ifndef KDEBUG
+	#if defined(_MSC_VER) && defined(_DEBUG)
+		#define KDEBUG
+	#elif (defined(__GNUC__) || defined(__clang__)) && !defined(NDEBUG)
+		#define KDEBUG
+	#endif
+#endif
+
+#ifndef rcast
+	#define rcast reinterpret_cast
+#endif
+#ifndef scast
+	#define scast static_cast
+#endif
+#ifndef ccast
+	#define ccast const_cast
+#endif
+
 //================================================================================
 //
 // DEFINE SHORTHANDS FOR SAFE MATH VARIABLES
@@ -93,11 +111,7 @@ using f32 = float;
 using f64 = double;
 
 namespace KalaHeaders::KalaMath
-{	
-#ifndef scast
-	#define scast static_cast
-#endif
-
+{
 	using std::sinf;
 	using std::cosf;
 	using std::tanf;

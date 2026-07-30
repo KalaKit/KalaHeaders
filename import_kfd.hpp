@@ -86,15 +86,26 @@ Offset | Size | Field
 #include <fstream>
 #include <filesystem>
 
-namespace KalaHeaders::KalaFontData
-{	
+#ifndef KDEBUG
+	#if defined(_MSC_VER) && defined(_DEBUG)
+		#define KDEBUG
+	#elif (defined(__GNUC__) || defined(__clang__)) && !defined(NDEBUG)
+		#define KDEBUG
+	#endif
+#endif
+
 #ifndef rcast
 	#define rcast reinterpret_cast
 #endif
 #ifndef scast
 	#define scast static_cast
 #endif
+#ifndef ccast
+	#define ccast const_cast
+#endif
 
+namespace KalaHeaders::KalaFontData
+{
 	using std::vector;
 	using std::array;
 	using std::string;
