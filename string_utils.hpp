@@ -53,53 +53,73 @@ namespace KalaHeaders::KalaString
 	using std::transform;
 	using std::toupper;
 	using std::tolower;
+	using std::isalpha;
 	using std::isdigit;
 	using std::isspace;
 	using std::memcpy;
 	using std::memset;
 
 	//
-	// CONVERSION FUNCTIONS
-	//
-
-	//Convert T to string
-	template<typename T>
-	inline constexpr string ToString(const T& value) { return to_string(value); }
-
-	//Convert bool to 'true' or 'false'
-	template<> inline constexpr string ToString<bool>(const bool& state) { return state ? "true" : "false"; }
-
-	template<typename T> inline constexpr T FromString(string_view s); //Convert string to T
-
-	template<> inline constexpr bool     FromString<bool>(string_view s) { return (s == "true"); }                   //Convert string to bool
-
-	template<> inline int                FromString<int>(string_view s) { return stoi(string(s)); }                  //Convert string to int
-	template<> inline long               FromString<long>(string_view s) { return stol(string(s)); }                 //Convert string to long
-	template<> inline long long          FromString<long long>(string_view s) { return stoll(string(s)); }           //Convert string to long long
-	template<> inline unsigned int       FromString<unsigned int>(string_view s) { return stoul(string(s)); }        //Convert string to unsigned int
-	template<> inline unsigned long      FromString<unsigned long>(string_view s) { return stoul(string(s)); }       //Convert string to unsigned long
-	template<> inline unsigned long long FromString<unsigned long long>(string_view s) { return stoull(string(s)); } //Convert string to unsigned long long
-	template<> inline float              FromString<float>(string_view s) { return stof(string(s)); }                //Convert string to float
-	template<> inline double             FromString<double>(string_view s) { return stod(string(s)); }               //Convert string to double
-	template<> inline long double        FromString<long double>(string_view s) { return stold(string(s)); }         //Convert string to long double
-
-	//
 	// GENERAL FUNCTIONS
 	//
 
-	//1 = true
-	//0 = false
-	inline constexpr string_view BoolValue(bool state) { return state ? "true" : "false"; } 
-
-	//Cast a vector of strings into a vector of string_views
-	inline constexpr vector<string_view> MakeViews(const vector<string>& strings)
+	inline bool ContainsAlpha(string_view value)
 	{
-		vector<string_view> views{};
-		views.reserve(strings.size());
+		for (char c : value)
+		{
+			if (isalpha(scast<unsigned char>(c))) return true;
+		}
 
-		for (const auto& s : strings) views.emplace_back(s);
+		return false;
+	}
+	inline bool ContainsNumber(string_view value)
+	{
+		for (char c : value)
+		{
+			if (isdigit(scast<unsigned char>(c))) return true;
+		}
 
-		return views;
+		return false;
+	}
+	inline bool ContainsSymbol(string_view value)
+	{
+		for (char c : value)
+		{
+			unsigned char uc = scast<unsigned char>(c);
+			if (!isalpha(uc)
+				&& !isdigit(uc)
+				&& !isspace(uc))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+	inline bool ContainsSpace(string_view value)
+	{
+		for (char c : value)
+		{
+			if (isspace(scast<unsigned char>(c))) return true;
+		}
+
+		return false;
+	}
+	//Returns true if string contains any unsafe file characters,
+	//Safe: 'A-Z', 'a-z', '0-9', '_', '-', '.'
+	inline bool ContainsUnsafeFileChar(string_view origin)
+	{
+		for (unsigned char c : origin)
+		{
+			if (!(isalnum(c)
+				|| c == '_'
+				|| c == '-'
+				|| c == '.'))
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	//Copies the value of the origin string_view within the bounds of the target char array,
@@ -169,7 +189,7 @@ namespace KalaHeaders::KalaString
 	
 	//Split origin into a vector of chunks between each splitter,
 	//keep strings between two tokens as a single string with preserved tokens
-	inline constexpr vector<string> TokenizeString(
+	inline vector<string> TokenizeString(
 		string_view origin,
 		char token,
 		string_view splitter)
@@ -218,7 +238,7 @@ namespace KalaHeaders::KalaString
 	
 
 	//Split origin into a vector of chunks between each splitter
-	inline constexpr vector<string> SplitString(
+	inline vector<string> SplitString(
 		string_view origin,
 		string_view splitter)
 	{
@@ -243,7 +263,7 @@ namespace KalaHeaders::KalaString
 
 	//Join all chunks in parts vector together into a single string
 	//and add delimiter after each chunk except the last one
-	inline constexpr string JoinString(
+	inline string JoinString(
 		const vector<string_view>& parts,
 		string_view delimiter)
 	{
@@ -269,7 +289,7 @@ namespace KalaHeaders::KalaString
 	}
 
 	//Remove leading and trailing whitespace characters from origin
-	inline constexpr string TrimString(string_view origin)
+	inline string TrimString(string_view origin)
 	{
 		const char* whitespace = " \t\n\r\f\v";
 		size_t start = origin.find_first_not_of(whitespace);
@@ -281,7 +301,7 @@ namespace KalaHeaders::KalaString
 
 	//Remove occurrences of target from origin,
 	//if removeAll is true then all found occurences will be removed
-	inline constexpr string RemoveFromString(
+	inline string RemoveFromString(
 		string_view origin,
 		string_view target,
 		bool removeAll = false)
@@ -312,7 +332,7 @@ namespace KalaHeaders::KalaString
 
 	//Replace occurences of target from origin with replacement,
 	//if replaceAll is true then all found occurences will be replaced
-	inline constexpr string ReplaceFromString(
+	inline string ReplaceFromString(
 		string_view origin,
 		string_view target,
 		string_view replacement,
@@ -346,7 +366,7 @@ namespace KalaHeaders::KalaString
 	}
 
 	//Replaces everything after the start of target with replacer and returns the result
-	inline constexpr string ReplaceAfter(
+	inline string ReplaceAfter(
 		string_view origin, 
 		string_view target, 
 		string_view replacer = {})
@@ -367,7 +387,7 @@ namespace KalaHeaders::KalaString
 	}
 
 	//Replaces everything before the end of target with replacer and returns the result
-	inline constexpr string ReplaceBefore(
+	inline string ReplaceBefore(
 		string_view origin, 
 		string_view target,
 		string_view replacer = {})
@@ -388,7 +408,7 @@ namespace KalaHeaders::KalaString
 	}
 
 	//Returns everything after the start of target
-	inline constexpr string GetAfter(
+	inline string GetAfter(
 		string_view origin, 
 		string_view target)
 	{
@@ -402,7 +422,7 @@ namespace KalaHeaders::KalaString
 	}
 
 	//Returns everything before the end of target
-	inline constexpr string GetBefore(
+	inline string GetBefore(
 		string_view origin, 
 		string_view target)
 	{
@@ -416,7 +436,7 @@ namespace KalaHeaders::KalaString
 	}
 
 	//Set all letters of this string to uppercase letters
-	inline constexpr string ToUpperString(string_view origin)
+	inline string ToUpperString(string_view origin)
 	{
 		//return origin if target is empty
 		if (origin.empty()) return "";
@@ -433,7 +453,7 @@ namespace KalaHeaders::KalaString
 	}
 
 	//Set all letters of this string to lowercase letters
-	inline constexpr string ToLowerString(string_view origin)
+	inline string ToLowerString(string_view origin)
 	{
 		//return origin if target is empty
 		if (origin.empty()) return "";
@@ -447,47 +467,5 @@ namespace KalaHeaders::KalaString
 			});
 
 		return result;
-	}
-	
-	//Returns true if the string has one or more numbers
-	inline constexpr bool HasAnyNumber(string_view origin)
-	{
-		for (unsigned char c : origin) if (isdigit(c)) return true;
-		
-		return false;
-	}
-	//Returns true if the string has one or more non-number characters
-	inline constexpr bool HasAnyNonNumber(string_view origin)
-	{
-		for (unsigned char c : origin) if (!isdigit(c)) return true;
-		
-		return false;
-	}
-	//Returns true if the string has one or more white-space characters
-	//  - ' '
-	//  - '\t'
-	//  - '\n'
-	//  - '\r'
-	inline constexpr bool HasAnyWhiteSpace(string_view origin)
-	{
-		for (unsigned char c : origin) if (isspace(c)) return true;
-		
-		return false;
-	}
-
-	//Returns true if string contains any unsafe field characters,
-	//Safe: 'A-Z', 'a-z', '0-9', '_', '-'
-	inline constexpr bool HasAnyUnsafeFieldChar(string_view origin)
-	{
-		for (unsigned char c : origin)
-		{
-			if (!(isalnum(c)
-				|| c == '_'
-				|| c == '-'))
-			{
-				return true;
-			}
-		}
-		return false;
 	}
 }

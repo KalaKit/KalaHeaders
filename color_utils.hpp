@@ -12,6 +12,7 @@
 //---------------------------------------------------------------------------
 
 #include <cmath>
+#include <cstdint>
 #include <algorithm>
 
 #ifndef KDEBUG
