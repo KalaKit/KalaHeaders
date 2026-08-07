@@ -23,6 +23,10 @@
 #include <basetsd.h>
 #endif
 
+#if !defined(__USE_VULKAN__) && !defined(__USE_OPENGL__)
+#error "USER MUST DEFINE EITHER '__USE_VULKAN__' OR '__USE_OPENGL__'"
+#endif
+
 #ifndef KDEBUG
 	#if defined(_MSC_VER) && defined(_DEBUG)
 		#define KDEBUG
@@ -639,6 +643,9 @@ namespace KalaHeaders::KalaMath
 	using vec4 = vec<4>; //Vector: x, y, z, w
 
 	//right-handed, +Y up
+
+	//Clamp pitch so it doesn't go too high or too low during normal camera operation
+	constexpr f32 PITCH_LIMIT = 89.9f;
 
 	//Global right direction is +X
 	inline const vec3 DIR_RIGHT = { 1, 0,  0 };
@@ -2186,9 +2193,13 @@ namespace KalaHeaders::KalaMath
 		};
 	}
 
-	//ortographic projection, bottom-left origin, Y-up projection,
-	//viewport size is clamped internally from 100x100 to 8192x8192,
-	//near and far are clamped internally from -10000.0 to 10000.0
+	//Orthographic projection.
+	//OpenGL: bottom-left origin, Y-up NDC [-1,1] Z.
+	//Vulkan: top-left origin, Y-down NDC [0,1] Z.
+	//        This function compensates and makes Vulkan Y-up bottom-left like OpenGL.
+	//        You MUST set VK_FRONT_FACE_CLOCKWISE.
+	//Viewport clamped to [100, 8192]. Near/far clamped to [-10000, 10000].
+	//Define __USE_VULKAN__ or __USE_OPENGL__ before including this header.
 	inline constexpr mat4 ortho(
 		const vec2 viewport,
 		f32 zNear = -1.0f,
@@ -2216,18 +2227,27 @@ namespace KalaHeaders::KalaMath
 
 		mat4 m{};
 
+#if defined(__USE_VULKAN__)
+		m.m00 = 2.0f / rl;            m.m10 = 0.0f;                 m.m20 = 0.0f;                 m.m30 = 0.0f;
+		m.m01 = 0.0f;                 m.m11 = -2.0f / tb;           m.m21 = 0.0f;                 m.m31 = 0.0f;
+		m.m02 = 0.0f;                 m.m12 = 0.0f;                 m.m22 = 1.0f / fn;            m.m32 = 0.0f;
+    	m.m03 = -(right + left) / rl; m.m13 = (top + bottom) / tb;  m.m23 = -zNear / fn;          m.m33 = 1.0f;
+#elif defined(__USE_OPENGL__)
 		m.m00 = 2.0f / rl;            m.m10 = 0.0f;                 m.m20 = 0.0f;                 m.m30 = 0.0f;
 		m.m01 = 0.0f;                 m.m11 = 2.0f / tb;            m.m21 = 0.0f;                 m.m31 = 0.0f;
 		m.m02 = 0.0f;                 m.m12 = 0.0f;                 m.m22 = -2.0f / fn;           m.m32 = 0.0f;
 		m.m03 = -(right + left) / rl; m.m13 = -(top + bottom) / tb; m.m23 = -(zFar + zNear) / fn; m.m33 = 1.0f;
-
+#endif
 		return m;
 	}
 
-	//perpective projection, bottom-left origin, Y-up projection,
-	//viewport size is clamped internally from 100x100 to 8192x8192,
-	//fov is clamped internally from 1.0 to 360.0 degrees,
-	//near and far are clamped internally from epsilon to 1000000.0
+	//Perspective projection.
+	//OpenGL: bottom-left origin, Y-up NDC [-1,1] Z.
+	//Vulkan: top-left origin, Y-down NDC [0,1] Z.
+	//        This function compensates and makes Vulkan Y-up bottom-left like OpenGL.
+	//        You MUST set VK_FRONT_FACE_CLOCKWISE.
+	//Fov clamped to [1, 360]. Near/far clamped to [epsilon, 1000000.0].
+	//Define __USE_VULKAN__ or __USE_OPENGL__ before including this header.
 	inline mat4 perspective(
 		const vec2 viewport,
 		f32 fovDeg = 90.0f,
@@ -2254,16 +2274,23 @@ namespace KalaHeaders::KalaMath
 
 		mat4 m{};
 
-		m.m00 = f / aspect; m.m10 = 0.0f; m.m20 = 0.0f;                 m.m30 = 0.0f;
-		m.m01 = 0.0f;       m.m11 = f;    m.m21 = 0.0f;                 m.m31 = 0.0f;
-		m.m02 = 0.0f;       m.m12 = 0.0f; m.m22 = -(zFar + zNear) / fn; m.m32 = -1.0f;
+#if defined(__USE_VULKAN__)
+		m.m00 = f / aspect; m.m10 = 0.0f; m.m20 = 0.0f;                        m.m30 = 0.0f;
+		m.m01 = 0.0f;       m.m11 = -f;   m.m21 = 0.0f;                        m.m31 = 0.0f;
+		m.m02 = 0.0f;       m.m12 = 0.0f; m.m22 = -zFar / fn;                  m.m32 = -1.0f;
+		m.m03 = 0.0f;       m.m13 = 0.0f; m.m23 = -(zFar * zNear) / fn;        m.m33 = 0.0f;
+#elif defined(__USE_OPENGL__)
+		m.m00 = f / aspect; m.m10 = 0.0f; m.m20 = 0.0f;                        m.m30 = 0.0f;
+		m.m01 = 0.0f;       m.m11 = f;    m.m21 = 0.0f;                        m.m31 = 0.0f;
+		m.m02 = 0.0f;       m.m12 = 0.0f; m.m22 = -(zFar + zNear) / fn;        m.m32 = -1.0f;
 		m.m03 = 0.0f;       m.m13 = 0.0f; m.m23 = -(2.0f * zFar * zNear) / fn; m.m33 = 0.0f;
+#endif
 
 		return m;
 	}
 
-	//Returns a valid 2D uModel for vertex shaders
-	inline mat4 createumodel(
+	//Returns a valid 2D model matrix for vertex shaders
+	inline mat4 creatmodelmatrix(
 		const vec2 pos,
 		const f32 rotDeg,
 		const vec2 size)
@@ -2282,8 +2309,8 @@ namespace KalaHeaders::KalaMath
 		return m;
 	}
 
-	//Returns a valid 3D uModel for vertex shaders
-	inline mat4 createumodel(
+	//Returns a valid 3D model matrix for vertex shaders
+	inline mat4 createmodelmatrix(
 		const vec3& pos, 
 		const quat& rot, 
 		const vec3& size)
@@ -3258,8 +3285,7 @@ namespace KalaHeaders::KalaMath
 	}
 	
 	//Takes in rotation in euler (degrees) and incrementally rotates over time,
-	//if parent is identity then target combined is target world,
-	//clamps internally between -360 and 360, you're expected to wrap according to your needs on your end
+	//if parent is identity then target combined is target world
 	inline constexpr void addrot3d(
 		Transform3D& target,
 		const Transform3D& parent,
@@ -3279,6 +3305,8 @@ namespace KalaHeaders::KalaMath
 		}
 			
 		current = current + rot_delta;
+		//clamp to prevent absurd rotation jumps when looking up/down
+		current.x = clamp(current.x, -PITCH_LIMIT, PITCH_LIMIT);
 
 		switch (type)
 		{
@@ -3291,7 +3319,6 @@ namespace KalaHeaders::KalaMath
 	}
 	//Takes in rotation in euler (degrees) and snaps to given rotation,
 	//if parent is identity then target combined is target world,
-	//clamps internally between -360 and 360, you're expected to wrap according to your needs on your end
 	inline constexpr void setroteuler(
 		Transform3D& target,
 		const Transform3D& parent,
@@ -3418,7 +3445,7 @@ namespace KalaHeaders::KalaMath
 		e.x = degrees;
 		setroteuler(target, parent, type, e);
 	}
-	//Snaps pitch to given degrees,
+	//Snaps yaw to given degrees,
 	//if parent is identity then target combined is target world
 	inline constexpr void setyaw(
 		Transform3D& target,
@@ -3430,7 +3457,7 @@ namespace KalaHeaders::KalaMath
 		e.y = degrees;
 		setroteuler(target, parent, type, e);
 	}
-	//Snaps pitch to given degrees,
+	//Snaps roll to given degrees,
 	//if parent is identity then target combined is target world
 	inline constexpr void setroll(
 		Transform3D& target,
