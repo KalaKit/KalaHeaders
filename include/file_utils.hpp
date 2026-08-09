@@ -78,6 +78,8 @@ namespace KalaHeaders::KalaFile
 	using std::filesystem::directory_iterator;
 	using std::filesystem::status;
 	using std::filesystem::perms;
+	using std::error_code;
+	using std::generic_category;
 	using std::is_pointer_v;
 	using std::is_array_v;
 	using std::same_as;
@@ -1676,17 +1678,11 @@ namespace KalaHeaders::KalaFile
 				&& errno != 0)
 			{
 				int err = errno;
+				error_code ec(err, generic_category());
 
-				char errbuf[256]{};
-#ifdef _WIN32
-				strerror_s(errbuf, sizeof(errbuf), err);
-#else
-				strerror_r(err, errbuf, sizeof(errbuf));
-#endif
-
-				oss << "Failed to get target '" << target
+				oss << "Failed to get target '" << target 
 					<< "' line count because it couldn't be opened! "
-					<< "Reason: (errno " << err << "): " << errbuf;
+					<< "Reason: (" << err <<  ") " << ec.message();
 
 				return oss.str();
 			}
@@ -1872,18 +1868,11 @@ namespace KalaHeaders::KalaFile
 				&& errno != 0)
 			{
 				int err = errno;
+				error_code ec(err, generic_category());
 
-				char errbuf[256]{};
-
-#ifdef _WIN32
-				strerror_s(errbuf, sizeof(errbuf), err);
-#else
-				strerror_r(err, errbuf, sizeof(errbuf));
-#endif
-
-				oss << "Failed to write text to target '" << target
+				oss << "Failed to write text to target '" << target 
 					<< "' because it couldn't be opened! "
-					<< "Reason: (errno " << err << "): " << errbuf;
+					<< "Reason: (" << err <<  ") " << ec.message();
 
 				return oss.str();
 			}
@@ -1952,18 +1941,11 @@ namespace KalaHeaders::KalaFile
 				&& errno != 0)
 			{
 				int err = errno;
+				error_code ec(err, generic_category());
 
-				char errbuf[256]{};
-
-#ifdef _WIN32
-				strerror_s(errbuf, sizeof(errbuf), err);
-#else
-				strerror_r(err, errbuf, sizeof(errbuf));
-#endif
-
-				oss << "Failed to read text from target '" << target
+				oss << "Failed to read text from target '" << target 
 					<< "' because it couldn't be opened! "
-					<< "Reason: (errno " << err << "): " << errbuf;
+					<< "Reason: (" << err <<  ") " << ec.message();
 
 				return oss.str();
 			}
@@ -2075,18 +2057,11 @@ namespace KalaHeaders::KalaFile
 				&& errno != 0)
 			{
 				int err = errno;
+				error_code ec(err, generic_category());
 
-				char errbuf[256]{};
-
-#ifdef _WIN32
-				strerror_s(errbuf, sizeof(errbuf), err);
-#else
-				strerror_r(err, errbuf, sizeof(errbuf));
-#endif
-
-				oss << "Failed to write lines to target '" << target
+				oss << "Failed to write lines to target '" << target 
 					<< "' because it couldn't be opened! "
-					<< "Reason: (errno " << err << "): " << errbuf;
+					<< "Reason: (" << err <<  ") " << ec.message();
 
 				return oss.str();
 			}
@@ -2162,18 +2137,11 @@ namespace KalaHeaders::KalaFile
 				&& errno != 0)
 			{
 				int err = errno;
+				error_code ec(err, generic_category());
 
-				char errbuf[256]{};
-
-#ifdef _WIN32
-				strerror_s(errbuf, sizeof(errbuf), err);
-#else
-				strerror_r(err, errbuf, sizeof(errbuf));
-#endif
-
-				oss << "Failed to read lines from target '" << target
+				oss << "Failed to read lines from target '" << target 
 					<< "' because it couldn't be opened! "
-					<< "Reason: (errno " << err << "): " << errbuf;
+					<< "Reason: (" << err <<  ") " << ec.message();
 
 				return oss.str();
 			}
@@ -2364,18 +2332,11 @@ namespace KalaHeaders::KalaFile
 				&& errno != 0)
 			{
 				int err = errno;
+				error_code ec(err, generic_category());
 
-				char errbuf[256]{};
-
-#ifdef _WIN32
-				strerror_s(errbuf, sizeof(errbuf), err);
-#else
-				strerror_r(err, errbuf, sizeof(errbuf));
-#endif
-
-				oss << "Failed to write binary data to target '" << target
+				oss << "Failed to write binary data to target '" << target 
 					<< "' because it couldn't be opened! "
-					<< "Reason: (errno " << err << "): " << errbuf;
+					<< "Reason: (" << err <<  ") " << ec.message();
 
 				return oss.str();
 			}
@@ -2388,18 +2349,11 @@ namespace KalaHeaders::KalaFile
 				&& errno != 0)
 			{
 				int err = errno;
+				error_code ec(err, generic_category());
 
-				char errbuf[256]{};
-
-#ifdef _WIN32
-				strerror_s(errbuf, sizeof(errbuf), err);
-#else
-				strerror_r(err, errbuf, sizeof(errbuf));
-#endif
-
-				oss << "Failed to write binary data to target '" << target
+				oss << "Failed to write binary data to target '" << target 
 					<< "' because it couldn't be opened! "
-					<< "Reason: (errno " << err << "): " << errbuf;
+					<< "Reason: (" << err <<  ") " << ec.message();
 
 				return oss.str();
 			}
@@ -2471,18 +2425,11 @@ namespace KalaHeaders::KalaFile
 				&& errno != 0)
 			{
 				int err = errno;
+				error_code ec(err, generic_category());
 
-				char errbuf[256]{};
-
-#ifdef _WIN32
-				strerror_s(errbuf, sizeof(errbuf), err);
-#else
-				strerror_r(err, errbuf, sizeof(errbuf));
-#endif
-
-				oss << "Failed to read binary data from target '" << target
+				oss << "Failed to read binary data from target '" << target 
 					<< "' because it couldn't be opened! "
-					<< "Reason: (errno " << err << "): " << errbuf;
+					<< "Reason: (" << err <<  ") " << ec.message();
 
 				return oss.str();
 			}
@@ -2550,18 +2497,11 @@ namespace KalaHeaders::KalaFile
 				&& errno != 0)
 			{
 				int err = errno;
+				error_code ec(err, generic_category());
 
-				char errbuf[256]{};
-
-#ifdef _WIN32
-				strerror_s(errbuf, sizeof(errbuf), err);
-#else
-				strerror_r(err, errbuf, sizeof(errbuf));
-#endif
-
-				oss << "Failed to read binary data from target '" << target
+				oss << "Failed to read binary data from target '" << target 
 					<< "' because it couldn't be opened! "
-					<< "Reason: (errno " << err << "): " << errbuf;
+					<< "Reason: (" << err <<  ") " << ec.message();
 
 				return oss.str();
 			}
@@ -2892,18 +2832,11 @@ namespace KalaHeaders::KalaFile
 				&& errno != 0)
 			{
 				int err = errno;
+				error_code ec(err, generic_category());
 
-				char errbuf[256]{};
-
-#ifdef _WIN32
-				strerror_s(errbuf, sizeof(errbuf), err);
-#else
-				strerror_r(err, errbuf, sizeof(errbuf));
-#endif
-
-				oss << "Failed to get ragge by value from target '" << target
+				oss << "Failed to get range by value from target '" << target 
 					<< "' because it couldn't be opened! "
-					<< "Reason: (errno " << err << "): " << errbuf;
+					<< "Reason: (" << err <<  ") " << ec.message();
 
 				return oss.str();
 			}
@@ -2967,18 +2900,11 @@ namespace KalaHeaders::KalaFile
 					&& errno != 0)
 				{
 					int err = errno;
+					error_code ec(err, generic_category());
 
-					char errbuf[256]{};
-
-#ifdef _WIN32
-					strerror_s(errbuf, sizeof(errbuf), err);
-#else
-					strerror_r(err, errbuf, sizeof(errbuf));
-#endif
-
-					oss << "Failed to get range by value from target '" << target
+					oss << "Failed to get range by value from target '" << target 
 						<< "' because it couldn't be opened! "
-						<< "Reason: (errno " << err << "): " << errbuf;
+						<< "Reason: (" << err <<  ") " << ec.message();
 
 					return oss.str();
 				}
@@ -3080,18 +3006,11 @@ namespace KalaHeaders::KalaFile
 				&& errno != 0)
 			{
 				int err = errno;
+				error_code ec(err, generic_category());
 
-				char errbuf[256]{};
-
-#ifdef _WIN32
-				strerror_s(errbuf, sizeof(errbuf), err);
-#else
-				strerror_r(err, errbuf, sizeof(errbuf));
-#endif
-
-				oss << "Failed to get range by value from target '" << target
+				oss << "Failed to get range by value from target '" << target 
 					<< "' because it couldn't be opened! "
-					<< "Reason: (errno " << err << "): " << errbuf;
+					<< "Reason: (" << err <<  ") " << ec.message();
 
 				return oss.str();
 			}
@@ -3155,18 +3074,11 @@ namespace KalaHeaders::KalaFile
 					&& errno != 0)
 				{
 					int err = errno;
+					error_code ec(err, generic_category());
 
-					char errbuf[256]{};
-
-#ifdef _WIN32
-					strerror_s(errbuf, sizeof(errbuf), err);
-#else
-					strerror_r(err, errbuf, sizeof(errbuf));
-#endif
-
-					oss << "Failed to get range by value from target '" << target
+					oss << "Failed to get range by value from target '" << target 
 						<< "' because it couldn't be opened! "
-						<< "Reason: (errno " << err << "): " << errbuf;
+						<< "Reason: (" << err <<  ") " << ec.message();
 
 					return oss.str();
 				}

@@ -22,30 +22,6 @@ Provides:
   - operators and helpers for vec, mat and quat types
   - mat containers as column-major and scalar form
 
-## color_utils.hpp
-
-Provides:
-  - custom color container as a variable for linear RGBA operations
-  - color conversion, color operators
-
-Provides:
-  - shorthands for math variables
-  - GLM-like containers as vec2, vec3, vec4, mat2, mat3, mat4, quat
-  - operators and helpers for vec, mat and quat types
-  - mat containers as column-major and scalar form
-
----
-
-## thread_utils.hpp
-
-Provides:
-  - lock, lockwait and unlock overrides for handling safe access to variables
-  - lock_m, lockwait_m (where applicable) and unlock_m for mutexes
-  - jthread (joinable thread) which returns the created thread so it can be joined
-  - dthread (self-exiting thread)
-
----
-
 ## string_utils.hpp
 
 Various string conversions and functions to improve workflow with string operations
@@ -113,35 +89,6 @@ Provides:
 | DATE_TEXT_MDY     | Month Day, Year                   | December 31, 2026   |
 | DATE_FILENAME_DMY | Filename-safe (day-month-year)    | 31-12-2026          |
 | DATE_FILENAME_MDY | Filename-safe (month-day-year)    | 12-31-2026          |
-
----
-
-## import_kfd.hpp
-
-Import kfd (kalafontdata) binaries into your program for runtime fonts. Use the [KalaFont cli](https://github.com/kalakit/kalafont) for exporting ttf or otf fonts as kfd.
-
-Each kfd contains this structure:
-    for per-glyph kfd:
-    - one top header
-    - table and block pair per glyph
-	
-    for bitmap kfd:
-    - one top header
-    - tables for each glyph, one block for the bitmap texture
-	
-The tables are used for looking up glyphs, each table contains the glyph char code, its block size and offset.
-
----
-
-## import_kmd.hpp
-
-Import kmd (kalamodeldata) binaries into your program for runtime models. Use the [KalaModel cli](https://github.com/kalakit/kalamodel) for exporting fbx, obj or gltf models as kmd.
-
-Each kmd contains this structure:
-  - one top header
-  - table and block pair per model
-	
-The tables are used for looking up models, each table contains the model name, its block size and offset.
 
 ---
 
