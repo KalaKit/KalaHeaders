@@ -23,10 +23,6 @@
 #include <basetsd.h>
 #endif
 
-#if !defined(__USE_VULKAN__) && !defined(__USE_OPENGL__)
-#error "USER MUST DEFINE EITHER '__USE_VULKAN__' OR '__USE_OPENGL__'"
-#endif
-
 #ifndef KDEBUG
 	#if defined(_MSC_VER) && defined(_DEBUG)
 		#define KDEBUG
@@ -2199,8 +2195,8 @@ namespace KalaHeaders::KalaMath
 	//        This function compensates and makes Vulkan Y-up bottom-left like OpenGL.
 	//        You MUST set VK_FRONT_FACE_CLOCKWISE.
 	//Viewport clamped to [100, 8192]. Near/far clamped to [-10000, 10000].
-	//Define __USE_VULKAN__ or __USE_OPENGL__ before including this header.
 	inline constexpr mat4 ortho(
+		bool useVulkan,
 		const vec2 viewport,
 		f32 zNear = -1.0f,
 		f32 zFar = 1.0f)
@@ -2227,17 +2223,21 @@ namespace KalaHeaders::KalaMath
 
 		mat4 m{};
 
-#if defined(__USE_VULKAN__)
-		m.m00 = 2.0f / rl;            m.m10 = 0.0f;                 m.m20 = 0.0f;                 m.m30 = 0.0f;
-		m.m01 = 0.0f;                 m.m11 = -2.0f / tb;           m.m21 = 0.0f;                 m.m31 = 0.0f;
-		m.m02 = 0.0f;                 m.m12 = 0.0f;                 m.m22 = 1.0f / fn;            m.m32 = 0.0f;
-    	m.m03 = -(right + left) / rl; m.m13 = (top + bottom) / tb;  m.m23 = -zNear / fn;          m.m33 = 1.0f;
-#elif defined(__USE_OPENGL__)
-		m.m00 = 2.0f / rl;            m.m10 = 0.0f;                 m.m20 = 0.0f;                 m.m30 = 0.0f;
-		m.m01 = 0.0f;                 m.m11 = 2.0f / tb;            m.m21 = 0.0f;                 m.m31 = 0.0f;
-		m.m02 = 0.0f;                 m.m12 = 0.0f;                 m.m22 = -2.0f / fn;           m.m32 = 0.0f;
-		m.m03 = -(right + left) / rl; m.m13 = -(top + bottom) / tb; m.m23 = -(zFar + zNear) / fn; m.m33 = 1.0f;
-#endif
+		if (useVulkan)
+		{
+			m.m00 = 2.0f / rl;            m.m10 = 0.0f;                 m.m20 = 0.0f;                 m.m30 = 0.0f;
+			m.m01 = 0.0f;                 m.m11 = -2.0f / tb;           m.m21 = 0.0f;                 m.m31 = 0.0f;
+			m.m02 = 0.0f;                 m.m12 = 0.0f;                 m.m22 = 1.0f / fn;            m.m32 = 0.0f;
+			m.m03 = -(right + left) / rl; m.m13 = (top + bottom) / tb;  m.m23 = -zNear / fn;          m.m33 = 1.0f;
+		}
+		else
+		{
+			m.m00 = 2.0f / rl;            m.m10 = 0.0f;                 m.m20 = 0.0f;                 m.m30 = 0.0f;
+			m.m01 = 0.0f;                 m.m11 = 2.0f / tb;            m.m21 = 0.0f;                 m.m31 = 0.0f;
+			m.m02 = 0.0f;                 m.m12 = 0.0f;                 m.m22 = -2.0f / fn;           m.m32 = 0.0f;
+			m.m03 = -(right + left) / rl; m.m13 = -(top + bottom) / tb; m.m23 = -(zFar + zNear) / fn; m.m33 = 1.0f;
+		}
+
 		return m;
 	}
 
@@ -2247,8 +2247,8 @@ namespace KalaHeaders::KalaMath
 	//        This function compensates and makes Vulkan Y-up bottom-left like OpenGL.
 	//        You MUST set VK_FRONT_FACE_CLOCKWISE.
 	//Fov clamped to [1, 360]. Near/far clamped to [epsilon, 1000000.0].
-	//Define __USE_VULKAN__ or __USE_OPENGL__ before including this header.
 	inline mat4 perspective(
+		bool useVulkan,
 		const vec2 viewport,
 		f32 fovDeg = 90.0f,
 		f32 zNear = 0.001f,
@@ -2274,17 +2274,20 @@ namespace KalaHeaders::KalaMath
 
 		mat4 m{};
 
-#if defined(__USE_VULKAN__)
-		m.m00 = f / aspect; m.m10 = 0.0f; m.m20 = 0.0f;                        m.m30 = 0.0f;
-		m.m01 = 0.0f;       m.m11 = -f;   m.m21 = 0.0f;                        m.m31 = 0.0f;
-		m.m02 = 0.0f;       m.m12 = 0.0f; m.m22 = -zFar / fn;                  m.m32 = -1.0f;
-		m.m03 = 0.0f;       m.m13 = 0.0f; m.m23 = -(zFar * zNear) / fn;        m.m33 = 0.0f;
-#elif defined(__USE_OPENGL__)
-		m.m00 = f / aspect; m.m10 = 0.0f; m.m20 = 0.0f;                        m.m30 = 0.0f;
-		m.m01 = 0.0f;       m.m11 = f;    m.m21 = 0.0f;                        m.m31 = 0.0f;
-		m.m02 = 0.0f;       m.m12 = 0.0f; m.m22 = -(zFar + zNear) / fn;        m.m32 = -1.0f;
-		m.m03 = 0.0f;       m.m13 = 0.0f; m.m23 = -(2.0f * zFar * zNear) / fn; m.m33 = 0.0f;
-#endif
+		if (useVulkan)
+		{
+			m.m00 = f / aspect; m.m10 = 0.0f; m.m20 = 0.0f;                        m.m30 = 0.0f;
+			m.m01 = 0.0f;       m.m11 = -f;   m.m21 = 0.0f;                        m.m31 = 0.0f;
+			m.m02 = 0.0f;       m.m12 = 0.0f; m.m22 = -zFar / fn;                  m.m32 = -1.0f;
+			m.m03 = 0.0f;       m.m13 = 0.0f; m.m23 = -(zFar * zNear) / fn;        m.m33 = 0.0f;
+		}
+		else
+		{
+			m.m00 = f / aspect; m.m10 = 0.0f; m.m20 = 0.0f;                        m.m30 = 0.0f;
+			m.m01 = 0.0f;       m.m11 = f;    m.m21 = 0.0f;                        m.m31 = 0.0f;
+			m.m02 = 0.0f;       m.m12 = 0.0f; m.m22 = -(zFar + zNear) / fn;        m.m32 = -1.0f;
+			m.m03 = 0.0f;       m.m13 = 0.0f; m.m23 = -(2.0f * zFar * zNear) / fn; m.m33 = 0.0f;
+		}
 
 		return m;
 	}
