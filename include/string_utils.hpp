@@ -37,25 +37,15 @@
 
 namespace KalaHeaders::KalaString
 {
-	using std::stoi;
-	using std::stoll;
-	using std::stoul;
-	using std::stoull;
-	using std::stod;
-	using std::stod;
-	using std::stold;
-
 	using std::vector;
 	using std::string;
 	using std::string_view;
 	using std::to_string;
 	using std::search;
 	using std::transform;
+	using std::any_of;
 	using std::toupper;
 	using std::tolower;
-	using std::isalpha;
-	using std::isdigit;
-	using std::isspace;
 	using std::memcpy;
 	using std::memset;
 
@@ -63,32 +53,60 @@ namespace KalaHeaders::KalaString
 	// GENERAL FUNCTIONS
 	//
 
+	inline bool IsAlpha(const char c)
+	{
+		return 
+			(c >= 'a' && c <= 'z') 
+			|| (c >= 'A' && c <= 'Z');
+	}
+	inline bool IsNumber(const char c)
+	{
+		return c >= '0' && c <= '9';
+	}
+	inline bool IsSpace(const char c) { return c == ' '; }
+	inline bool IsWhiteSpace(const char c)
+	{
+		return
+			c == '\t'
+			|| c == '\n'
+			|| c == '\v'
+			|| c == '\f'
+			|| c == '\r';
+	}
+
 	inline bool ContainsAlpha(string_view value)
 	{
-		for (char c : value)
-		{
-			if (isalpha(scast<unsigned char>(c))) return true;
-		}
+		for (char c : value) if (IsAlpha(c)) return true;
 
 		return false;
 	}
 	inline bool ContainsNumber(string_view value)
 	{
-		for (char c : value)
-		{
-			if (isdigit(scast<unsigned char>(c))) return true;
-		}
+		for (char c : value) if (IsNumber(c)) return true;
 
 		return false;
 	}
+	inline bool ContainsSpace(string_view value)
+	{
+		for (char c : value) if (IsSpace(c)) return true;
+
+		return false;
+	}
+	inline bool ContainsWhiteSpace(string_view value)
+	{
+		return any_of(
+			value.begin(),
+			value.end(),
+			IsWhiteSpace);
+	}
+
 	inline bool ContainsSymbol(string_view value)
 	{
-		for (char c : value)
+		for (const char c : value)
 		{
-			unsigned char uc = scast<unsigned char>(c);
-			if (!isalpha(uc)
-				&& !isdigit(uc)
-				&& !isspace(uc))
+			if (IsAlpha(c)
+				|| IsNumber(c)
+				|| IsSpace(c))
 			{
 				return true;
 			}
@@ -96,22 +114,15 @@ namespace KalaHeaders::KalaString
 
 		return false;
 	}
-	inline bool ContainsSpace(string_view value)
-	{
-		for (char c : value)
-		{
-			if (isspace(scast<unsigned char>(c))) return true;
-		}
 
-		return false;
-	}
 	//Returns true if string contains any unsafe file characters,
 	//Safe: 'A-Z', 'a-z', '0-9', '_', '-', '.'
 	inline bool ContainsUnsafeFileChar(string_view origin)
 	{
-		for (unsigned char c : origin)
+		for (char c : origin)
 		{
-			if (!(isalnum(c)
+			if (!(IsAlpha(c)
+				|| IsNumber(c)
 				|| c == '_'
 				|| c == '-'
 				|| c == '.'))
