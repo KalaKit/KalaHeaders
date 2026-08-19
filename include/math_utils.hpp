@@ -19,47 +19,100 @@
 #include <cstdint>
 #include <algorithm>
 
-#ifdef _WIN32
-#include <basetsd.h>
-#endif
+//
+// SKIP UNSUPPORTED PLATFORMS AND ARCHITECTURES
+//
 
-#ifndef KDEBUG
-	#if defined(_MSC_VER) && defined(_DEBUG)
-		#define KDEBUG
-	#elif (defined(__GNUC__) || defined(__clang__)) && !defined(NDEBUG)
-		#define KDEBUG
+#if !defined(K_REDEFINE_GUARD_PLAT_ARCH)
+	#define K_REDEFINE_GUARD_PLAT_ARCH
+
+	#if defined(__APPLE__) || \
+		defined(__FreeBSD__) || \
+		defined(__OpenBSD__) || \
+		defined(__NetBSD__) || \
+		defined(__DragonFly__) || \
+		defined(__CYGWIN__) || \
+		defined(__ANDROID__)
+		#error "UNSUPPORTED TARGET! SUPPORTED: _WIN32, __linux__"
+	#elif !defined(_WIN32) && \
+		!defined(__linux__)
+		#error "UNSUPPORTED TARGET! SUPPORTED: _WIN32, __linux__"
+	#elif !defined(_M_X64) && \
+		!defined(__x86_64__)
+		#error "UNSUPPORTED ARCHITECTURE! SUPPORTED: x64"
 	#endif
 #endif
 
-#ifndef rcast
+//
+// WINDOWS/LINUX MACROS
+//
+
+#if !defined(K_REDEFINE_GUARD_WIN_LIN)
+	#define K_REDEFINE_GUARD_WIN_LIN
+
+	#if defined(_WIN32)
+		//any targeting windows
+		#define KWIN_ANY
+
+		//any msvc targeting windows
+		#if defined(_MSC_VER)
+			#define KWIN_MSVC
+		//any posix targeting Windows
+		#elif defined(__GNUC__)
+			#define KWIN_GNU
+		#else
+			#error "UNKNOWN COMPILER DETECTED"
+		#endif
+	#endif
+
+	#if defined(__linux__)
+		//any targeting linux
+		#define KLIN_ANY
+
+		//any libc targeting linux
+		#if defined(__GLIBC__)
+			#define KLIN_GNU
+		//any musl targeting linux
+		#else
+			#define KLIN_MUSL
+		#endif
+	#endif
+#endif
+
+//
+// DEBUG MACRO
+//
+
+#if !defined(K_REDEFINE_GUARD_REL_DEB)
+	#define K_REDEFINE_GUARD_REL_DEB
+
+	#if !defined(KDEBUG)
+		#if (defined(_MSC_VER) || \
+			defined(__MINGW64__)) && \
+			defined(_DEBUG)
+			#define KDEBUG
+		#elif defined(__linux__) && \
+			!defined(NDEBUG)
+			#define KDEBUG
+		#endif
+	#endif
+#endif
+
+//
+// CAST SHORTHANDS
+//
+
+#if !defined(K_REDEFINE_GUARD_CASTS)
+	#define K_REDEFINE_GUARD_CASTS
+
 	#define rcast reinterpret_cast
-#endif
-#ifndef scast
 	#define scast static_cast
-#endif
-#ifndef ccast
 	#define ccast const_cast
 #endif
 
-//================================================================================
 //
-// DEFINE SHORTHANDS FOR SAFE MATH VARIABLES
+// NUMERIC TYPE SHORTHANDS
 //
-//================================================================================
-
-//64-bit signed int (signed size_t)
-//Min: -9 quintillion
-//Max: 9 quintillion
-#ifdef _WIN32
-	using sst = SSIZE_T;
-#else
-	using sst = ssize_t;
-#endif
-
-//64-bit unsigned int
-//Min: 0
-//Max: 18 quintillion
-using st = size_t;
 
 //8-bit unsigned int
 //Min: 0

@@ -22,30 +22,152 @@
 #include <string>
 #include <algorithm>
 
-#ifndef KDEBUG
-	#if defined(_MSC_VER) && defined(_DEBUG)
-		#define KDEBUG
-	#elif (defined(__GNUC__) || defined(__clang__)) && !defined(NDEBUG)
-		#define KDEBUG
+//
+// SKIP UNSUPPORTED PLATFORMS AND ARCHITECTURES
+//
+
+#if !defined(K_REDEFINE_GUARD_PLAT_ARCH)
+	#define K_REDEFINE_GUARD_PLAT_ARCH
+
+	#if defined(__APPLE__) || \
+		defined(__FreeBSD__) || \
+		defined(__OpenBSD__) || \
+		defined(__NetBSD__) || \
+		defined(__DragonFly__) || \
+		defined(__CYGWIN__) || \
+		defined(__ANDROID__)
+		#error "UNSUPPORTED TARGET! SUPPORTED: _WIN32, __linux__"
+	#elif !defined(_WIN32) && \
+		!defined(__linux__)
+		#error "UNSUPPORTED TARGET! SUPPORTED: _WIN32, __linux__"
+	#elif !defined(_M_X64) && \
+		!defined(__x86_64__)
+		#error "UNSUPPORTED ARCHITECTURE! SUPPORTED: x64"
 	#endif
 #endif
 
-#ifndef rcast
+//
+// WINDOWS/LINUX MACROS
+//
+
+#if !defined(K_REDEFINE_GUARD_WIN_LIN)
+	#define K_REDEFINE_GUARD_WIN_LIN
+
+	#if defined(_WIN32)
+		//any targeting windows
+		#define KWIN_ANY
+
+		//any msvc targeting windows
+		#if defined(_MSC_VER)
+			#define KWIN_MSVC
+		//any posix targeting Windows
+		#elif defined(__GNUC__)
+			#define KWIN_GNU
+		#else
+			#error "UNKNOWN COMPILER DETECTED"
+		#endif
+	#endif
+
+	#if defined(__linux__)
+		//any targeting linux
+		#define KLIN_ANY
+
+		//any libc targeting linux
+		#if defined(__GLIBC__)
+			#define KLIN_GNU
+		//any musl targeting linux
+		#else
+			#define KLIN_MUSL
+		#endif
+	#endif
+#endif
+
+//
+// DEBUG MACRO
+//
+
+#if !defined(K_REDEFINE_GUARD_REL_DEB)
+	#define K_REDEFINE_GUARD_REL_DEB
+
+	#if !defined(KDEBUG)
+		#if (defined(_MSC_VER) || \
+			defined(__MINGW64__)) && \
+			defined(_DEBUG)
+			#define KDEBUG
+		#elif defined(__linux__) && \
+			!defined(NDEBUG)
+			#define KDEBUG
+		#endif
+	#endif
+#endif
+
+//
+// CAST SHORTHANDS
+//
+
+#if !defined(K_REDEFINE_GUARD_CASTS)
+	#define K_REDEFINE_GUARD_CASTS
+
 	#define rcast reinterpret_cast
-#endif
-#ifndef scast
 	#define scast static_cast
-#endif
-#ifndef ccast
 	#define ccast const_cast
 #endif
 
+//
+// NUMERIC TYPE SHORTHANDS
+//
+
+//8-bit unsigned int
+//Min: 0
+//Max: 255
+using u8 = uint8_t;
+
+//16-bit unsigned int
+//Min: 0
+//Max: 65,535
+using u16 = uint16_t;
+
+//32-bit unsigned int
+//Min: 0
+//Max: 4,294,967,295
+using u32 = uint32_t;
+
+//64-bit unsigned int
+//Replaces handles and pointers (uintptr_t)
+//Min: 0
+//Max: 18 quintillion
+using u64 = uint64_t;
+
+//8-bit int
+//Min: -128
+//Max: 127
+using i8 = int8_t;
+
+//16-bit int
+//Min: -32,768
+//Max: 32,767
+using i16 = int16_t;
+
+//32-bit int
+//Min: -2,147,483,648
+//Max: 2,147,483,647
+using i32 = int32_t;
+
+//64-bit int
+//Min: -9 quintillion
+//Max: 9 quintillion
+using i64 = int64_t;
+
+//32-bit float
+//6 decimal precision
+using f32 = float;
+
+//64-bit float
+//15 decimal precision
+using f64 = double;
+
 namespace KalaHeaders::KalaKeyStandards
 {
-#ifndef MAXSIZE_T
-	#define MAXSIZE_T SIZE_MAX
-#endif
-
 	using std::array;
 	using std::vector;
 	using std::string;
@@ -111,10 +233,10 @@ namespace KalaHeaders::KalaKeyStandards
 		{scast<u32>(MouseButton::M_X2_DOUBLE),     0, "x2-double"}
 	}};
 
-	//Invalid value is always returned as MAXSIZE_T, never 0
+	//Invalid value is always returned as SIZE_MAX, never 0
 	inline constexpr size_t MouseToIndex(MouseButton m)
 	{
-		constexpr size_t invalid = MAXSIZE_T;
+		constexpr size_t invalid = SIZE_MAX;
 
 		if (m < MouseButton::M_LEFT
 			|| m > MouseButton::M_X2_DOUBLE)
@@ -216,10 +338,10 @@ namespace KalaHeaders::KalaKeyStandards
 		{scast<u32>(GamepadButton::G_TOUCHPAD), 0, "touchpad"}
 	}};
 
-	//Invalid value is always returned as MAXSIZE_T, never 0
+	//Invalid value is always returned as SIZE_MAX, never 0
 	inline constexpr size_t GamepadToIndex(GamepadButton g)
 	{
-		constexpr size_t invalid = MAXSIZE_T;
+		constexpr size_t invalid = SIZE_MAX;
 
 		if (g < GamepadButton::G_A
 			|| g > GamepadButton::G_TOUCHPAD)
@@ -419,10 +541,10 @@ namespace KalaHeaders::KalaKeyStandards
 		{scast<u32>(KeyboardButton::K_SUPERRIGHT),        0, "super-right"}
 	}};
 
-	//Invalid value is always returned as MAXSIZE_T, never 0
+	//Invalid value is always returned as SIZE_MAX, never 0
 	inline constexpr size_t KeyToIndex(KeyboardButton k)
 	{
-		constexpr size_t invalid = MAXSIZE_T;
+		constexpr size_t invalid = SIZE_MAX;
 
 		if (k < KeyboardButton::K_A
 			|| k > KeyboardButton::K_SUPERRIGHT)
