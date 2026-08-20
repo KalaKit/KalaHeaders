@@ -12,11 +12,13 @@
 
 #pragma once
 
-#include <vector>
-#include <string>
-#include <cstring>
-#include <cstdint>
-#include <algorithm>
+//
+// SKIP UNSUPPORTED C++ VERSION
+//
+
+#if __cplusplus < 202002L
+	#error "UNSUPPORTED C++ VERSION! SUPPORTED: C++20 AND ABOVE"
+#endif
 
 //
 // SKIP UNSUPPORTED PLATFORMS AND ARCHITECTURES
@@ -78,6 +80,14 @@
 	#endif
 #endif
 
+#include <vector>
+#include <string>
+#include <cstring>
+#include <cstdint>
+#include <algorithm>
+#include <ios>
+#include <charconv>
+
 //
 // DEBUG MACRO
 //
@@ -107,6 +117,10 @@
 	#define rcast reinterpret_cast
 	#define scast static_cast
 	#define ccast const_cast
+#endif
+
+#if !defined(KNODISCARD)
+	#define KNODISCARD [[nodiscard]]
 #endif
 
 //
@@ -175,22 +189,31 @@ namespace KalaHeaders::KalaString
 	using std::tolower;
 	using std::memcpy;
 	using std::memset;
+	using std::hex;
+	using std::dec;
+	using std::from_chars;
+	using std::from_chars_result;
+	using std::to_chars;
+	using std::to_chars_result;
+	using std::errc;
+	using std::error_code;
+	using std::make_error_code;
 
-	//
-	// GENERAL FUNCTIONS
-	//
-
+	KNODISCARD
 	inline bool IsAlpha(const char c)
 	{
 		return 
 			(c >= 'a' && c <= 'z') 
 			|| (c >= 'A' && c <= 'Z');
 	}
+	KNODISCARD
 	inline bool IsNumber(const char c)
 	{
 		return c >= '0' && c <= '9';
 	}
+	KNODISCARD
 	inline bool IsSpace(const char c) { return c == ' '; }
+	KNODISCARD
 	inline bool IsWhiteSpace(const char c)
 	{
 		return
@@ -201,24 +224,31 @@ namespace KalaHeaders::KalaString
 			|| c == '\r';
 	}
 
+	KNODISCARD
 	inline bool ContainsAlpha(string_view value)
 	{
-		for (char c : value) if (IsAlpha(c)) return true;
-
-		return false;
+		return any_of(
+			value.begin(),
+			value.end(),
+			IsAlpha);
 	}
+	KNODISCARD
 	inline bool ContainsNumber(string_view value)
 	{
-		for (char c : value) if (IsNumber(c)) return true;
-
-		return false;
+		return any_of(
+			value.begin(),
+			value.end(),
+			IsNumber);
 	}
+	KNODISCARD
 	inline bool ContainsSpace(string_view value)
 	{
-		for (char c : value) if (IsSpace(c)) return true;
-
-		return false;
+		return any_of(
+			value.begin(),
+			value.end(),
+			IsSpace);
 	}
+	KNODISCARD
 	inline bool ContainsWhiteSpace(string_view value)
 	{
 		return any_of(
@@ -227,113 +257,172 @@ namespace KalaHeaders::KalaString
 			IsWhiteSpace);
 	}
 
+	KNODISCARD
 	inline bool ContainsSymbol(string_view value)
 	{
-		for (const char c : value)
-		{
-			if (IsAlpha(c)
-				|| IsNumber(c)
-				|| IsSpace(c))
+		return any_of(
+			value.begin(),
+			value.end(), 
+			[](char c)
 			{
-				return true;
-			}
-		}
-
-		return false;
+				return !IsAlpha(c)
+					&& !IsNumber(c)
+					&& !IsSpace(c);
+			});
 	}
 
 	//Returns true if string contains any unsafe file characters,
 	//Safe: 'A-Z', 'a-z', '0-9', '_', '-', '.'
-	inline bool ContainsUnsafeFileChar(string_view origin)
+	KNODISCARD
+	inline bool ContainsUnsafeFileChar(string_view value)
 	{
-		for (char c : origin)
-		{
-			if (!(IsAlpha(c)
-				|| IsNumber(c)
-				|| c == '_'
-				|| c == '-'
-				|| c == '.'))
+		return any_of(
+			value.begin(),
+			value.end(), 
+			[](char c)
 			{
-				return true;
-			}
+				return 
+					!(IsAlpha(c)
+					|| IsNumber(c)
+					|| c == '_'
+					|| c == '-'
+					|| c == '.');
+			});
+	}
+
+	//Casts a base-16 hexadecimal string to a base-10 unsigned decimal number,
+	//something a CPU can use, returns error string on failure
+	KNODISCARD
+	inline string HexToDec(
+		string_view inString,
+		u64& outValue)
+	{
+		if (inString.empty()) return "Cannot convert empty string!";
+
+		u64 result{};
+
+		from_chars_result error = from_chars(
+			inString.data(), 
+			inString.data() + inString.size(), 
+			result, 
+			16);
+
+		if (error.ec != errc{})
+		{
+			return error.ec == errc::invalid_argument
+				? "HexToDec failed because inString is not a valid hex string!"
+				: "HexToDec failed because inString is too large for u64!";
 		}
-		return false;
+
+		outValue = result;
+		return "";
+	}
+
+	//Casts a base-10 unsigned decimal number to a base-16 hexadecimal string,
+	//something a human can read, can never realistically fail so there is no error string
+	inline void DecToHex(
+		u64 inNumber,
+		string& outValue)
+	{
+		char buf[16]{};
+
+		to_chars_result error = to_chars(
+			buf,
+			buf + sizeof(buf),
+			inNumber,
+			16);
+
+		outValue = string(buf, error.ptr);
 	}
 	
 	//Copies the value of the origin string_view within the bounds of the target char array,
-	//does not fill empty chars after \0,
-	//does not mutate output on empty input
+	//does not fill empty chars after \0, does not mutate output on empty input,
+	//returns error string on failure
 	template<size_t N>
-	inline constexpr void StringToCharArray(
+	KNODISCARD
+	inline string StringToCharArray(
 		string_view inValue, 
 		char (&outValue)[N])
 	{
 		//skip if there is no input data
-		if (inValue.empty()) return;
+		if (inValue.empty()) return "StringToCharArray failed because inValue was empty!";
 		
 		size_t len = inValue.size();
 		if (len >= N) len = N - 1;
 		
 		memcpy(outValue, inValue.data(), len);
 		outValue[len] = '\0';
+
+		return "";
 	}
 	
 	//Fills in remaining space of char array after '\0',
-	//does not mutate output if no null terminator exists
+	//does not mutate output if no null terminator exists,
+	//returns error string on failure
 	template<size_t N>
-	inline constexpr void ZeroPadCharArray(char(&outValue)[N])
+	KNODISCARD
+	inline string ZeroPadCharArray(char(&outValue)[N])
 	{
 		//find the null terminator
-		size_t i = 0;
-		for (; i < N; i++) { if (outValue[i] == '\0') break; }
+		size_t i{};
+		for (; i < N; i++)
+		{ 
+			if (outValue[i] == '\0') break;
+		}
 		
 		//skip if no null terminator was found
-		if (i == N) return;
+		if (i == N) return "ZeroPadCharArray failed because there was no null terminator!";
 		
 		//zero-pad everything after the null-terminator
 		memset(&outValue[i + 1], 0, N - (i + 1));
 	}
 
-	//Check if origin is the same as target, with optional case sensitivity flag
-	inline constexpr bool StringsMatch(
+	//Check if origin is the same as target, with optional case sensitivity flag,
+	//returns error string on failure
+	KNODISCARD
+	inline string StringsMatch(
 		string_view origin,
 		string_view target,
+		bool& outResult,
 		bool ignoreCase = true)
 	{
 		//return false if origin or target is empty
 		if (origin.empty()
 			|| target.empty())
 		{
-			return false;
+			return "StringsMatch failed because origin or target was empty!";
 		}
 
 		//case-sensitive compare
-		if (!ignoreCase) return origin == target;
+		if (!ignoreCase) outResult = origin == target;
 
 		//case-insensitive compare
-		if (origin.size() != target.size()) return false;
+		if (origin.size() != target.size()) return "";
 
 		for (size_t i = 0; i < origin.size(); ++i)
 		{
 			if (scast<char>(tolower(scast<unsigned char>(origin[i])))
 				!= scast<char>(tolower(scast<unsigned char>(target[i]))))
 			{
-				return false;
+				return "";
 			}
 		}
 
-		return true;
+		outResult = true;
+		return "";
 	}
 	
 	//Split origin into a vector of chunks between each splitter,
-	//keep strings between two tokens as a single string with preserved tokens
-	inline vector<string> TokenizeString(
+	//keep strings between two tokens as a single string with preserved tokens,
+	//returns error string on failure
+	KNODISCARD
+	inline string TokenizeString(
 		string_view origin,
 		char token,
-		string_view splitter)
+		string_view splitter,
+		vector<string>& outValue)
 	{
-		//return nothing if origin is empty
-		if (origin.empty()) return{};
+		if (origin.empty()) return "TokenizeString failed because origin was empty!";
 		
 		vector<string> result{};
 		string current{};
@@ -370,18 +459,22 @@ namespace KalaHeaders::KalaString
 		}
 		
 		if (!current.empty()) result.emplace_back(current);
+		outValue = std::move(result);
 		
-		return result;
+		return "";
 	}
 	
 
-	//Split origin into a vector of chunks between each splitter
-	inline vector<string> SplitString(
+	//Split origin into a vector of chunks between each splitter,
+	//returns error string on failure
+	KNODISCARD
+	inline string SplitString(
 		string_view origin,
-		string_view splitter)
+		string_view splitter,
+		vector<string>& outResult)
 	{
 		//return nothing if origin is empty
-		if (origin.empty()) return{};
+		if (origin.empty()) return "SplitString failed because origin was empty!";
 
 		vector<string> result{};
 		size_t start{};
@@ -396,17 +489,21 @@ namespace KalaHeaders::KalaString
 		//push the remainder (or whole string if no delimiter was found)
 		result.emplace_back(origin.substr(start));
 
-		return result;
+		outResult = std::move(result);
+		return "";
 	}
 
 	//Join all chunks in parts vector together into a single string
-	//and add delimiter after each chunk except the last one
+	//and add delimiter after each chunk except the last one,
+	//returns error string on failure
+	KNODISCARD
 	inline string JoinString(
 		const vector<string_view>& parts,
-		string_view delimiter)
+		string_view delimiter,
+		string& outResult)
 	{
 		//return nothing if parts vector is empty
-		if (parts.empty()) return "";
+		if (parts.empty()) return "JoinString failed because there were no parts to join!";
 
 		size_t totalSize{};
 
@@ -423,35 +520,52 @@ namespace KalaHeaders::KalaString
 			if (i + 1 < parts.size()) result += delimiter;
 		}
 
-		return result;
+		outResult = std::move(result);
+		return "";
 	}
 
-	//Remove leading and trailing whitespace characters from origin
-	inline string TrimString(string_view origin)
+	//Remove leading and trailing whitespace characters from origin,
+	//returns error string on failure
+	KNODISCARD
+	inline string TrimString(
+		string_view origin,
+		string& outResult)
 	{
+		if (origin.empty()) return "TrimString failed because origin was empty!";
+
 		const char* whitespace = " \t\n\r\f\v";
 		size_t start = origin.find_first_not_of(whitespace);
-		if (start == string::npos) return ""; // all whitespace
+
+		if (start == string::npos) return "TrimString failed because origin was all whitespace";
 
 		size_t end = origin.find_last_not_of(whitespace);
-		return string(origin.substr(start, end - start + 1));
+
+		outResult = string(origin.substr(start, end - start + 1));
+		return "";
 	}
 
 	//Remove occurrences of target from origin,
-	//if removeAll is true then all found occurences will be removed
+	//if removeAll is true then all found occurences will be removed,
+	//returns error string on failure
+	KNODISCARD
 	inline string RemoveFromString(
 		string_view origin,
 		string_view target,
+		string& outResult,
 		bool removeAll = false)
 	{
 		//return origin if target is empty
-		if (target.empty()) return string(origin);
+		if (target.empty()) return "RemoveFromString failed because target was empty!";
 
 		string result(origin);
 		size_t pos = result.find(target);
 
 		//nothing was found, skip further actions
-		if (pos == string::npos) return result;
+		if (pos == string::npos)
+		{
+			outResult = std::move(result);
+			return "";
+		}
 
 		//remove first occurence
 		result.erase(pos, target.length());
@@ -465,25 +579,33 @@ namespace KalaHeaders::KalaString
 			}
 		}
 
-		return result;
+		outResult = std::move(result);
+		return "";
 	}
 
 	//Replace occurences of target from origin with replacement,
-	//if replaceAll is true then all found occurences will be replaced
+	//if replaceAll is true then all found occurences will be replaced,
+	//returns error string on failure
+	KNODISCARD
 	inline string ReplaceFromString(
 		string_view origin,
 		string_view target,
 		string_view replacement,
+		string& outResult,
 		bool replaceAll = false)
 	{
 		//return origin if target is empty
-		if (target.empty()) return string(origin);
+		if (target.empty()) return "ReplaceFromString failed because target was empty!";
 
 		string result(origin);
 		size_t pos = result.find(target);
 
 		//nothing was found, skip further actions
-		if (pos == string::npos) return result;
+		if (pos == string::npos)
+		{
+			outResult = std::move(result);
+			return "";
+		}
 
 		//replace first occurence
 		result.replace(pos, target.length(), replacement);
@@ -500,84 +622,125 @@ namespace KalaHeaders::KalaString
 			}
 		}
 
-		return result;
+		outResult = std::move(result);
+		return "";
 	}
 
-	//Replaces everything after the start of target with replacer and returns the result
-	inline string ReplaceAfter(
-		string_view origin, 
-		string_view target, 
-		string_view replacer = {})
-	{
-		if (origin.empty()) return {};
-		if (target.empty()) return string(origin);
-
-		size_t pos = origin.find(target);
-		if (pos == string_view::npos) return string(origin);
-
-		string result{};
-		result.reserve(pos + replacer.size());
-
-		result.append(origin.substr(0, pos));
-		result.append(replacer);
-
-		return result;
-	}
-
-	//Replaces everything before the end of target with replacer and returns the result
+	//Replaces everything before the end of target with replacer and returns the result,
+	//returns error string on failure
+	KNODISCARD
 	inline string ReplaceBefore(
 		string_view origin, 
 		string_view target,
+		string& outResult,
 		string_view replacer = {})
 	{
-		if (origin.empty()) return {};
-		if (target.empty()) return string(origin);
+		if (origin.empty()) return "ReplaceBefore failed because origin was empty!";
+		if (target.empty()) return "ReplaceBefore failed because target was empty!";
 
+		string result(origin);
 		size_t pos = origin.find(target);
-		if (pos == string_view::npos) return string(origin);
+		if (pos == string_view::npos)
+		{
+			outResult = std::move(result);
+			return "";
+		}
 
-		string result{};
+		result.clear();
 		result.reserve(replacer.size() + origin.size() - pos - target.size());
 
 		result.append(replacer);
 		result.append(origin.substr(pos + target.size()));
 
-		return result;
+		outResult = std::move(result);
+		return "";
 	}
 
-	//Returns everything after the start of target
-	inline string GetAfter(
+
+	//Replaces everything after the start of target with replacer and returns the result,
+	//returns error string on failure
+	KNODISCARD
+	inline string ReplaceAfter(
 		string_view origin, 
-		string_view target)
+		string_view target,
+		string& outResult,
+		string_view replacer = {})
 	{
-		if (origin.empty()) return {};
-		if (target.empty()) return string(origin);
+		if (origin.empty()) return "ReplaceAfter failed because origin was empty!";
+		if (target.empty()) return "ReplaceAfter failed because target was empty!";
 
+		string result(origin);
 		size_t pos = origin.find(target);
-		if (pos == string_view::npos) return string(origin);
+		if (pos == string_view::npos)
+		{
+			outResult = std::move(result);
+			return "";
+		}
 
-		return string(origin.substr(pos + target.size()));
+		result.clear();
+		result.reserve(pos + replacer.size());
+
+		result.append(origin.substr(0, pos));
+		result.append(replacer);
+
+		outResult = std::move(result);
+		return "";
 	}
 
-	//Returns everything before the end of target
+	//Returns everything before the end of target,
+	//returns error string on failure
+	KNODISCARD
 	inline string GetBefore(
 		string_view origin, 
-		string_view target)
+		string_view target,
+		string& outValue)
 	{
-		if (origin.empty()) return {};
-		if (target.empty()) return string(origin);
+		if (origin.empty()) return "GetBefore failed because origin was empty!";
+		if (target.empty()) return "GetBefore failed because target was empty!";
 
+		string result(origin);
 		size_t pos = origin.find(target);
-		if (pos == string_view::npos) return string(origin);
+		if (pos == string_view::npos)
+		{
+			outValue = std::move(result);
+			return "";
+		}
 
-		return string(origin.substr(0, pos));
+		outValue = string(origin.substr(0, pos));
+		return "";
 	}
 
-	//Set all letters of this string to uppercase letters
-	inline string ToUpperString(string_view origin)
+	//Returns everything after the start of target,
+	//returns error string on failure
+	KNODISCARD
+	inline string GetAfter(
+		string_view origin, 
+		string_view target,
+		string& outValue)
 	{
-		//return origin if target is empty
-		if (origin.empty()) return "";
+		if (origin.empty()) return "GetAfter failed because origin was empty!";
+		if (target.empty()) return "GetAfter failed because target was empty!";
+
+		string result(origin);
+		size_t pos = origin.find(target);
+		if (pos == string_view::npos)
+		{
+			outValue = std::move(result);
+			return "";
+		}
+
+		outValue = string(origin.substr(pos + target.size()));
+		return "";
+	}
+
+	//Set all letters of this string to uppercase letters,
+	//returns error string on failure
+	KNODISCARD
+	inline string ToUpperString(
+		string_view origin,
+		string& outValue)
+	{
+		if (origin.empty()) return "ToUpperString failed because origin was empty!";
 
 		string result = string(origin);
 
@@ -587,14 +750,18 @@ namespace KalaHeaders::KalaString
 				return scast<char>(toupper(c));
 			});
 
-		return result;
+		outValue = std::move(result);
+		return "";
 	}
 
-	//Set all letters of this string to lowercase letters
-	inline string ToLowerString(string_view origin)
+	//Set all letters of this string to lowercase letters,
+	//returns error string on failure
+	KNODISCARD
+	inline string ToLowerString(
+		string_view origin,
+		string& outValue)
 	{
-		//return origin if target is empty
-		if (origin.empty()) return "";
+		if (origin.empty()) return "ToUpperString failed because origin was empty!";
 
 		string result = string(origin);
 
@@ -604,6 +771,7 @@ namespace KalaHeaders::KalaString
 				return scast<char>(tolower(c));
 			});
 
-		return result;
+		outValue = std::move(result);
+		return "";
 	}
 }

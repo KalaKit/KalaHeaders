@@ -15,9 +15,13 @@
 
 #pragma once
 
-#include <cmath>
-#include <cstdint>
-#include <algorithm>
+//
+// SKIP UNSUPPORTED C++ VERSION
+//
+
+#if __cplusplus < 202002L
+	#error "UNSUPPORTED C++ VERSION! SUPPORTED: C++20 AND ABOVE"
+#endif
 
 //
 // SKIP UNSUPPORTED PLATFORMS AND ARCHITECTURES
@@ -79,6 +83,10 @@
 	#endif
 #endif
 
+#include <cmath>
+#include <cstdint>
+#include <algorithm>
+
 //
 // DEBUG MACRO
 //
@@ -108,6 +116,10 @@
 	#define rcast reinterpret_cast
 	#define scast static_cast
 	#define ccast const_cast
+#endif
+
+#if !defined(KNODISCARD)
+	#define KNODISCARD [[nodiscard]]
 #endif
 
 //
@@ -191,6 +203,7 @@ namespace KalaHeaders::KalaMath
 	//================================================================================
 
 	//Used for arithmetic division and prevents division by 0, returns result instead of mutating origin
+	KNODISCARD
 	inline f32 safediv_a(
 		f32 origin,
 		f32 divisor)
@@ -229,6 +242,8 @@ namespace KalaHeaders::KalaMath
 		static_assert(N >= 2 && N <= 4, "vec can only have 2, 3, or 4 components.");
 
 		constexpr vec() = default;
+		constexpr vec(const vec&) = default;
+		constexpr vec& operator=(const vec&) = default;
 
 		//vec2
 
@@ -239,9 +254,6 @@ namespace KalaHeaders::KalaMath
 			requires (N == 2)
 			: vec_storage<N>{ _x, _y } {}
 			
-		constexpr vec(const vec<2>& _v)
-			requires (N == 2)
-			: vec_storage<N>{ _v.x, _v.y } {}
 		constexpr vec(const vec<3>& _v)
 			requires (N == 2)
 			: vec_storage<N>{ _v.x, _v.y } {}
@@ -273,9 +285,6 @@ namespace KalaHeaders::KalaMath
 		constexpr vec(const vec<2>& _v)
 			requires (N == 3)
 			: vec_storage<N>{ _v.x, _v.y, 0.0f } {}
-		constexpr vec(const vec<3>& _v)
-			requires (N == 3)
-			: vec_storage<N>{ _v.x, _v.y, _v.z } {}
 		constexpr vec(const vec<4>& _v)
 			requires (N == 3)
 			: vec_storage<N>{ _v.x, _v.y, _v.z } {}
@@ -323,9 +332,6 @@ namespace KalaHeaders::KalaMath
 		constexpr vec(const vec<3>& _v)
 			requires (N == 4)
 			: vec_storage<N>{ _v.x, _v.y, _v.z, 0.0f } {}
-		constexpr vec(const vec<4>& _v)
-			requires (N == 4)
-			: vec_storage<N>{ _v.x, _v.y, _v.z, _v.w } {}
 			
 		constexpr vec(const f32 (&_f)[2])
 			requires (N == 4)
@@ -346,12 +352,14 @@ namespace KalaHeaders::KalaMath
 		//
 		//================================================================================
 
-		constexpr vec operator+(const vec& v) const 
+		KNODISCARD
+		constexpr vec operator+(const vec& v) const
 		{ 
 			if constexpr (N == 2) return { this->x + v.x, this->y + v.y };
 			if constexpr (N == 3) return { this->x + v.x, this->y + v.y, this->z + v.z };
 			if constexpr (N == 4) return { this->x + v.x, this->y + v.y, this->z + v.z, this->w + v.w };
 		}
+		KNODISCARD
 		constexpr vec operator+(f32 s) const
 		{
 			if constexpr (N == 2) return { this->x + s, this->y + s };
@@ -359,12 +367,14 @@ namespace KalaHeaders::KalaMath
 			if constexpr (N == 4) return { this->x + s, this->y + s, this->z + s, this->w + s };
 		}
 
+		KNODISCARD
 		constexpr vec operator-(const vec& v) const
 		{ 
 			if constexpr (N == 2) return { this->x - v.x, this->y - v.y };
 			if constexpr (N == 3) return { this->x - v.x, this->y - v.y, this->z - v.z };
 			if constexpr (N == 4) return { this->x - v.x, this->y - v.y, this->z - v.z, this->w - v.w };
 		}
+		KNODISCARD
 		constexpr vec operator-(f32 s) const
 		{
 			if constexpr (N == 2) return { this->x - s, this->y - s };
@@ -372,12 +382,14 @@ namespace KalaHeaders::KalaMath
 			if constexpr (N == 4) return { this->x - s, this->y - s, this->z - s, this->w - s };
 		}
 
+		KNODISCARD
 		constexpr vec operator*(const vec& v) const
 		{ 
 			if constexpr (N == 2) return { this->x * v.x, this->y * v.y };
 			if constexpr (N == 3) return { this->x * v.x, this->y * v.y, this->z * v.z };
 			if constexpr (N == 4) return { this->x * v.x, this->y * v.y, this->z * v.z, this->w * v.w };
 		}
+		KNODISCARD
 		constexpr vec operator*(f32 s) const
 		{
 			if constexpr (N == 2) return { this->x * s, this->y * s };
@@ -385,12 +397,14 @@ namespace KalaHeaders::KalaMath
 			if constexpr (N == 4) return { this->x * s, this->y * s, this->z * s, this->w * s };
 		}
 
+		KNODISCARD
 		constexpr vec operator/(const vec& v) const
 		{
 			if constexpr (N == 2) return { safediv_a(this->x, v.x), safediv_a(this->y, v.y) };
 			if constexpr (N == 3) return { safediv_a(this->x, v.x), safediv_a(this->y, v.y), safediv_a(this->z, v.z) };
 			if constexpr (N == 4) return { safediv_a(this->x, v.x), safediv_a(this->y, v.y), safediv_a(this->z, v.z), safediv_a(this->w, v.w) };
 		}
+		KNODISCARD
 		constexpr vec operator/(f32 s) const
 		{ 
 			if constexpr (N == 2) return { safediv_a(this->x, s), safediv_a(this->y, s) };
@@ -398,12 +412,14 @@ namespace KalaHeaders::KalaMath
 			if constexpr (N == 4) return { safediv_a(this->x, s), safediv_a(this->y, s), safediv_a(this->z, s), safediv_a(this->w, s) };
 		}
 
+		KNODISCARD
 		constexpr bool operator<(f32 s) const
 		{
 			if constexpr (N == 2) return { this->x < s && this->y < s };
 			if constexpr (N == 3) return { this->x < s && this->y < s && this->z < s };
 			if constexpr (N == 4) return { this->x < s && this->y < s && this->z < s && this->w < s };
 		}
+		KNODISCARD
 		constexpr bool operator<(const vec& s) const
 		{
 			if constexpr (N == 2) return { this->x < s.x && this->y < s.y };
@@ -411,12 +427,14 @@ namespace KalaHeaders::KalaMath
 			if constexpr (N == 4) return { this->x < s.x && this->y < s.y && this->z < s.z && this->w < s.w };
 		}
 		
+		KNODISCARD
 		constexpr bool operator>(f32 s) const
 		{
 			if constexpr (N == 2) return { this->x > s && this->y > s };
 			if constexpr (N == 3) return { this->x > s && this->y > s && this->z > s };
 			if constexpr (N == 4) return { this->x > s && this->y > s && this->z > s && this->w > s };
 		}
+		KNODISCARD
 		constexpr bool operator>(const vec& s) const
 		{
 			if constexpr (N == 2) return { this->x > s.x && this->y > s.y };
@@ -424,6 +442,7 @@ namespace KalaHeaders::KalaMath
 			if constexpr (N == 4) return { this->x > s.x && this->y > s.y && this->z > s.z && this->w > s.w };
 		}
 
+		KNODISCARD
 		constexpr bool operator==(const vec& v) const
 		{
 			if constexpr (N == 2) return 
@@ -439,8 +458,10 @@ namespace KalaHeaders::KalaMath
 				&& fabsf(this->z - v.z) < epsilon
 				&& fabsf(this->w - v.w) < epsilon;
 		}
+		KNODISCARD
 		constexpr bool operator!=(const vec& v) const { return !(*this == v); }
 
+		KNODISCARD
 		constexpr vec operator-() const
 		{
 			if constexpr (N == 2) return { -this->x, -this->y };
@@ -506,12 +527,14 @@ namespace KalaHeaders::KalaMath
 			if constexpr (N == 4) { safediv_c(this->x, v.x); safediv_c(this->y, v.y); safediv_c(this->z, v.z); safediv_c(this->w, v.w); return *this; }
 		}
 		
+		KNODISCARD
 		constexpr bool operator<=(f32 s) const
 		{
 			if constexpr (N == 2) return { this->x <= s && this->y <= s };
 			if constexpr (N == 3) return { this->x <= s && this->y <= s && this->z <= s };
 			if constexpr (N == 4) return { this->x <= s && this->y <= s && this->z <= s && this->w <= s };
 		}
+		KNODISCARD
 		constexpr bool operator<=(const vec& s) const
 		{
 			if constexpr (N == 2) return { this->x <= s.x && this->y <= s.y };
@@ -519,12 +542,14 @@ namespace KalaHeaders::KalaMath
 			if constexpr (N == 4) return { this->x <= s.x && this->y <= s.y && this->z <= s.z && this->w <= s.w };
 		}
 
+		KNODISCARD
 		constexpr bool operator>=(f32 s) const
 		{
 			if constexpr (N == 2) return { this->x >= s && this->y >= s };
 			if constexpr (N == 3) return { this->x >= s && this->y >= s && this->z >= s };
 			if constexpr (N == 4) return { this->x >= s && this->y >= s && this->z >= s && this->w >= s };
 		}
+		KNODISCARD
 		constexpr bool operator>=(const vec& s) const
 		{
 			if constexpr (N == 2) return { this->x >= s.x && this->y >= s.y };
@@ -534,6 +559,7 @@ namespace KalaHeaders::KalaMath
 	};
 
 	template<typename F, size_t N>
+	KNODISCARD
 	inline constexpr vec<N> apply_scalar(const vec<N>& v, f32 s, F func)
 	{
 		if constexpr (N == 2) return { func(v.x, s), func(v.y, s) };
@@ -542,6 +568,7 @@ namespace KalaHeaders::KalaMath
 	}
 
 	template<typename F, size_t N>
+	KNODISCARD
 	inline constexpr vec<N> apply_scalar(const vec<N>& v1, const vec<N>& v2, F func)
 	{
 		if constexpr (N == 2) return { func(v1.x, v2.x), func(v1.y, v2.y) };
@@ -553,12 +580,14 @@ namespace KalaHeaders::KalaMath
 
 	template<size_t N>
 		requires (N >= 2 && N <= 4)
+	KNODISCARD
 	inline constexpr vec<N> operator+(f32 s, const vec<N>& v)
 	{
 		return apply_scalar(v, s, [](f32 a, f32 b) { return a + b; });
 	}
 	template<size_t N1, size_t N2>
 		requires (N1 > N2 && N1 <= 4 && N2 >= 2)
+	KNODISCARD
 	inline constexpr vec<N1> operator+(const vec<N1>& a, const vec<N2>& b)
 	{
 		vec<N1> r = a;
@@ -587,12 +616,14 @@ namespace KalaHeaders::KalaMath
 
 	template<size_t N>
 		requires (N >= 2 && N <= 4)
+	KNODISCARD
 	inline constexpr vec<N> operator-(f32 s, const vec<N>& v)
 	{
 		return apply_scalar(v, s, [](f32 a, f32 b) { return a - b; });
 	}
 	template<size_t N1, size_t N2>
 		requires (N1 > N2 && N1 <= 4 && N2 >= 2)
+	KNODISCARD
 	inline constexpr vec<N1> operator-(const vec<N1>& a, const vec<N2>& b)
 	{
 		vec<N1> r = a;
@@ -621,12 +652,14 @@ namespace KalaHeaders::KalaMath
 
 	template<size_t N>
 		requires (N >= 2 && N <= 4)
+	KNODISCARD
 	inline constexpr vec<N> operator*(f32 s, const vec<N>& v)
 	{
 		return apply_scalar(v, s, [](f32 a, f32 b) { return a * b; });
 	}
 	template<size_t N1, size_t N2>
 		requires (N1 > N2 && N1 <= 4 && N2 >= 2)
+	KNODISCARD
 	inline constexpr vec<N1> operator*(const vec<N1>& a, const vec<N2>& b)
 	{
 		vec<N1> r = a;
@@ -655,12 +688,14 @@ namespace KalaHeaders::KalaMath
 
 	template<size_t N>
 		requires (N >= 2 && N <= 4)
+	KNODISCARD
 	inline constexpr vec<N> operator/(f32 s, const vec<N>& v)
 	{
 		return apply_scalar(v, s, [](f32 a, f32 b) { return safediv_a(a, b); });
 	}
 	template<size_t N1, size_t N2>
 		requires (N1 > N2 && N1 <= 4 && N2 >= 2)
+	KNODISCARD
 	inline constexpr vec<N1> operator/(const vec<N1>& a, const vec<N2>& b)
 	{
 		vec<N1> r = a;
@@ -747,6 +782,8 @@ namespace KalaHeaders::KalaMath
 		static_assert(N >= 2 && N <= 4, "mat can only have 2, 3, or 4 components.");
 
 		constexpr mat() = default;
+		constexpr mat(const mat&) = default;
+		constexpr mat& operator=(const mat&) = default;
 
 		constexpr mat(
 			f32 _m)
@@ -777,7 +814,6 @@ namespace KalaHeaders::KalaMath
 				_m01, _m11, _m21,
 				_m02, _m12, _m22
 			} {}
-
 
 		constexpr mat(
 			f32 _m)
@@ -810,6 +846,7 @@ namespace KalaHeaders::KalaMath
 		//
 		//================================================================================
 
+		KNODISCARD
 		constexpr mat operator+(const mat& m) const
 		{
 			mat r = *this;
@@ -817,6 +854,7 @@ namespace KalaHeaders::KalaMath
 
 			return r;
 		}
+		KNODISCARD
 		constexpr mat operator+(f32 s) const
 		{
 			mat r = *this;
@@ -825,6 +863,7 @@ namespace KalaHeaders::KalaMath
 			return r;
 		}
 
+		KNODISCARD
 		constexpr mat operator-(const mat& m) const
 		{
 			mat r = *this;
@@ -832,6 +871,7 @@ namespace KalaHeaders::KalaMath
 
 			return r;
 		}
+		KNODISCARD
 		constexpr mat operator-(f32 s) const
 		{
 			mat r = *this;
@@ -840,6 +880,7 @@ namespace KalaHeaders::KalaMath
 			return r;
 		}
 
+		KNODISCARD
 		constexpr mat operator*(const mat& m) const
 		{
 			mat r = *this;
@@ -847,6 +888,7 @@ namespace KalaHeaders::KalaMath
 
 			return r;
 		}
+		KNODISCARD
 		constexpr mat operator*(f32 s) const
 		{
 			mat r = *this;
@@ -855,7 +897,9 @@ namespace KalaHeaders::KalaMath
 			return r;
 		}
 
+		KNODISCARD
 		constexpr mat operator/(const mat& m) const { return *this * inverse(m); }
+		KNODISCARD
 		constexpr mat operator/(f32 s) const
 		{ 
 			mat r = *this;
@@ -864,6 +908,7 @@ namespace KalaHeaders::KalaMath
 			return r;
 		}
 
+		KNODISCARD
 		constexpr mat operator<(f32 s) const
 		{
 			if constexpr (N == 2)
@@ -885,6 +930,7 @@ namespace KalaHeaders::KalaMath
 				this->m03 < s; this->m13 < s; this->m23 < s; this->m33 < s;
 			}
 		}
+		KNODISCARD
 		constexpr mat operator>(f32 s) const
 		{
 			if constexpr (N == 2)
@@ -906,6 +952,7 @@ namespace KalaHeaders::KalaMath
 				this->m03 > s; this->m13 > s; this->m23 > s; this->m33 > s;
 			}
 		}
+		KNODISCARD
 		constexpr mat operator<(const mat& m) const
 		{
 			if constexpr (N == 2)
@@ -927,6 +974,7 @@ namespace KalaHeaders::KalaMath
 				this->m01 < m.m03; this->m11 < m.m13; this->m10 < m.m23; this->m10 < m.m33;
 			}
 		}
+		KNODISCARD
 		constexpr mat operator>(const mat& m) const
 		{
 			if constexpr (N == 2)
@@ -949,6 +997,7 @@ namespace KalaHeaders::KalaMath
 			}
 		}
 
+		KNODISCARD
 		constexpr mat operator-() const
 		{ 
 			mat r = *this; 
@@ -957,6 +1006,7 @@ namespace KalaHeaders::KalaMath
 			return r; 
 		}
 
+		KNODISCARD
 		constexpr bool operator==(const mat& m) const
 		{
 			if constexpr (N == 2)
@@ -997,6 +1047,7 @@ namespace KalaHeaders::KalaMath
 				&& (fabsf(this->m32 - m.m32) < epsilon)
 				&& (fabsf(this->m33 - m.m33) < epsilon);
 		}
+		KNODISCARD
 		constexpr bool operator!=(const mat& m) const { return !(*this == m); }
 
 		//================================================================================
@@ -1213,6 +1264,7 @@ namespace KalaHeaders::KalaMath
 			return *this;
 		}
 
+		KNODISCARD
 		constexpr mat operator<=(f32 s) const
 		{
 			if constexpr (N == 2)
@@ -1234,6 +1286,7 @@ namespace KalaHeaders::KalaMath
 				this->m03 <= s; this->m13 <= s; this->m23 <= s; this->m33 <= s;
 			}
 		}
+		KNODISCARD
 		constexpr mat operator>=(f32 s) const
 		{
 			if constexpr (N == 2)
@@ -1255,6 +1308,7 @@ namespace KalaHeaders::KalaMath
 				this->m03 >= s; this->m13 >= s; this->m23 >= s; this->m33 >= s;
 			}
 		}
+		KNODISCARD
 		constexpr mat operator<=(const mat& m) const
 		{
 			if constexpr (N == 2)
@@ -1276,6 +1330,7 @@ namespace KalaHeaders::KalaMath
 				this->m01 <= m.m03; this->m11 <= m.m13; this->m10 <= m.m23; this->m10 <= m.m33;
 			}
 		}
+		KNODISCARD
 		constexpr mat operator>=(const mat& m) const
 		{
 			if constexpr (N == 2)
@@ -1303,6 +1358,7 @@ namespace KalaHeaders::KalaMath
 
 	template<size_t N>
 		requires(N >= 2 && N <= 4)
+	KNODISCARD
 	inline constexpr vec<N> operator*(const mat<N>& m, const vec<N>& v)
 	{
 		if constexpr (N == 2)
@@ -1345,6 +1401,8 @@ namespace KalaHeaders::KalaMath
 		f32 w = 1.0f, x{}, y{}, z{};
 		
 		constexpr quat() = default;
+		constexpr quat(const quat&) = default;
+		constexpr quat& operator=(const quat&) = default;
 		
 		constexpr quat(f32 _w, f32 _x, f32 _y, f32 _z)
 			: w(_w), x(_x), y(_y), z(_z) {}
@@ -1359,12 +1417,14 @@ namespace KalaHeaders::KalaMath
 		//================================================================================
 
 		//unary negation
+		KNODISCARD
 		constexpr quat operator-() const
 		{
 			return { -w, -x, -y, -z };
 		}
 		
 		//hamilton multiplication
+		KNODISCARD
 		constexpr quat operator*(const quat& q) const
 		{ 
 			return 
@@ -1377,17 +1437,20 @@ namespace KalaHeaders::KalaMath
 		}
 		
 		//scalar multiplication
+		KNODISCARD
 		constexpr quat operator*(f32 s) const
 		{
 			return { w * s, x * s, y * s, z * s };
 		}
 		
 		//scalar division 
+		KNODISCARD
 		constexpr quat operator/(f32 s) const
 		{
 			return { w / s, x / s, y / s, z / s };
 		}
 
+		KNODISCARD
 		constexpr bool operator==(const quat& q) const
 		{
 			auto kabs = [](f32 v) -> f32
@@ -1401,6 +1464,7 @@ namespace KalaHeaders::KalaMath
 				&& kabs(y - q.y) < epsilon
 				&& kabs(z - q.z) < epsilon;
 		}
+		KNODISCARD
 		constexpr bool operator!=(const quat& q) const { return !(*this == q); }
 		
 		//================================================================================
@@ -1417,6 +1481,7 @@ namespace KalaHeaders::KalaMath
 	};
 	
 	//rotate vector by quaternion
+	KNODISCARD
 	inline constexpr vec3 operator*(const quat& q, const vec3& v)
 	{
 		auto cross = [](
@@ -1443,6 +1508,7 @@ namespace KalaHeaders::KalaMath
 	//
 	//================================================================================
 
+	KNODISCARD
 	inline constexpr vec2 kround(vec2 v)
 	{
 		return
@@ -1451,6 +1517,7 @@ namespace KalaHeaders::KalaMath
 			scast<f32>(round(v.y))	
 		};
 	}
+	KNODISCARD
 	inline constexpr vec3 kround(const vec3& v)
 	{
 		return
@@ -1460,6 +1527,7 @@ namespace KalaHeaders::KalaMath
 			scast<f32>(round(v.z))	
 		};
 	}
+	KNODISCARD
 	inline constexpr vec4 kround(const vec4& v)
 	{
 		return
@@ -1471,6 +1539,7 @@ namespace KalaHeaders::KalaMath
 		};
 	}
 
+	KNODISCARD
 	inline constexpr vec2 kfloor(vec2 v)
 	{
 		return
@@ -1479,6 +1548,7 @@ namespace KalaHeaders::KalaMath
 			scast<f32>(floor(v.y))	
 		};
 	}
+	KNODISCARD
 	inline constexpr vec3 kfloor(const vec3& v)
 	{
 		return
@@ -1488,6 +1558,7 @@ namespace KalaHeaders::KalaMath
 			scast<f32>(floor(v.z))	
 		};
 	}
+	KNODISCARD
 	inline constexpr vec4 kfloor(const vec4& v)
 	{
 		return
@@ -1499,6 +1570,7 @@ namespace KalaHeaders::KalaMath
 		};
 	}
 
+	KNODISCARD
 	inline constexpr vec2 kceil(vec2 v)
 	{
 		return
@@ -1507,6 +1579,7 @@ namespace KalaHeaders::KalaMath
 			scast<f32>(ceil(v.y))	
 		};
 	}
+	KNODISCARD
 	inline constexpr vec3 kceil(const vec3& v)
 	{
 		return
@@ -1516,6 +1589,7 @@ namespace KalaHeaders::KalaMath
 			scast<f32>(ceil(v.z))	
 		};
 	}
+	KNODISCARD
 	inline constexpr vec4 kceil(const vec4& v)
 	{
 		return
@@ -1527,6 +1601,7 @@ namespace KalaHeaders::KalaMath
 		};
 	}
 
+	KNODISCARD
 	inline constexpr vec2 toint(vec2 v)
 	{
 		return
@@ -1535,6 +1610,7 @@ namespace KalaHeaders::KalaMath
 			scast<f32>(scast<int>(v.y))	
 		};
 	}
+	KNODISCARD
 	inline constexpr vec3 toint(const vec3& v)
 	{
 		return
@@ -1544,6 +1620,7 @@ namespace KalaHeaders::KalaMath
 			scast<f32>(scast<int>(v.z))	
 		};
 	}
+	KNODISCARD
 	inline constexpr vec4 toint(const vec4& v)
 	{
 		return
@@ -1557,12 +1634,14 @@ namespace KalaHeaders::KalaMath
 	
 	//Returns the inverse (congjugated) rotation of a quaternion,
 	//assuming the quat input is already normalized
+	KNODISCARD
 	inline constexpr quat inverse(const quat& q)
 	{
 		return { q.w, -q.x, -q.y, -q.z };
 	}
 	
 	//Computes vec2 magnitude (distance from a)
+	KNODISCARD
 	inline f32 length(const vec2 v)
 	{
 		return sqrtf(
@@ -1570,6 +1649,7 @@ namespace KalaHeaders::KalaMath
 			+ v.y * v.y);
 	}
 	//Computes vec3 magnitude (distance from a)
+	KNODISCARD
 	inline f32 length(const vec3& v)
 	{
 		return sqrtf(
@@ -1578,6 +1658,7 @@ namespace KalaHeaders::KalaMath
 			+ v.z * v.z);
 	}
 	//Computes vec4 magnitude (distance from a)
+	KNODISCARD
 	inline f32 length(const vec4& v)
 	{
 		return sqrtf(
@@ -1588,6 +1669,7 @@ namespace KalaHeaders::KalaMath
 	}
 	
 	//Computes quat magnitude (distance from a)
+	KNODISCARD
 	inline f32 length(const quat& q)
 	{
 		return sqrtf(
@@ -1603,30 +1685,35 @@ namespace KalaHeaders::KalaMath
 	//
 	
 	//Returns true if f32 a is close to f32 b within epsilon range
+	KNODISCARD
 	inline bool isnear(const f32 a, const f32 b = {})
 	{
 		return fabsf(a - b) <= epsilon;
 	}
 	
 	//Returns true if vec2 a is close to vec2 b within epsilon range
+	KNODISCARD
 	inline bool isnear(const vec2 a, const vec2 b = {})
 	{
 		return length(a - b) <= epsilon;
 	}
 	
 	//Returns true if vec3 a is close to vec3 b within epsilon range
+	KNODISCARD
 	inline bool isnear(const vec3& a, const vec3& b = {})
 	{
 		return length(a - b) <= epsilon;
 	}
 	
 	//Returns true if vec4 a is close to vec4 b within epsilon range
+	KNODISCARD
 	inline bool isnear(const vec4& a, const vec4& b = {})
 	{
 		return length(a - b) <= epsilon;
 	}
 	
 	//Returns true if quat a is close to quat b within epsilon range
+	KNODISCARD
 	inline bool isnear_q(const quat& a, const quat& b = {})
 	{
 		return (isnear(a.w, b.w)
@@ -1640,6 +1727,7 @@ namespace KalaHeaders::KalaMath
 	}
 	
 	//Returns true if mat2 a is close to mat2 b within epsilon range
+	KNODISCARD
 	inline bool isnear(const mat2& a, const mat2& b = {})
 	{
 		return isnear(a.m00, b.m00)
@@ -1649,6 +1737,7 @@ namespace KalaHeaders::KalaMath
 	}
 	
 	//Returns true if mat3 a is close to mat3 b within epsilon range
+	KNODISCARD
 	inline bool isnear(const mat3& a, const mat3& b = {})
 	{
 		return isnear(a.m00, b.m00)
@@ -1665,6 +1754,7 @@ namespace KalaHeaders::KalaMath
 	}
 	
 	//Returns true if mat4 a is close to mat4 b within epsilon range
+	KNODISCARD
 	inline bool isnear(const mat4& a, const mat4& b = {})
 	{
 		return isnear(a.m00, b.m00)
@@ -1689,6 +1779,7 @@ namespace KalaHeaders::KalaMath
 	}
 	
 	//Measures alignment between two vec2s
+	KNODISCARD
 	inline constexpr f32 dot(
 		const vec2 a,
 		const vec2 b)
@@ -1698,6 +1789,7 @@ namespace KalaHeaders::KalaMath
 			+ a.y * b.y;
 	}
 	//Measures alignment between two vec3s
+	KNODISCARD
 	inline constexpr f32 dot(
 		const vec3& a,
 		const vec3& b)
@@ -1708,6 +1800,7 @@ namespace KalaHeaders::KalaMath
 			+ a.z * b.z;
 	}
 	//Measures alignment between two vec4s
+	KNODISCARD
 	inline constexpr f32 dot(
 		const vec4& a,
 		const vec4& b)
@@ -1720,6 +1813,7 @@ namespace KalaHeaders::KalaMath
 	}
 	
 	//Measures alignment between two quats
+	KNODISCARD
 	inline constexpr f32 dot(
 		const quat& a,
 		const quat& b)
@@ -1732,17 +1826,20 @@ namespace KalaHeaders::KalaMath
 	}
 	
 	//Returns true if float is range-normalized
+	KNODISCARD
 	inline constexpr bool isnormalized_r(f32 v)
 	{
 		return v >= -epsilon && v <= 1.0f + epsilon;
 	}
 	//Returns true if vec2 is range-normalized
+	KNODISCARD
 	inline constexpr bool isnormalized_r(vec2 v)
 	{
 		return isnormalized_r(v.x)
 			&& isnormalized_r(v.y);
 	}
 	//Returns true if vec3 is range-normalized
+	KNODISCARD
 	inline constexpr bool isnormalized_r(const vec3& v)
 	{
 		return isnormalized_r(v.x)
@@ -1750,6 +1847,7 @@ namespace KalaHeaders::KalaMath
 			&& isnormalized_r(v.z);
 	}
 	//Returns true if vec4 is range-normalized
+	KNODISCARD
 	inline constexpr bool isnormalized_r(const vec4& v)
 	{
 		return isnormalized_r(v.x)
@@ -1759,6 +1857,7 @@ namespace KalaHeaders::KalaMath
 	}
 	
 	//Returns range-normalized float
+	KNODISCARD
 	inline constexpr f32 normalize_r(f32 v)
 	{ 
 		return 
@@ -1767,6 +1866,7 @@ namespace KalaHeaders::KalaMath
 			: clamp(v, 0.0f, 1.0f);
 	}
 	//Returns range-normalized vec2
+	KNODISCARD
 	inline constexpr vec2 normalize_r(vec2 v)
 	{ 
 		return vec2(
@@ -1774,6 +1874,7 @@ namespace KalaHeaders::KalaMath
 			normalize_r(v.y)); 
 	}
 	//Returns range-normalized vec3
+	KNODISCARD
 	inline constexpr vec3 normalize_r(const vec3& v)
 	{ 
 		return vec3(
@@ -1782,6 +1883,7 @@ namespace KalaHeaders::KalaMath
 			normalize_r(v.z)); 
 	}
 	//Returns range-normalized vec4
+	KNODISCARD
 	inline constexpr vec4 normalize_r(const vec4& v)
 	{ 
 		return vec4(
@@ -1792,18 +1894,21 @@ namespace KalaHeaders::KalaMath
 	}
 	
 	//Returns true if vec2 is unit-length normalized
+	KNODISCARD
 	inline bool isnormalized(vec2 v)
 	{
 		f32 len2 = dot(v, v);
 		return fabsf(len2 - 1.0f) <= epsilon;
 	}
 	//Returns true if vec3 is unit-length normalized
+	KNODISCARD
 	inline bool isnormalized(const vec3& v)
 	{
 		f32 len2 = dot(v, v);
 		return fabsf(len2 - 1.0f) <= epsilon;
 	}
 	//Returns true if vec4 is unit-length normalized
+	KNODISCARD
 	inline bool isnormalized(const vec4& v)
 	{
 		f32 len2 = dot(v, v);
@@ -1811,6 +1916,7 @@ namespace KalaHeaders::KalaMath
 	}
 	
 	//Returns true if quat is unit-length normalized
+	KNODISCARD
 	inline bool isnormalized(const quat& q)
 	{
 		f32 len2 = dot(q, q);
@@ -1818,6 +1924,7 @@ namespace KalaHeaders::KalaMath
 	}
 
 	//Returns unit-length normalized vec2
+	KNODISCARD
 	inline vec2 normalize(const vec2 v)
 	{
 		//skip normalize if already normalized
@@ -1829,6 +1936,7 @@ namespace KalaHeaders::KalaMath
 			: v / len;
 	}
 	//Returns unit-length normalized vec3
+	KNODISCARD
 	inline vec3 normalize(const vec3& v)
 	{
 		//skip normalize if already normalized
@@ -1840,6 +1948,7 @@ namespace KalaHeaders::KalaMath
 			: v / len;
 	}
 	//Returns unit-length normalized vec4
+	KNODISCARD
 	inline vec4 normalize(const vec4& v)
 	{
 		//skip normalize if already normalized
@@ -1852,6 +1961,7 @@ namespace KalaHeaders::KalaMath
 	}
 	
 	//Returns unit-length normalized quat
+	KNODISCARD
 	inline quat normalize_q(const quat& q)
 	{
 		//skip normalize if already normalized
@@ -1864,6 +1974,7 @@ namespace KalaHeaders::KalaMath
 	}
 	
 	//Wraps a rotation axis between 0 to 360 degrees
+	KNODISCARD
 	inline f32 wrap(f32 deg)
 	{
 		deg = fmodf(deg, 360.0f);
@@ -1873,36 +1984,44 @@ namespace KalaHeaders::KalaMath
 	}
 
 	//Convert degrees to radians
+	KNODISCARD
 	inline constexpr f32 radians(f32 deg) { return deg * 0.017453f; }
 	//Convert degrees to radians
+	KNODISCARD
 	inline constexpr vec2 radians(const vec2 v)
 	{
 		return { radians(v.x), radians(v.y) };
 	}
 	//Convert degrees to radians
+	KNODISCARD
 	inline constexpr vec3 radians(const vec3& v)
 	{
 		return { radians(v.x), radians(v.y), radians(v.z) };
 	}
 	//Convert degrees to radians
+	KNODISCARD
 	inline constexpr vec4 radians(const vec4& v)
 	{
 		return { radians(v.x), radians(v.y), radians(v.z), radians(v.w) };
 	}
 
 	//Convert radians to degrees
+	KNODISCARD
 	inline constexpr f32 degrees(f32 rad) { return rad * 57.295780f; }
 	//Convert radians to degrees
+	KNODISCARD
 	inline constexpr vec2 degrees(const vec2 v)
 	{
 		return { degrees(v.x), degrees(v.y) };
 	}
 	//Convert radians to degrees
+	KNODISCARD
 	inline constexpr vec3 degrees(const vec3& v)
 	{
 		return { degrees(v.x), degrees(v.y), degrees(v.z) };
 	}
 	//Convert radians to degrees
+	KNODISCARD
 	inline constexpr vec4 degrees(const vec4& v)
 	{
 		return { degrees(v.x), degrees(v.y), degrees(v.z), degrees(v.w) };
@@ -1912,6 +2031,7 @@ namespace KalaHeaders::KalaMath
 	//returns rotations as pitch-yaw-roll (XYZ), uses YXZ internally,
 	//pitch, yaw and roll are clamped -360 to 360,
 	//you are supposed to wrap or clamp pitch and roll as you prefer after this function
+	KNODISCARD
 	inline vec3 toeuler3(const quat& q)
 	{
 		quat nq = normalize_q(q);
@@ -1971,6 +2091,7 @@ namespace KalaHeaders::KalaMath
 	//takes in rotations as pitch-yaw-roll (XYZ), uses YXZ internally,
 	//pitch, yaw and roll are clamped -360 to 360,
 	//you are supposed to wrap or clamp pitch and roll as you prefer before this function
+	KNODISCARD
 	inline quat toquat(const vec3& euler)
 	{
 		//returns quat as identity if euler input is near 0
@@ -2005,6 +2126,7 @@ namespace KalaHeaders::KalaMath
 	}
 
 	//Converts mat3 to quat
+	KNODISCARD
 	inline constexpr quat toquat(const mat3& m)
 	{
 		const f32 trace = m.m00 + m.m11 + m.m22;
@@ -2046,6 +2168,7 @@ namespace KalaHeaders::KalaMath
 		return q;
 	}
 	//Converts mat4 to quat
+	KNODISCARD
 	inline constexpr quat toquat(const mat4& m)
 	{
 		const f32 trace = m.m00 + m.m11 + m.m22;
@@ -2088,6 +2211,7 @@ namespace KalaHeaders::KalaMath
 	}
 
 	//Converts quat to mat3
+	KNODISCARD
 	inline mat3 tomat3(const quat& q)
 	{
 		quat nq = normalize_q(q);
@@ -2110,6 +2234,7 @@ namespace KalaHeaders::KalaMath
 		};
 	}
 	//Converts quat to mat4
+	KNODISCARD
 	inline mat4 tomat4(const quat& q)
 	{
 		quat nq = normalize_q(q);
@@ -2134,6 +2259,7 @@ namespace KalaHeaders::KalaMath
 	}
 
 	//Converts a 2D matrix to 3D
+	KNODISCARD
 	inline constexpr mat4 tomat4(const mat3& m)
 	{
 		return
@@ -2146,6 +2272,7 @@ namespace KalaHeaders::KalaMath
 	}
 	
 	//Vector pointing from one position to another
+	KNODISCARD
 	inline vec2 direction(
 		const vec2 a, 
 		const vec2 b)
@@ -2153,6 +2280,7 @@ namespace KalaHeaders::KalaMath
 		return normalize(b - a);
 	}
 	//Vector pointing from one position to another
+	KNODISCARD
 	inline vec3 direction(
 		const vec3& a, 
 		const vec3& b)
@@ -2161,6 +2289,7 @@ namespace KalaHeaders::KalaMath
 	}
 
 	//Returns the perpendicular magnitude in 2D
+	KNODISCARD
 	inline constexpr f32 cross(
 		const vec2 a,
 		const vec2 b)
@@ -2170,6 +2299,7 @@ namespace KalaHeaders::KalaMath
 			- a.y * b.x;
 	}
 	//Returns the normal vec3 in 3D
+	KNODISCARD
 	inline constexpr vec3 cross(
 		const vec3& a,
 		const vec3& b)
@@ -2183,6 +2313,7 @@ namespace KalaHeaders::KalaMath
 	}
 	
 	//Restricts a vec2 to given ranges
+	KNODISCARD
 	inline constexpr vec2 kclamp(
 		const vec2 v,
 		const vec2 min,
@@ -2195,6 +2326,7 @@ namespace KalaHeaders::KalaMath
 		};
 	}
 	//Restricts a vec3 to given ranges
+	KNODISCARD
 	inline constexpr vec3 kclamp(
 		const vec3& v,
 		const vec3& min,
@@ -2208,6 +2340,7 @@ namespace KalaHeaders::KalaMath
 		};
 	}
 	//Restricts a vec4 to given ranges
+	KNODISCARD
 	inline constexpr vec4 kclamp(
 		const vec4& v,
 		const vec4& min,
@@ -2224,6 +2357,7 @@ namespace KalaHeaders::KalaMath
 
 	//Turns position/orientation into a view transform,
 	//use DIR_UP for fps style camera, or if youre using the camera from KalaGraphics
+	KNODISCARD
 	inline mat4 view(
 		const vec3& origin, 
 		const vec3& target, 
@@ -2248,6 +2382,7 @@ namespace KalaHeaders::KalaMath
 	//        This function compensates and makes Vulkan Y-up bottom-left like OpenGL.
 	//        You MUST set VK_FRONT_FACE_CLOCKWISE.
 	//Viewport clamped to [100, 8192]. Near/far clamped to [-10000, 10000].
+	KNODISCARD
 	inline constexpr mat4 ortho(
 		bool useVulkan,
 		const vec2 viewport,
@@ -2300,6 +2435,7 @@ namespace KalaHeaders::KalaMath
 	//        This function compensates and makes Vulkan Y-up bottom-left like OpenGL.
 	//        You MUST set VK_FRONT_FACE_CLOCKWISE.
 	//Fov clamped to [1, 360]. Near/far clamped to [epsilon, 1000000.0].
+	KNODISCARD
 	inline mat4 perspective(
 		bool useVulkan,
 		const vec2 viewport,
@@ -2346,6 +2482,7 @@ namespace KalaHeaders::KalaMath
 	}
 
 	//Returns a valid 2D model matrix for vertex shaders
+	KNODISCARD
 	inline mat4 creatmodelmatrix(
 		const vec2 pos,
 		const f32 rotDeg,
@@ -2366,6 +2503,7 @@ namespace KalaHeaders::KalaMath
 	}
 
 	//Returns a valid 3D model matrix for vertex shaders
+	KNODISCARD
 	inline mat4 createmodelmatrix(
 		const vec3& pos, 
 		const quat& rot, 
@@ -2409,6 +2547,7 @@ namespace KalaHeaders::KalaMath
 	}
 
 	//Linear interpolation between two floats by t
+	KNODISCARD
 	inline constexpr f32 lerp(
 		f32 a,
 		f32 b,
@@ -2417,6 +2556,7 @@ namespace KalaHeaders::KalaMath
 		return a + (b - a) * t;
 	}
 	//Linear interpolation between two vec2s by t
+	KNODISCARD
 	inline constexpr vec2 lerp(
 		const vec2 a,
 		const vec2 b,
@@ -2429,6 +2569,7 @@ namespace KalaHeaders::KalaMath
 		};
 	}
 	//Linear interpolation between two vec3s by t
+	KNODISCARD
 	inline constexpr vec3 lerp(
 		const vec3& a,
 		const vec3& b,
@@ -2442,6 +2583,7 @@ namespace KalaHeaders::KalaMath
 		};
 	}
 	//Linear interpolation between two vec4s by t
+	KNODISCARD
 	inline constexpr vec4 lerp(
 		const vec4& a,
 		const vec4& b,
@@ -2457,6 +2599,7 @@ namespace KalaHeaders::KalaMath
 	}
 	
 	//Linear interpolation between two quats by t
+	KNODISCARD
 	inline quat lerp(
 		const quat& a,
 		const quat& b,
@@ -2472,6 +2615,7 @@ namespace KalaHeaders::KalaMath
 	}
 
 	//Spherical linear interpolation between two non-normalized vec4s by t
+	KNODISCARD
 	inline quat slerp(
 		const quat& a,
 		const quat& b,
@@ -2510,6 +2654,7 @@ namespace KalaHeaders::KalaMath
 		});
 	}
 
+	KNODISCARD
 	inline constexpr f32 smoothstep(
 		const f32 edge0,
 		const f32 edge1,
@@ -2520,6 +2665,7 @@ namespace KalaHeaders::KalaMath
 		return t * t * (3.0f - 2.0f * t);
 	}
 
+	KNODISCARD
 	inline constexpr vec2 smoothstep(
 		const vec2 edge0,
 		const vec2 edge1,
@@ -2531,6 +2677,7 @@ namespace KalaHeaders::KalaMath
 			smoothstep(edge0.y, edge1.y, x.y)
 		};
 	}
+	KNODISCARD
 	inline constexpr vec3 smoothstep(
 		const vec3& edge0,
 		const vec3& edge1,
@@ -2543,6 +2690,7 @@ namespace KalaHeaders::KalaMath
 			smoothstep(edge0.z, edge1.z, x.z)
 		};
 	}
+	KNODISCARD
 	inline constexpr vec4 smoothstep(
 		const vec4& edge0,
 		const vec4& edge1,
@@ -2558,6 +2706,7 @@ namespace KalaHeaders::KalaMath
 	}
 
 	//Uses std::sqrtf and returns unit-accurate distance between two vec2s
+	KNODISCARD
 	inline f32 distancesqrt(
 		const vec2 a, 
 		const vec2 b)
@@ -2568,6 +2717,7 @@ namespace KalaHeaders::KalaMath
 		return sqrtf(dx * dx + dy * dy);
 	}
 	//Uses std::sqrtf and returns unit-accurate distance between two vec3s
+	KNODISCARD
 	inline f32 distancesqrt(
 		const vec3& a, 
 		const vec3& b)
@@ -2580,6 +2730,7 @@ namespace KalaHeaders::KalaMath
 	}
 
 	//Does not use std::sqrtf and returns squared distance between two vec2s
+	KNODISCARD
 	inline constexpr f32 distancefast(
 		const vec2 a, 
 		const vec2 b)
@@ -2590,6 +2741,7 @@ namespace KalaHeaders::KalaMath
 		return dx * dx + dy * dy;
 	}
 	//Does not use std::sqrtf and returns squared distance between two vec3s
+	KNODISCARD
 	inline constexpr f32 distancefast(
 		const vec3& a, 
 		const vec3& b)
@@ -2601,6 +2753,7 @@ namespace KalaHeaders::KalaMath
 		return dx * dx + dy * dy + dz * dz;
 	}
 
+	KNODISCARD
 	inline vec3 reflect(
 		const vec3& I, 
 		const vec3& N)
@@ -2613,6 +2766,7 @@ namespace KalaHeaders::KalaMath
 
 	//Takes in non-normalized positions and returns angle in degrees (0..180),
 	//uses vec2 a as the reference direction
+	KNODISCARD
 	inline f32 angle(
 		const vec2 a,
 		const vec2 b)
@@ -2625,6 +2779,7 @@ namespace KalaHeaders::KalaMath
 	}
 	//Takes in non-normalized positions and returns angle in degrees (0..180),
 	//uses vec3 a as the reference direction
+	KNODISCARD
 	inline f32 angle(
 		const vec3& a,
 		const vec3& b,
@@ -2647,6 +2802,7 @@ namespace KalaHeaders::KalaMath
 
 	//Takes in non-normalized positions and returns signed angle in degrees (-180..180),
 	//uses vec2 a as the reference direction
+	KNODISCARD
 	inline f32 angle_s(
 		const vec2 a,
 		const vec2 b)
@@ -2664,6 +2820,7 @@ namespace KalaHeaders::KalaMath
 	}
 	//Takes in non-normalized positions and returns signed angle in degrees (-180..180),
 	//uses vec3 a as the reference direction
+	KNODISCARD
 	inline f32 angle_s(
 		const vec3& a,
 		const vec3& b,
@@ -2686,6 +2843,7 @@ namespace KalaHeaders::KalaMath
 
 	//Takes in non-normalized positions and returns full angle in degrees (0..360),
 	//uses vec2 a as the reference direction
+	KNODISCARD
 	inline f32 angle_f(
 		const vec2 a,
 		const vec2 b)
@@ -2702,6 +2860,7 @@ namespace KalaHeaders::KalaMath
 	}
 	//Takes in non-normalized positions and returns full angle in degrees (0..360),
 	//uses vec3 a as the reference direction
+	KNODISCARD
 	inline f32 angle_f(
 		const vec3& a,
 		const vec3& b,
@@ -2713,6 +2872,7 @@ namespace KalaHeaders::KalaMath
 	}
 
 	//Takes in a non-normalized axis and returns a quaternion that rotates around angle and axis
+	KNODISCARD
 	inline quat angleaxis(
 		f32 angle, 
 		const vec3& axis)
@@ -2731,6 +2891,7 @@ namespace KalaHeaders::KalaMath
 	}
 
 	//Projects vec2 a onto vec2 b
+	KNODISCARD
 	inline constexpr vec2 project(
 		const vec2 a, 
 		const vec2 b)
@@ -2738,6 +2899,7 @@ namespace KalaHeaders::KalaMath
 		return (dot(a, b) / dot(b, b)) * b;
 	}
 	//Projects vec3 a onto vec3 b
+	KNODISCARD
 	inline constexpr vec3 project(
 		const vec3& a, 
 		const vec3& b)
@@ -2746,23 +2908,31 @@ namespace KalaHeaders::KalaMath
 	}
 	
 	//Returns neutral vec2
+	KNODISCARD
 	inline constexpr vec2 identity_vec2() { return vec2{}; }
 	//Returns true if vec2 is true identity
+	KNODISCARD
 	inline bool isidentity(const vec2& v) { return isnear(v); }
 	
 	//Returns neutral vec3
+	KNODISCARD
 	inline constexpr vec3 identity_vec3() { return vec3{}; }
 	//Returns true if vec3 is true identity
+	KNODISCARD
 	inline bool isidentity(const vec3& v) { return isnear(v); }
 	
 	//Returns neutral vec4
+	KNODISCARD
 	inline constexpr vec4 identity_vec4() { return vec4{}; }
 	//Returns true if vec4 is true identity
+	KNODISCARD
 	inline bool isidentity(const vec4& v) { return isnear(v); }
 	
 	//Returns neutral quat
+	KNODISCARD
 	inline constexpr quat identity_quat() { return quat{}; }
 	//Returns true if quat is true identity
+	KNODISCARD
 	inline bool isidentity_q(const quat& q)
 	{
 		return isnear(q.w, 1.0f)
@@ -2772,8 +2942,10 @@ namespace KalaHeaders::KalaMath
 	}
 
 	//Returns neutral mat2
+	KNODISCARD
 	inline constexpr mat2 identity_mat2() { return mat2{}; }
 	//Returns true if mat2 is true identity
+	KNODISCARD
 	inline bool isidentity(const mat2& m)
 	{
 		return isnear(m.m00, 1.0f)
@@ -2784,8 +2956,10 @@ namespace KalaHeaders::KalaMath
 	}
 	
 	//Returns neutral mat3
+	KNODISCARD
 	inline constexpr mat3 identity_mat3() { return mat3{}; }
 	//Returns true if mat3 is true identity
+	KNODISCARD
 	inline bool isidentity(const mat3& m)
 	{
 		return isnear(m.m00, 1.0f)
@@ -2802,8 +2976,10 @@ namespace KalaHeaders::KalaMath
 	}
 	
 	//Returns neutral mat4
+	KNODISCARD
 	inline constexpr mat4 identity_mat4() { return mat4{}; }
 	//Returns true if mat4 is true identity
+	KNODISCARD
 	inline bool isidentity(const mat4& m)
 	{
 		return isnear(m.m00, 1.0f)
@@ -2999,6 +3175,7 @@ namespace KalaHeaders::KalaMath
 
 		combine(target, parent);
 	}
+	KNODISCARD
 	inline constexpr vec2 getpos(
 		const Transform2D& target,
 		PosTarget type)
@@ -3013,12 +3190,14 @@ namespace KalaHeaders::KalaMath
 	}
 	
 	//Returns true local right direction of this transform
+	KNODISCARD
 	inline constexpr vec2 getdirright(Transform2D& target)
 	{
 		float r = radians(target.rot_combined);
 		return vec2(cosf(r), sinf(r));
 	}
 	//Returns true local up direction of this transform
+	KNODISCARD
 	inline constexpr vec2 getdirup(Transform2D& target)
 	{
 		float r = radians(target.rot_combined);
@@ -3077,6 +3256,7 @@ namespace KalaHeaders::KalaMath
 		combine(target, parent);
 	}
 	//Returns rotation in euler (degrees)
+	KNODISCARD
 	inline constexpr f32 getrot(
 		const Transform2D& target,
 		RotTarget type)
@@ -3144,6 +3324,7 @@ namespace KalaHeaders::KalaMath
 
 		combine(target, parent);
 	}
+	KNODISCARD
 	inline constexpr vec2 getsize(
 		const Transform2D& target,
 		SizeTarget type)
@@ -3278,6 +3459,7 @@ namespace KalaHeaders::KalaMath
 
 		combine3d(target, parent);
 	}
+	KNODISCARD
 	inline constexpr vec3 getpos3d(
 		const Transform3D& target,
 		PosTarget type)
@@ -3416,6 +3598,7 @@ namespace KalaHeaders::KalaMath
 		combine3d(target, parent);
 	}
 	//Returns rotation in euler (degrees)
+	KNODISCARD
 	inline constexpr vec3 getroteuler(
 		const Transform3D& target,
 		RotTarget type)
@@ -3429,6 +3612,7 @@ namespace KalaHeaders::KalaMath
 		}
 	}
 	//Returns quaternion rotation
+	KNODISCARD
 	inline constexpr quat getrotquat(
 		const Transform3D& target,
 		RotTarget type)
@@ -3443,16 +3627,19 @@ namespace KalaHeaders::KalaMath
 	}
 	
 	//Returns true local front direction of this transform
+	KNODISCARD
 	inline constexpr vec3 getdirfront(Transform3D& target)
 	{
 		return target.rot_combined * DIR_FRONT;
 	}
 	//Returns true local right direction of this transform
+	KNODISCARD
 	inline constexpr vec3 getdirright(Transform3D& target)
 	{
 		return target.rot_combined * DIR_RIGHT;
 	}
 	//Returns true local up direction of this transform
+	KNODISCARD
 	inline constexpr vec3 getdirup(Transform3D& target)
 	{
 		return target.rot_combined * DIR_UP;
@@ -3527,6 +3714,7 @@ namespace KalaHeaders::KalaMath
 	}
 	
 	//Returns pitch as degrees for current transform
+	KNODISCARD
 	inline constexpr f32 getpitch(
 		Transform3D& target,
 		RotTarget type)
@@ -3534,6 +3722,7 @@ namespace KalaHeaders::KalaMath
 		return getroteuler(target, type).x;
 	}
 	//Returns yaw as degrees for current transform
+	KNODISCARD
 	inline constexpr f32 getyaw(
 		Transform3D& target,
 		RotTarget type)
@@ -3541,6 +3730,7 @@ namespace KalaHeaders::KalaMath
 		return getroteuler(target, type).y;
 	}
 	//Returns roll as degrees for current transform
+	KNODISCARD
 	inline constexpr f32 getroll(
 		Transform3D& target,
 		RotTarget type)
@@ -3602,6 +3792,7 @@ namespace KalaHeaders::KalaMath
 
 		combine3d(target, parent);
 	}
+	KNODISCARD
 	inline constexpr vec3 getsize3d(
 		const Transform3D& target,
 		SizeTarget type)

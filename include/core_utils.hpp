@@ -17,17 +17,13 @@
 
 #pragma once
 
-#include <string>
-#include <vector>
-#include <unordered_map>
-#include <unordered_set>
-#include <map>
-#include <array>
-#include <tuple>
-#include <cstdint>
-#include <bit>
-#include <type_traits>
-#include <concepts>
+//
+// SKIP UNSUPPORTED C++ VERSION
+//
+
+#if __cplusplus < 202002L
+	#error "UNSUPPORTED C++ VERSION! SUPPORTED: C++20 AND ABOVE"
+#endif
 
 //
 // SKIP UNSUPPORTED PLATFORMS AND ARCHITECTURES
@@ -89,6 +85,18 @@
 	#endif
 #endif
 
+#include <string>
+#include <vector>
+#include <unordered_map>
+#include <unordered_set>
+#include <map>
+#include <array>
+#include <tuple>
+#include <cstdint>
+#include <bit>
+#include <type_traits>
+#include <concepts>
+
 //
 // DEBUG MACRO
 //
@@ -118,6 +126,10 @@
 	#define rcast reinterpret_cast
 	#define scast static_cast
 	#define ccast const_cast
+#endif
+
+#if !defined(KNODISCARD)
+	#define KNODISCARD [[nodiscard]]
 #endif
 
 //
@@ -362,6 +374,7 @@ namespace KalaHeaders::KalaCore
 	//assumes map or unordered map key is known enum type and value is string type,
 	//returns false if unsuccessful
 	template<AnyString S, AnyEnumAndStringMap M>
+	KNODISCARD
 	inline constexpr bool StringToEnum(
 		S&& value,
 		const M& map,
@@ -385,6 +398,7 @@ namespace KalaHeaders::KalaCore
 	//assumes map or unordered map key known enum type and value is string type,
 	//returns false if unsuccessful
 	template<AnyEnumAndStringMap M>
+	KNODISCARD
 	inline constexpr bool EnumToString(
 		typename M::key_type key,
 		const M& map,
@@ -407,6 +421,7 @@ namespace KalaHeaders::KalaCore
 		requires (
 		IsComparable<typename T::mapped_type, V>
 		&& IsAssignable<K&, typename T::key_type>)
+	KNODISCARD
 	bool GetMapKeys(
 		const T& map, 
 		const V& value, 
@@ -428,6 +443,7 @@ namespace KalaHeaders::KalaCore
 		requires (
 			IsComparable<typename T::key_type, K>
 			&& IsAssignable<V&, typename T::mapped_type>)
+	KNODISCARD
 	bool GetMapValue(
 		const T& map, 
 		const K& key, 
@@ -447,6 +463,7 @@ namespace KalaHeaders::KalaCore
 	//Returns true if raw array of type T contains the requested value 
 	template<AnyRawArray A, typename T>
 		requires IsComparable<AnyRawArrayElement<A>, T>
+	KNODISCARD
 	bool ContainsValue(
 		const A& container, 
 		const T& value)
@@ -463,6 +480,7 @@ namespace KalaHeaders::KalaCore
 	//Returns true if array of type T contains the requested value 
 	template<AnyArray A, typename T>
 		requires IsComparable<typename A::value_type, T>
+	KNODISCARD
 	bool ContainsValue(
 		const A& container, 
 		const T& value)
@@ -479,6 +497,7 @@ namespace KalaHeaders::KalaCore
 	//Returns true if vector of type T contains the requested value
 	template<AnyVector V, typename T>
 		requires IsComparable<typename V::value_type, T>
+	KNODISCARD
 	bool ContainsValue(
 		const V& container, 
 		const T& value)
@@ -495,6 +514,7 @@ namespace KalaHeaders::KalaCore
 	//Returns true if map or unordered map with value of type T contains the requested key 
 	template<AnyMap M, typename T>
 		requires IsComparable<typename M::key_type, T>
+	KNODISCARD
 	bool ContainsKey(
 		const M& container, 
 		const T& key)
@@ -505,6 +525,7 @@ namespace KalaHeaders::KalaCore
 	//Returns true if map or unordered map with value of type T contains the requested value 
 	template<AnyMap M, typename T>
 		requires IsComparable<typename M::mapped_type, T>
+	KNODISCARD
 	bool ContainsValue(
 		const M& container, 
 		const T& value)
@@ -566,6 +587,7 @@ namespace KalaHeaders::KalaCore
 	//  - functions
 	//  - arrays
 	template<typename T>
+	KNODISCARD
 	inline constexpr T ToVar(uintptr_t h)
 		requires is_pointer_v<T>
 	{
@@ -579,6 +601,7 @@ namespace KalaHeaders::KalaCore
 	//  - bitmask flags
 	//  - opaque handles
 	template<typename T>
+	KNODISCARD
 	inline constexpr T ToVar(uintptr_t h)
 		requires is_integral_v<T>
 	{
@@ -592,6 +615,7 @@ namespace KalaHeaders::KalaCore
 	//  - enum-based bitmask flags
 	//  - strongly typed API handles
 	template<typename T>
+	KNODISCARD
 	inline constexpr T ToVar(uintptr_t h)
 		requires AnyEnum<T>
 	{
@@ -605,6 +629,7 @@ namespace KalaHeaders::KalaCore
 	//  - functions
 	//  - arrays
 	template<typename T>
+	KNODISCARD
 	inline constexpr uintptr_t FromVar(T* h)
 	{
 		return rcast<uintptr_t>(h);
@@ -616,6 +641,7 @@ namespace KalaHeaders::KalaCore
 	//  - bitmask flags
 	//  - opaque handles
 	template<typename T>
+	KNODISCARD
 	inline constexpr uintptr_t FromVar(T h)
 		requires is_integral_v<T>
 	{
@@ -628,6 +654,7 @@ namespace KalaHeaders::KalaCore
 	//  - enum-based bitmask flags
 	//  - strongly typed API handles
 	template<typename T>
+	KNODISCARD
 	inline constexpr uintptr_t FromVar(T h)
 		requires AnyEnum<T>
 	{

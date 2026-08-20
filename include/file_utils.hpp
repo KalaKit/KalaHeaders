@@ -16,18 +16,13 @@
 
 #pragma once
 
-#include <string>
-#include <vector>
-#include <sstream>
-#include <fstream>
-#include <algorithm>
-#include <filesystem>
-#include <cerrno>
-#include <cstring>
-#include <cstdint>
-#include <concepts>
-#include <type_traits>
-#include <chrono>
+//
+// SKIP UNSUPPORTED C++ VERSION
+//
+
+#if __cplusplus < 202002L
+	#error "UNSUPPORTED C++ VERSION! SUPPORTED: C++20 AND ABOVE"
+#endif
 
 //
 // SKIP UNSUPPORTED PLATFORMS AND ARCHITECTURES
@@ -89,6 +84,19 @@
 	#endif
 #endif
 
+#include <string>
+#include <vector>
+#include <sstream>
+#include <fstream>
+#include <algorithm>
+#include <filesystem>
+#include <cerrno>
+#include <cstring>
+#include <cstdint>
+#include <concepts>
+#include <type_traits>
+#include <chrono>
+
 //
 // DEBUG MACRO
 //
@@ -118,6 +126,10 @@
 	#define rcast reinterpret_cast
 	#define scast static_cast
 	#define ccast const_cast
+#endif
+
+#if !defined(KNODISCARD)
+	#define KNODISCARD [[nodiscard]]
 #endif
 
 //
@@ -262,6 +274,7 @@ namespace KalaHeaders::KalaFile
 	};
 	
 	//Converts file_time_type to local time
+	KNODISCARD
 	inline string TimeToString(file_time_type time)
 	{
 		auto sctp = time_point_cast<system_clock::duration>(
@@ -287,6 +300,7 @@ namespace KalaHeaders::KalaFile
 	//Returns true if string contains any unsafe path characters.
 	//Safe: 'A-Z', 'a-z', '0-9', '_', '-', '.', '/', '\\', ':'.
 	//If ignoreWildcards is true then '*' is also safe
+	KNODISCARD
 	inline constexpr bool HasAnyUnsafePathChar(
 		string_view origin, 
 		bool ignoreWildcards = false)
@@ -367,6 +381,7 @@ namespace KalaHeaders::KalaFile
 
 	//Resolve any path-like field into a vector of paths (wildcards may return multiple values),
 	//PathTarget let you select both files and dirs, or files only, or dirs only
+	KNODISCARD
 	inline string ResolveAnyPath(
 		string_view input,
 		string_view relativeDir,
@@ -803,6 +818,7 @@ namespace KalaHeaders::KalaFile
 	//
 
 	//Convert a path vector to a string vector
+	KNODISCARD
 	inline string ToStringVector(
 		const vector<path>& in, 
 		vector<string>& out)
@@ -818,6 +834,7 @@ namespace KalaHeaders::KalaFile
 	}
 
 	//Convert a string vector to a path vector
+	KNODISCARD
 	inline string ToPathVector(
 		const vector<string>& in, 
 		vector<path>& out)
@@ -859,6 +876,7 @@ namespace KalaHeaders::KalaFile
 	//Create regular or binary file at target path. If you also want data written
 	//to the new file after its been created then pass a fileData struct
 	//with one of the fields filled in, only the first found field data is used
+	KNODISCARD
 	inline string CreateNewFile(
 		const path& target,
 		FileType targetFileType = FileType::FILE_BINARY,
@@ -991,6 +1009,7 @@ namespace KalaHeaders::KalaFile
 
 	//Create a directory at target path, this also creates all
 	//parent folders up to it that don't exist yet
+	KNODISCARD
 	inline string CreateNewDirectory(const path& target)
 	{
 		ostringstream oss{};
@@ -1046,6 +1065,7 @@ namespace KalaHeaders::KalaFile
 	//depending on the side opposite to the asterisk (*.example or example.*),
 	//will not return any directories,
 	//can search recursively if recursive is true
+	KNODISCARD
 	inline string GetRelativeFiles(
 		const path& dir,
 		string_view extensionOrName,
@@ -1224,6 +1244,7 @@ namespace KalaHeaders::KalaFile
 
 	//List all the contents of a folder,
 	//can search recursively if recursive is true
+	KNODISCARD
 	inline string ListDirectoryContents(
 		const path& target,
 		vector<path>& outEntries,
@@ -1292,6 +1313,7 @@ namespace KalaHeaders::KalaFile
 	}
 
 	//Rename file or folder in its current directory
+	KNODISCARD
 	inline string RenamePath(
 		const path& target,
 		string_view newName)
@@ -1360,6 +1382,7 @@ namespace KalaHeaders::KalaFile
 	}
 
 	//Delete file or folder in target path (recursive for directories)
+	KNODISCARD
 	inline string DeletePath(const path& target)
 	{
 		ostringstream oss{};
@@ -1409,6 +1432,7 @@ namespace KalaHeaders::KalaFile
 	}
 
 	//Copy file or folder from origin to target, with optional overwrite flag
+	KNODISCARD
 	inline string CopyPath(
 		const path& origin,
 		const path& target,
@@ -1529,6 +1553,7 @@ namespace KalaHeaders::KalaFile
 	}
 
 	//Move file or folder from origin to target, target is always overwritten if it already exists
+	KNODISCARD
 	inline string MovePath(
 		const path& origin,
 		const path& target)
@@ -1628,6 +1653,7 @@ namespace KalaHeaders::KalaFile
 	//
 
 	//Get the size of the target file in bytes
+	KNODISCARD
 	inline string GetFileSize(
 		const path& target,
 		uintmax_t& outSize)
@@ -1682,6 +1708,7 @@ namespace KalaHeaders::KalaFile
 	}
 
 	//Get the size of the target directory in bytes
+	KNODISCARD
 	inline string GetDirectorySize(
 		const path& target,
 		uintmax_t& outSize)
@@ -1755,6 +1782,7 @@ namespace KalaHeaders::KalaFile
 	}
 
 	//Get the count of lines in a text file
+	KNODISCARD
 	inline string GetTextFileLineCount(
 		const path& target,
 		size_t& outCount)
@@ -1839,6 +1867,7 @@ namespace KalaHeaders::KalaFile
 	}
 
 	//Set the extension of the target
+	KNODISCARD
 	inline string SetPathExtension(
 		const path& target,
 		string_view newExtension,
@@ -1917,6 +1946,7 @@ namespace KalaHeaders::KalaFile
 
 	//Write all text from a string to a text file, with optional append and overwrite flags.
 	//A new file is created at target path if it doesn't already exist
+	KNODISCARD
 	inline string WriteTextToFile(
 		const path& target,
 		string_view inText,
@@ -2018,6 +2048,7 @@ namespace KalaHeaders::KalaFile
 		return{};
 	}
 	//Read all text from a file into a string
+	KNODISCARD
 	inline string ReadTextFromFile(
 		const path& target, 
 		string& outText)
@@ -2106,6 +2137,7 @@ namespace KalaHeaders::KalaFile
 
 	//Write all lines from a vector to a text file, with optional append and overwrite flags.
 	//A new file is created at target path if it doesn't already exist
+	KNODISCARD
 	inline string WriteLinesToFile(
 		const path& target,
 		const vector<string>& inLines,
@@ -2212,6 +2244,7 @@ namespace KalaHeaders::KalaFile
 	//Read all lines from a file into a vector of strings with optional 
 	//lineStart and lineEnd values to avoid placing all lines to memory.
 	//If lineEnd is 0 and lineStart isnt, then this function defaults end to EOF
+	KNODISCARD
 	inline string ReadLinesFromFile(
 		const path& target,
 		vector<string>& outLines,
@@ -2362,6 +2395,7 @@ namespace KalaHeaders::KalaFile
 	//
 
 	//Simple helper to get binary chunk stream size for efficient binary reading
+	KNODISCARD
 	inline constexpr size_t GetBinaryChunkStreamSize(size_t fileSize)
 	{
 		//empty file
@@ -2379,6 +2413,7 @@ namespace KalaHeaders::KalaFile
 
 	//Write all binary data from a vector<uint8_t> to a file, with optional append and overwrite flags.
 	//A new file is created at target path if it doesn't already exist
+	KNODISCARD
 	inline string WriteBinaryDataToFile(
 		const path& target,
 		const vector<uint8_t>& inData,
@@ -2499,6 +2534,7 @@ namespace KalaHeaders::KalaFile
 	//Read all binary data from a file into a vector<uint8_t> with optional 
 	//rangeStart and rangeEnd values to avoid placing whole binary file to memory.
 	//If rangeEnd is 0 and rangeStart isnt, then this function defaults end to EOF
+	KNODISCARD
 	inline string ReadBinaryDataFromFile(
 		const path& target,
 		vector<uint8_t>& outData,
@@ -2696,6 +2732,8 @@ namespace KalaHeaders::KalaFile
 			else data[offset + i] = 0; //null-pad remaining bytes
 		}
 	}
+
+	KNODISCARD
 	inline constexpr string ReadFixedString(
 		const vector<u8>& data,
 		size_t offset,
@@ -2777,6 +2815,7 @@ namespace KalaHeaders::KalaFile
 		data[offset + 3] = scast<u8>((value >> 24) & 0xFF);
 	}
 	
+	KNODISCARD
 	inline constexpr u8 ReadU8(
 		const vector<u8>& data,
 		size_t offset)
@@ -2785,6 +2824,7 @@ namespace KalaHeaders::KalaFile
 			? 0x00
 			: scast<u8>(data[offset]);
 	}
+	KNODISCARD
 	inline constexpr u16 ReadU16(
 		const vector<u8>& data,
 		size_t offset)
@@ -2794,6 +2834,7 @@ namespace KalaHeaders::KalaFile
 			: scast<u16>(data[offset])
 			| scast<u16>(data[offset + 1]) << 8;
 	}
+	KNODISCARD
 	inline constexpr u32 ReadU32(
 		const vector<u8>& data,
 		size_t offset)
@@ -2866,6 +2907,7 @@ namespace KalaHeaders::KalaFile
 		data[offset + 3] = scast<u8>((value >> 24) & 0xFF);
 	}
 	
+	KNODISCARD
 	inline constexpr i8 ReadI8(
 		const vector<u8>& data,
 		size_t offset)
@@ -2874,6 +2916,7 @@ namespace KalaHeaders::KalaFile
 			? 0
 			: scast<i8>(data[offset]);
 	}
+	KNODISCARD
 	inline constexpr i16 ReadI16(
 		const vector<u8>& data,
 		size_t offset)
@@ -2886,6 +2929,7 @@ namespace KalaHeaders::KalaFile
 			
 		return scast<i16>(value);
 	}
+	KNODISCARD
 	inline constexpr i32 ReadI32(
 		const vector<u8>& data,
 		size_t offset)
@@ -2902,6 +2946,7 @@ namespace KalaHeaders::KalaFile
 	}
 	
 	//Return all start and end of defined string in a binary
+	KNODISCARD
 	inline string GetRangeByValue(
 		const path& target,
 		string_view inData,
@@ -3076,6 +3121,7 @@ namespace KalaHeaders::KalaFile
 	}
 
 	//Return all start and end of defined bytes in a binary
+	KNODISCARD
 	inline string GetRangeByValue(
 		const path& target,
 		const vector<uint8_t>& inData,

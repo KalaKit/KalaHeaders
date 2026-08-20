@@ -15,12 +15,13 @@
 
 #pragma once
 
-#include <cstddef>
-#include <array>
-#include <cstdint>
-#include <vector>
-#include <string>
-#include <algorithm>
+//
+// SKIP UNSUPPORTED C++ VERSION
+//
+
+#if __cplusplus < 202002L
+	#error "UNSUPPORTED C++ VERSION! SUPPORTED: C++20 AND ABOVE"
+#endif
 
 //
 // SKIP UNSUPPORTED PLATFORMS AND ARCHITECTURES
@@ -82,6 +83,13 @@
 	#endif
 #endif
 
+#include <cstddef>
+#include <array>
+#include <cstdint>
+#include <vector>
+#include <string>
+#include <algorithm>
+
 //
 // DEBUG MACRO
 //
@@ -111,6 +119,10 @@
 	#define rcast reinterpret_cast
 	#define scast static_cast
 	#define ccast const_cast
+#endif
+
+#if !defined(KNODISCARD)
+	#define KNODISCARD [[nodiscard]]
 #endif
 
 //
@@ -234,6 +246,7 @@ namespace KalaHeaders::KalaKeyStandards
 	}};
 
 	//Invalid value is always returned as SIZE_MAX, never 0
+	KNODISCARD
 	inline constexpr size_t MouseToIndex(MouseButton m)
 	{
 		constexpr size_t invalid = SIZE_MAX;
@@ -248,6 +261,7 @@ namespace KalaHeaders::KalaKeyStandards
 			- scast<size_t>(MouseButton::M_LEFT);
 	}
 	//Valid indexes start at 0 so 0 is M_LEFT
+	KNODISCARD
 	inline constexpr MouseButton IndexToMouse(size_t i)
 	{
 		if (i >= mouseButtons.size()) return MouseButton::M_INVALID;
@@ -256,6 +270,7 @@ namespace KalaHeaders::KalaKeyStandards
 			i + scast<size_t>(MouseButton::M_LEFT));
 	}
 	
+	KNODISCARD
 	inline constexpr string_view MouseToString(MouseButton m)
 	{
 		constexpr string_view invalid = "INVALID";
@@ -273,6 +288,7 @@ namespace KalaHeaders::KalaKeyStandards
 
 		return invalid;
 	}
+	KNODISCARD
 	inline constexpr MouseButton StringToMouse(string_view s)
 	{
 		for (const auto& _m : mouseButtons)
@@ -339,6 +355,7 @@ namespace KalaHeaders::KalaKeyStandards
 	}};
 
 	//Invalid value is always returned as SIZE_MAX, never 0
+	KNODISCARD
 	inline constexpr size_t GamepadToIndex(GamepadButton g)
 	{
 		constexpr size_t invalid = SIZE_MAX;
@@ -353,6 +370,7 @@ namespace KalaHeaders::KalaKeyStandards
 			- scast<size_t>(GamepadButton::G_A);
 	}
 	//Valid indexes start at 0 so 0 is G_A
+	KNODISCARD
 	inline constexpr GamepadButton IndexToGamepad(size_t i)
 	{
 		if (i >= gamepadButtons.size()) return GamepadButton::G_INVALID;
@@ -361,6 +379,7 @@ namespace KalaHeaders::KalaKeyStandards
 			i + scast<size_t>(GamepadButton::G_A));
 	}
 
+	KNODISCARD
 	inline constexpr string_view GamepadToString(GamepadButton g)
 	{
 		constexpr string_view invalid = "INVALID";
@@ -378,6 +397,7 @@ namespace KalaHeaders::KalaKeyStandards
 
 		return invalid;
 	}
+	KNODISCARD
 	inline constexpr GamepadButton StringToGamepad(string_view s)
 	{
 		for (const auto& _g : gamepadButtons)
@@ -542,6 +562,7 @@ namespace KalaHeaders::KalaKeyStandards
 	}};
 
 	//Invalid value is always returned as SIZE_MAX, never 0
+	KNODISCARD
 	inline constexpr size_t KeyToIndex(KeyboardButton k)
 	{
 		constexpr size_t invalid = SIZE_MAX;
@@ -556,6 +577,7 @@ namespace KalaHeaders::KalaKeyStandards
 			- scast<size_t>(KeyboardButton::K_A);
 	}
 	//Valid indexes start at 0 so 0 is K_A
+	KNODISCARD
 	inline constexpr KeyboardButton IndexToKey(size_t i)
 	{
 		if (i >= keyboardButtons.size()) return KeyboardButton::K_INVALID;
@@ -564,6 +586,7 @@ namespace KalaHeaders::KalaKeyStandards
 			i + scast<size_t>(KeyboardButton::K_A));
 	}
 
+	KNODISCARD
 	inline constexpr string_view KeyToString(KeyboardButton k)
 	{
 		constexpr string_view invalid = "INVALID";
@@ -581,6 +604,7 @@ namespace KalaHeaders::KalaKeyStandards
 
 		return invalid;
 	}
+	KNODISCARD
 	inline constexpr KeyboardButton StringToKey(string_view s)
 	{
 		for (const auto& _k : keyboardButtons)
@@ -1167,6 +1191,7 @@ namespace KalaHeaders::KalaKeyStandards
 		keyValues.insert(keyValues.end(), emojis.begin(), emojis.end());
 	}
 	
+	KNODISCARD
 	inline constexpr u32 GetKeyByUTF(const u32 utf)
 	{
 		FillKeyValues();
@@ -1184,6 +1209,7 @@ namespace KalaHeaders::KalaKeyStandards
 			? it->utf
 			: u32{};
 	}
+	KNODISCARD
 	inline constexpr u32 GetKeyByValue(const string_view& value)
 	{
 		FillKeyValues();
@@ -1202,6 +1228,7 @@ namespace KalaHeaders::KalaKeyStandards
 			: u32{};
 	}
 	
+	KNODISCARD
 	inline constexpr u32 GetUTFByKey(u32 key)
 	{
 		FillKeyValues();
@@ -1220,6 +1247,7 @@ namespace KalaHeaders::KalaKeyStandards
 			? it->utf
 			: 0x003F; //returns ? as fallback
 	}
+	KNODISCARD
 	inline constexpr u32 GetUTFByValue(const string_view& value)
 	{
 		FillKeyValues();
@@ -1238,6 +1266,7 @@ namespace KalaHeaders::KalaKeyStandards
 			: 0x003F; //returns ? as fallback
 	}
 	
+	KNODISCARD
 	inline constexpr string_view GetValueByKey(u32 key)
 	{
 		FillKeyValues();
@@ -1255,6 +1284,7 @@ namespace KalaHeaders::KalaKeyStandards
 			? it->value
 			: "?";
 	}
+	KNODISCARD
 	inline constexpr string_view GetValueByUTF(u32 utf)
 	{
 		FillKeyValues();

@@ -16,14 +16,13 @@
 
 #pragma once
 
-#include <cstring>
-#include <ctime>
-#include <cstdio>
-#include <cstdint>
-#include <string>
-#include <chrono>
-#include <array>
-#include <algorithm>
+//
+// SKIP UNSUPPORTED C++ VERSION
+//
+
+#if __cplusplus < 202002L
+	#error "UNSUPPORTED C++ VERSION! SUPPORTED: C++20 AND ABOVE"
+#endif
 
 //
 // SKIP UNSUPPORTED PLATFORMS AND ARCHITECTURES
@@ -85,6 +84,15 @@
 	#endif
 #endif
 
+#include <cstring>
+#include <ctime>
+#include <cstdio>
+#include <cstdint>
+#include <string>
+#include <chrono>
+#include <array>
+#include <algorithm>
+
 //
 // DEBUG MACRO
 //
@@ -114,6 +122,10 @@
 	#define rcast reinterpret_cast
 	#define scast static_cast
 	#define ccast const_cast
+#endif
+
+#if !defined(KNODISCARD)
+	#define KNODISCARD [[nodiscard]]
 #endif
 
 //
@@ -244,6 +256,7 @@ namespace KalaHeaders::KalaLog
 	{
 	public:
 		//Returns current time in chosen or default format
+		KNODISCARD
 		static inline string GetTime(TimeFormat timeFormat = TimeFormat::TIME_DEFAULT)
 		{
 			static thread_local const string empty{};
@@ -375,6 +388,7 @@ namespace KalaHeaders::KalaLog
 			return buffer;
 		}
 		//Returns current date in chosen or default format
+		KNODISCARD
 		static inline string GetDate(DateFormat dateFormat = DateFormat::DATE_DEFAULT)
 		{
 			static thread_local string empty{};
@@ -465,7 +479,7 @@ namespace KalaHeaders::KalaLog
 
 			string_view prefix = GetCachedPrefix(type, target);
 
-			char* p = logBuffer().data();
+			char* p = buffer.data();
 
 			//append [ date ] [ time ]
 			if (!dateStamp.empty())
@@ -516,12 +530,12 @@ namespace KalaHeaders::KalaLog
 				? stderr
 				: stdout;
 
-			const size_t length = scast<size_t>(p - logBuffer().data());
+			const size_t length = scast<size_t>(p - buffer.data());
 
 			//TODO: figure out how to make it work
-			//EmitLog(string_view(logBuffer().data(), length));
+			//EmitLog(string_view(buffer.data(), length));
 
-			fwrite(logBuffer().data(), 1, length, out);
+			fwrite(buffer.data(), 1, length, out);
 
 			if (flush
 				|| type == LogType::LOG_ERROR)
@@ -545,17 +559,18 @@ namespace KalaHeaders::KalaLog
 			const size_t length = trimmed.size();
 			const size_t totalLength = length + 1; //+1 for '\n'
 
-			memcpy(logBuffer().data(), trimmed.data(), length);
-			logBuffer()[length] = '\n';
+			memcpy(buffer.data(), trimmed.data(), length);
+			buffer[length] = '\n';
 
 			//TODO: figure out how to make it work
-			//EmitLog(string_view(logBuffer().data(), totalLength));
+			//EmitLog(string_view(buffer.data(), totalLength));
 
-			fwrite(logBuffer().data(), 1, totalLength, stdout);
+			fwrite(buffer.data(), 1, totalLength, stdout);
 
 			if (flush) fflush(stdout);
 		}
 	private:		
+		KNODISCARD
 		static inline string TrimUTF8(string_view s)
 		{
 			size_t bytes = 0;
@@ -604,6 +619,7 @@ namespace KalaHeaders::KalaLog
 			8
 		};
 
+		KNODISCARD
 		static inline string_view GetCachedPrefix(
 			LogType type,
 			string_view target)
@@ -612,7 +628,7 @@ namespace KalaHeaders::KalaLog
 
 			for (size_t i = 0; i < prefixSize; ++i)
 			{
-				const auto& e = prefixCache()[i];
+				const auto& e = cache[i];
 				if (e.type == type
 					&& e.target == target)
 				{
@@ -641,25 +657,15 @@ namespace KalaHeaders::KalaLog
 			p[4 + tagLength + targetLength] = ' ';
 
 			size_t index{};
-			if (prefixSize < prefixCache().size()) index = prefixSize++;
-			else index = (prefixClock++ % prefixCache().size());
+			if (prefixSize < cache.size()) index = prefixSize++;
+			else index = (prefixClock++ % cache.size());
 
-			prefixCache()[index] = { type, string(target), std::move(built) };
-			return prefixCache()[index].prefix;
+			cache[index] = { type, string(target), std::move(built) };
+			return cache[index].prefix;
 		}
 
-		//Message length + headroom for tag, date stamp, time stamp and indent
-		static inline array<char, MAX_MESSAGE_LENGTH + 256>& logBuffer()
-		{
-			thread_local array<char, MAX_MESSAGE_LENGTH + 256> buffer{};
-			return buffer;
-		}
-
-		static inline array<CachedPrefix, CACHED_TAGS_LENGTH>& prefixCache()
-		{
-			thread_local array<CachedPrefix, CACHED_TAGS_LENGTH> cache{};
-			return cache;
-		}
+		static inline thread_local array<char, MAX_MESSAGE_LENGTH + 256> buffer{};
+		static inline thread_local array<CachedPrefix, CACHED_TAGS_LENGTH> cache{};
 
 		static inline thread_local size_t prefixSize{};  //total filled cached prefixes
 		static inline thread_local size_t prefixClock{}; //where to overwrite next once the cache is full
