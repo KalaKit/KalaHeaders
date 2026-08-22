@@ -119,6 +119,14 @@
 	#define ccast const_cast
 #endif
 
+//
+// COMPILER MACROS
+//
+
+#if !defined(KNORETURN)
+	#define KNORETURN [[noreturn]]
+#endif
+
 #if !defined(KNODISCARD)
 	#define KNODISCARD [[nodiscard]]
 #endif
