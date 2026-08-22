@@ -407,10 +407,11 @@ namespace KalaHeaders::KalaFile
 
 		auto complete = [&out, &results]() -> void
 			{
-				out.insert(
-					out.end(),
-					make_move_iterator(results.begin()),
-					make_move_iterator(results.end()));
+				for (path& p : results)
+				{
+					out.push_back(std::move(p));
+				}
+				results.clear();
 			};
 
 		auto clean_paths = [&results]() -> string
@@ -556,10 +557,11 @@ namespace KalaHeaders::KalaFile
 					}
 				}
 
-				out.insert(
-					out.end(),
-					make_move_iterator(tempOutTargetPaths.begin()),
-					make_move_iterator(tempOutTargetPaths.end()));
+				for (path& p : tempOutTargetPaths)
+				{
+					out.push_back(std::move(p));
+				}
+				tempOutTargetPaths.clear();
 
 				return{};
 			};
@@ -670,10 +672,11 @@ namespace KalaHeaders::KalaFile
 					}
 				}
 
-				out.insert(
-					out.end(),
-					make_move_iterator(tempOutFilePaths.begin()),
-					make_move_iterator(tempOutFilePaths.end()));
+				for (path& p : tempOutFilePaths)
+				{
+					out.push_back(std::move(p));
+				}
+				tempOutFilePaths.clear();
 
 				return{};
 			};
@@ -696,10 +699,11 @@ namespace KalaHeaders::KalaFile
 					+ "' because of wildcard error! Reason: " + result;
 			}
 
-			results.insert(
-				results.end(),
-				make_move_iterator(foundPaths.begin()),
-				make_move_iterator(foundPaths.end()));
+			for (path& p : foundPaths)
+			{
+				results.push_back(std::move(p));
+			}
+			foundPaths.clear();
 
 			string cleanupResult = clean_paths();
 			if (!cleanupResult.empty()) return cleanupResult;
@@ -722,10 +726,11 @@ namespace KalaHeaders::KalaFile
 					+ "' because of wildcard error! Reason: " + result;
 			}
 
-			results.insert(
-				results.end(),
-				make_move_iterator(foundPaths.begin()),
-				make_move_iterator(foundPaths.end()));
+			for (path& p : foundPaths)
+			{
+				results.push_back(std::move(p));
+			}
+			foundPaths.clear();
 
 			string cleanupResult = clean_paths();
 			if (!cleanupResult.empty()) return cleanupResult;
@@ -751,10 +756,11 @@ namespace KalaHeaders::KalaFile
 					+ "' because of wildcard error! Reason: " + result;
 			}
 
-			results.insert(
-				results.end(),
-				make_move_iterator(foundPaths.begin()),
-				make_move_iterator(foundPaths.end()));
+			for (path& p : foundPaths)
+			{
+				results.push_back(std::move(p));
+			}
+			foundPaths.clear();
 
 			string cleanupResult = clean_paths();
 			if (!cleanupResult.empty()) return cleanupResult;
@@ -779,10 +785,11 @@ namespace KalaHeaders::KalaFile
 					+ "' because of wildcard error! Reason: " + result;
 			}
 
-			results.insert(
-				results.end(),
-				make_move_iterator(foundPaths.begin()),
-				make_move_iterator(foundPaths.end()));
+			for (path& p : foundPaths)
+			{
+				results.push_back(std::move(p));
+			}
+			foundPaths.clear();
 
 			string cleanupResult = clean_paths();
 			if (!cleanupResult.empty()) return cleanupResult;
@@ -805,10 +812,11 @@ namespace KalaHeaders::KalaFile
 					+ "' because of wildcard error! Reason: " + result;
 			}
 
-			results.insert(
-				results.end(),
-				make_move_iterator(foundPaths.begin()),
-				make_move_iterator(foundPaths.end()));
+			for (path& p : foundPaths)
+			{
+				results.push_back(std::move(p));
+			}
+			foundPaths.clear();
 
 			string cleanupResult = clean_paths();
 			if (!cleanupResult.empty()) return cleanupResult;

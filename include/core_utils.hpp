@@ -380,13 +380,13 @@ namespace KalaHeaders::KalaCore
 
 	//Converts string type to known enum type,
 	//assumes map or unordered map key is known enum type and value is string type,
-	//returns false if unsuccessful
+	//returns error string on failure
 	template<AnyString S, AnyEnumAndStringMap M>
 	KNODISCARD
-	inline constexpr bool StringToEnum(
+	inline constexpr string StringToEnum(
 		S&& value,
 		const M& map,
-		typename M::key_type& target)
+		typename M::key_type& outValue)
 	{
 		string_view sv{ value };
 
@@ -394,29 +394,32 @@ namespace KalaHeaders::KalaCore
 		{
 			if (v == sv)
 			{
-				target = k;
-				return true;
+				outValue = k;
+				return "";
 			}
 		}
 
-		return false;
+		return "StringToEnum failed because target was not found!";
 	}
 
 	//Converts known enum type to string_view,
 	//assumes map or unordered map key known enum type and value is string type,
-	//returns false if unsuccessful
+	//returns error string on failure
 	template<AnyEnumAndStringMap M>
 	KNODISCARD
-	inline constexpr bool EnumToString(
+	inline constexpr string EnumToString(
 		typename M::key_type key,
 		const M& map,
-		string_view& out)
+		string_view& outValue)
 	{
 		auto it = map.find(key);
-		if (it == map.end()) return false;
+		if (it == map.end())
+		{
+			return "EnumToString failed because key was not found!";
+		}
 
-		out = it->second;
-		return true;
+		outValue = it->second;
+		return "";
 	}
 
 	//
@@ -424,44 +427,56 @@ namespace KalaHeaders::KalaCore
 	//
 
 	//Get all keys by value from map or unordered_map,
-	//if append is true then the output vector won't be cleared
+	//if append is true then the output vector won't be cleared,
+	//returns error string on failure
 	template<AnyMap T, typename K, typename V>
 		requires (
 		IsComparable<typename T::mapped_type, V>
 		&& IsAssignable<K&, typename T::key_type>)
 	KNODISCARD
-	bool GetMapKeys(
+	inline string GetMapKeys(
 		const T& map, 
 		const V& value, 
-		vector<K>& keys,
+		vector<K>& outValue,
 		bool append = false)
 	{
-		if (!append) keys.clear();
+		if (!append) outValue.clear();
 
+		bool foundValues{};
 		for (const auto& [k, v] : map)
 		{
-			if (v == value) keys.push_back(k);
+			if (v == value)
+			{
+				outValue.push_back(k);
+				foundValues = true;
+			}
 		}
 
-		return !keys.empty();
+		return foundValues
+			? ""
+			: "GetMapKeys failed because map was empty!";
 	}
 
-	//Get value by key from map or unordered_map
+	//Get value by key from map or unordered_map,
+	//returns error string on failure
 	template<AnyMap T, typename K, typename V>
 		requires (
 			IsComparable<typename T::key_type, K>
 			&& IsAssignable<V&, typename T::mapped_type>)
 	KNODISCARD
-	bool GetMapValue(
+	inline constexpr string GetMapValue(
 		const T& map, 
 		const K& key, 
-		V& value)
+		V& outValue)
 	{
 		auto it = map.find(key);
-		if (it == map.end()) return false;
+		if (it == map.end())
+		{
+			return "GetMapValue failed because map did not contain key!";
+		}
 
-		value = it->second;
-		return true;
+		outValue = it->second;
+		return "";
 	}
 
 	//
@@ -472,7 +487,7 @@ namespace KalaHeaders::KalaCore
 	template<AnyRawArray A, typename T>
 		requires IsComparable<AnyRawArrayElement<A>, T>
 	KNODISCARD
-	bool ContainsValue(
+	inline constexpr bool ContainsValue(
 		const A& container, 
 		const T& value)
 	{
@@ -489,7 +504,7 @@ namespace KalaHeaders::KalaCore
 	template<AnyArray A, typename T>
 		requires IsComparable<typename A::value_type, T>
 	KNODISCARD
-	bool ContainsValue(
+	inline constexpr bool ContainsValue(
 		const A& container, 
 		const T& value)
 	{
@@ -506,7 +521,7 @@ namespace KalaHeaders::KalaCore
 	template<AnyVector V, typename T>
 		requires IsComparable<typename V::value_type, T>
 	KNODISCARD
-	bool ContainsValue(
+	inline constexpr bool ContainsValue(
 		const V& container, 
 		const T& value)
 	{
@@ -523,7 +538,7 @@ namespace KalaHeaders::KalaCore
 	template<AnyMap M, typename T>
 		requires IsComparable<typename M::key_type, T>
 	KNODISCARD
-	bool ContainsKey(
+	inline constexpr bool ContainsKey(
 		const M& container, 
 		const T& key)
 	{
@@ -534,7 +549,7 @@ namespace KalaHeaders::KalaCore
 	template<AnyMap M, typename T>
 		requires IsComparable<typename M::mapped_type, T>
 	KNODISCARD
-	bool ContainsValue(
+	inline constexpr bool ContainsValue(
 		const M& container, 
 		const T& value)
 	{
