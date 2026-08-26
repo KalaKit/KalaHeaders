@@ -83,6 +83,22 @@
 	#endif
 #endif
 
+//
+// ENFORCE OLDER GLIBC FOR MATH FUNCTIONS
+//
+
+#if !defined(K_GLIBC)
+	#define K_GLIBC
+
+	#if defined(KLIN_ANY)
+	extern "C"
+	{
+		__asm__(".symver sqrtf,sqrtf@GLIBC_2.2.5");
+		__asm__(".symver atan2f,atan2f@GLIBC_2.2.5");
+	}
+	#endif
+#endif
+
 #include <cmath>
 #include <cstdint>
 #include <algorithm>
