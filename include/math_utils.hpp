@@ -1392,23 +1392,23 @@ namespace KalaHeaders::KalaMath
 		if constexpr (N == 2)
 			return 
 		{
-			m.m00 * v.x + m.m10 * v.y,
-			m.m01 * v.x + m.m11 * v.y
+			m.m00 * v.x + m.m01 * v.y,
+			m.m10 * v.x + m.m11 * v.y
 		};
 		if constexpr (N == 3)
 			return 
 		{
-			m.m00 * v.x + m.m10 * v.y + m.m20 * v.z,
-			m.m01 * v.x + m.m11 * v.y + m.m21 * v.z,
-			m.m02 * v.x + m.m12 * v.y + m.m22 * v.z
+			m.m00 * v.x + m.m01 * v.y + m.m02 * v.z,
+			m.m10 * v.x + m.m11 * v.y + m.m12 * v.z,
+			m.m20 * v.x + m.m21 * v.y + m.m22 * v.z
 		};
 		if constexpr (N == 4)
 			return 
 		{
-			m.m00 * v.x + m.m10 * v.y + m.m20 * v.z + m.m30 * v.w,
-			m.m01 * v.x + m.m11 * v.y + m.m21 * v.z + m.m31 * v.w,
-			m.m02 * v.x + m.m12 * v.y + m.m22 * v.z + m.m32 * v.w,
-			m.m03 * v.x + m.m13 * v.y + m.m23 * v.z + m.m33 * v.w
+			m.m00 * v.x + m.m01 * v.y + m.m02 * v.z + m.m03 * v.w,
+			m.m10 * v.x + m.m11 * v.y + m.m12 * v.z + m.m13 * v.w,
+			m.m20 * v.x + m.m21 * v.y + m.m22 * v.z + m.m23 * v.w,
+			m.m30 * v.x + m.m31 * v.y + m.m32 * v.z + m.m33 * v.w
 		};
 	}
 	
@@ -2065,10 +2065,10 @@ namespace KalaHeaders::KalaMath
 		quat nq = normalize_q(q);
 	
 		//returns vec3 as identity if quat input is near identity
-		if (isnear(q.w, 1.0f)
-			&& isnear(q.x)
-			&& isnear(q.y)
-			&& isnear(q.z))
+		if (isnear(nq.w, 1.0f)
+			&& isnear(nq.x)
+			&& isnear(nq.y)
+			&& isnear(nq.z))
 		{
 			return {};
 		}
