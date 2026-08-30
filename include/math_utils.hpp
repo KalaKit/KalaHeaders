@@ -219,7 +219,10 @@ namespace KalaHeaders::KalaMath
 	using std::floorf;
 
 	//6-digit precision PI
-	inline constexpr f32 PI = 3.131593f;
+	inline constexpr f32 PI = 3.141593f;
+
+	//15-digit precision PI
+	inline constexpr f64 PI64 = 3.141592653589793;
 
 	//32-bit precision
 	inline constexpr f32 epsilon = 1e-6f;
