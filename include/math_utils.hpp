@@ -3077,7 +3077,6 @@ namespace KalaHeaders::KalaMath
 		//Incrementally update position over time,
 		//adding parent updates this position relative to parent
 		inline constexpr void addpos(
-			Transform2D& target,
 			const Transform2D& parent,
 			PosTarget type,
 			const vec2 pos_delta)
@@ -3086,18 +3085,17 @@ namespace KalaHeaders::KalaMath
 			if (type == PosTarget::POS_WORLD) return;
 				
 			vec2 pos_clamped = kclamp(
-				target.pos_local + pos_delta,
+				pos_local + pos_delta,
 				MIN_POS2,
 				MAX_POS2);
 				
-			target.pos_local = pos_clamped;
+			pos_local = pos_clamped;
 			
-			combine(target, parent);
+			combine(parent);
 		}
 		//Snaps to given position,
 		//adding parent updates this position relative to parent
 		inline constexpr void setpos(
-			Transform2D& target,
 			const Transform2D& parent,
 			PosTarget type,
 			const vec2 pos_new)
@@ -3110,32 +3108,31 @@ namespace KalaHeaders::KalaMath
 				MIN_POS2, 
 				MAX_POS2);
 
-			target.pos_local = pos_clamped;
+			pos_local = pos_clamped;
 
-			combine(target, parent);
+			combine(parent);
 		}
 		KNODISCARD
 		inline constexpr vec2 getpos(
-			const Transform2D& target,
 			PosTarget type)
 		{
 			return type == PosTarget::POS_LOCAL
-				? target.pos_local
-				: target.pos_world;
+				? pos_local
+				: pos_world;
 		}
 		
 		//Returns true local right direction of this transform
 		KNODISCARD
-		inline constexpr vec2 getdirright(Transform2D& target)
+		inline constexpr vec2 getdirright()
 		{
-			float r = radians(target.rot_world);
+			float r = radians(rot_world);
 			return vec2(cosf(r), sinf(r));
 		}
 		//Returns true local up direction of this transform
 		KNODISCARD
-		inline constexpr vec2 getdirup(Transform2D& target)
+		inline constexpr vec2 getdirup()
 		{
-			float r = radians(target.rot_world);
+			float r = radians(rot_world);
 			return vec2(-sinf(r), cosf(r));
 		}
 		
@@ -3143,7 +3140,6 @@ namespace KalaHeaders::KalaMath
 		//adding parent updates this rotation relative to parent,
 		//clamps between -360 and 360, you're expected to wrap according to your needs on your end
 		inline constexpr void addrot(
-			Transform2D& target,
 			const Transform2D& parent,
 			RotTarget type,
 			f32 rot_delta)
@@ -3151,18 +3147,17 @@ namespace KalaHeaders::KalaMath
 			//cannot set world vec rot
 			if (type == RotTarget::ROT_WORLD) return;
 
-			f32 clamped = target.rot_local + rot_delta;
+			f32 clamped = rot_local + rot_delta;
 			clamped = clamp(clamped, -360.0f, 360.0f);
 
-			target.rot_local = clamped;
+			rot_local = clamped;
 
-			combine(target, parent);
+			combine(parent);
 		}
 		//Takes in rotation in euler (degrees) and snaps to given rotation,
 		//adding parent updates this rotation relative to parent,
 		//clamps between -360 and 360, you're expected to wrap according to your needs on your end
 		inline constexpr void setrot(
-			Transform2D& target,
 			const Transform2D& parent,
 			RotTarget type,
 			const f32 rot_new)
@@ -3172,25 +3167,23 @@ namespace KalaHeaders::KalaMath
 
 			f32 clamped = clamp(rot_new, -360.0f, 360.0f);
 
-			target.rot_local = clamped;
+			rot_local = clamped;
 
-			combine(target, parent);
+			combine(parent);
 		}
 		//Returns rotation in euler (degrees)
 		KNODISCARD
 		inline constexpr f32 getrot(
-			const Transform2D& target,
 			RotTarget type)
 		{
 			return type == RotTarget::ROT_LOCAL
-				? target.rot_local
-				: target.rot_world;
+				? rot_local
+				: rot_world;
 		}
 		
 		//Incrementally scales over time,
 		//adding parent updates this size relative to parent
 		inline constexpr void addsize(
-			Transform2D& target,
 			const Transform2D& parent,
 			SizeTarget type,
 			const vec2 size_delta)
@@ -3199,18 +3192,17 @@ namespace KalaHeaders::KalaMath
 			if (type == SizeTarget::SIZE_WORLD) return;
 
 			vec2 size_clamped = kclamp(
-				target.size_local + size_delta,
+				size_local + size_delta,
 				MIN_SIZE2,
 				MAX_SIZE2);
 
-			target.size_local = size_clamped;
+			size_local = size_clamped;
 
-			combine(target, parent);
+			combine(parent);
 		}
 		//Snaps to given size,
 		//adding parent updates this size relative to parent
 		inline constexpr void setsize(
-			Transform2D& target,
 			const Transform2D& parent,
 			SizeTarget type,
 			const vec2 size_new)
@@ -3223,37 +3215,28 @@ namespace KalaHeaders::KalaMath
 				MIN_SIZE2, 
 				MAX_SIZE2);
 
-			target.size_local = size_clamped;
+			size_local = size_clamped;
 
-			combine(target, parent);
+			combine(parent);
 		}
 		KNODISCARD
-		inline constexpr vec2 getsize(
-			const Transform2D& target,
-			SizeTarget type)
+		inline constexpr vec2 getsize(SizeTarget type)
 		{
 			return type == SizeTarget::SIZE_LOCAL
-				? target.size_local
-				: target.size_world;
+				? size_local
+				: size_world;
 		}
 
 	private:
 		//Updates target world pos, rot and size relative to target local and parent world values
-		inline void combine(
-			Transform2D& target,
-			const Transform2D& parent)
+		inline void combine(const Transform2D& parent)
 		{
 			if (!isidentity(parent.pos_world)
 				|| !isnear(parent.rot_world)
 				|| !isnear(parent.size_world, vec2(1.0f)))
 			{
-				target.rot_world = 
-					parent.rot_world 
-					+ target.rot_local;
-					
-				target.size_world = 
-					parent.size_world 
-					* target.size_local;
+				rot_world = parent.rot_world + rot_local;
+				size_world = parent.size_world * size_local;
 
 				f32 rads = radians(parent.rot_world);
 				mat3 rot_mat =
@@ -3263,16 +3246,16 @@ namespace KalaHeaders::KalaMath
 					0.0f,        0.0f,       1.0f
 				};
 
-				vec3 rot_offset = vec3(rot_mat * vec3(target.pos_local, 1.0f));
-				target.pos_world =
+				vec3 rot_offset = vec3(rot_mat * vec3(pos_local, 1.0f));
+				pos_world =
 					parent.pos_world
 					+ vec2(rot_offset.x, rot_offset.y);
 			}
 			else
 			{
-				target.pos_world = target.pos_local;
-				target.rot_world = target.rot_local;
-				target.size_world = target.size_local;
+				pos_world = pos_local;
+				rot_world = rot_local;
+				size_world = size_local;
 			}
 		}
 
@@ -3306,7 +3289,6 @@ namespace KalaHeaders::KalaMath
 	{		
 		//Incrementally moves over time
 		inline constexpr void addpos(
-			Transform3D& target,
 			const Transform3D& parent,
 			PosTarget type,
 			const vec3& pos_delta)
@@ -3315,17 +3297,16 @@ namespace KalaHeaders::KalaMath
 			if (type == PosTarget::POS_WORLD) return;
 
 			vec3 pos_clamped = kclamp(
-				target.pos_local + pos_delta,
+				pos_local + pos_delta,
 				MIN_POS3,
 				MAX_POS3);
 
-			target.pos_local = pos_clamped;
+			pos_local = pos_clamped;
 
-			combine(target, parent);
+			combine(parent);
 		}
 		//Snaps to given position
 		inline constexpr void setpos(
-			Transform3D& target,
 			const Transform3D& parent,
 			PosTarget type,
 			const vec3& pos_new)
@@ -3338,23 +3319,20 @@ namespace KalaHeaders::KalaMath
 				MIN_POS3,
 				MAX_POS3);
 
-			target.pos_local = pos_clamped;
+			pos_local = pos_clamped;
 
-			combine(target, parent);
+			combine(parent);
 		}
 		KNODISCARD
-		inline constexpr vec3 getpos(
-			const Transform3D& target,
-			PosTarget type)
+		inline constexpr vec3 getpos(PosTarget type)
 		{
 			return type == PosTarget::POS_LOCAL
-				? target.pos_local
-				: target.pos_world;
+				? pos_local
+				: pos_world;
 		}
 		
 		//Rotate towards target position
 		inline constexpr void lookat(
-			Transform3D& target,
 			const Transform3D& parent,
 			RotTarget type,
 			const vec3& targetPos)
@@ -3362,7 +3340,7 @@ namespace KalaHeaders::KalaMath
 			//cannot set world vec rot
 			if (type == RotTarget::ROT_WORLD) return;
 			
-			vec3 diff = targetPos - target.pos_world;
+			vec3 diff = targetPos - pos_world;
 			
 			//cannot look at itself or targets too close to compute a direction
 			if (isnear(diff)) return;
@@ -3390,14 +3368,13 @@ namespace KalaHeaders::KalaMath
 				-forward.x, -forward.y, -forward.z
 			}));
 			
-			target.rot_local = q;
+			rot_local = q;
 			
-			combine(target, parent);
+			combine(parent);
 		}
 		
 		//Takes in rotation in euler (degrees) and incrementally rotates over time
 		inline constexpr void addrot(
-			Transform3D& target,
 			const Transform3D& parent,
 			RotTarget type,
 			const vec3& rot_delta)
@@ -3405,19 +3382,18 @@ namespace KalaHeaders::KalaMath
 			//cannot set world vec rot
 			if (type == RotTarget::ROT_WORLD) return;
 
-			vec3 current = toeuler3(target.rot_local);
+			vec3 current = toeuler3(rot_local);
 				
 			current = current + rot_delta;
 			//clamp to prevent absurd rotation jumps when looking up/down
 			current.x = clamp(current.x, -PITCH_LIMIT, PITCH_LIMIT);
 
-			target.rot_local = toquat(current);
+			rot_local = toquat(current);
 
-			combine(target, parent);
+			combine(parent);
 		}
 		//Takes in rotation in euler (degrees) and snaps to given rotation
 		inline constexpr void setroteuler(
-			Transform3D& target,
 			const Transform3D& parent,
 			RotTarget type,
 			const vec3& rot_new)
@@ -3425,13 +3401,12 @@ namespace KalaHeaders::KalaMath
 			//cannot set world vec rot
 			if (type == RotTarget::ROT_WORLD) return;
 
-			target.rot_local = toquat(rot_new);
+			rot_local = toquat(rot_new);
 
-			combine(target, parent);
+			combine(parent);
 		}
 		//Takes in rotation in quaternion and snaps to given rotation
 		inline constexpr void setrotquat(
-			Transform3D& target,
 			const Transform3D& parent,
 			RotTarget type,
 			const quat& rot_new)
@@ -3441,140 +3416,105 @@ namespace KalaHeaders::KalaMath
 
 			quat rot_clamped = normalize_q(rot_new);
 
-			target.rot_local = rot_clamped;
+			rot_local = rot_clamped;
 				
-			combine(target, parent);
+			combine(parent);
 		}
 		//Returns rotation in euler (degrees)
 		KNODISCARD
-		inline constexpr vec3 getroteuler(
-			const Transform3D& target,
-			RotTarget type)
+		inline constexpr vec3 getroteuler(RotTarget type)
 		{
 			return type == RotTarget::ROT_LOCAL
-				? toeuler3(target.rot_local)
-				: toeuler3(target.rot_world);
+				? toeuler3(rot_local)
+				: toeuler3(rot_world);
 		}
 		//Returns quaternion rotation
 		KNODISCARD
-		inline constexpr quat getrotquat(
-			const Transform3D& target,
-			RotTarget type)
+		inline constexpr quat getrotquat(RotTarget type)
 		{
 			return type == RotTarget::ROT_LOCAL
-				? target.rot_local
-				: target.rot_world;
+				? rot_local
+				: rot_world;
 		}
 		
 		//Returns true local front direction of this transform
 		KNODISCARD
-		inline constexpr vec3 getdirfront(Transform3D& target)
-		{
-			return target.rot_world * DIR_FRONT;
-		}
+		inline constexpr vec3 getdirfront() { return rot_world * DIR_FRONT; }
 		//Returns true local right direction of this transform
 		KNODISCARD
-		inline constexpr vec3 getdirright(Transform3D& target)
-		{
-			return target.rot_world * DIR_RIGHT;
-		}
+		inline constexpr vec3 getdirright() { return rot_world * DIR_RIGHT; }
 		//Returns true local up direction of this transform
 		KNODISCARD
-		inline constexpr vec3 getdirup(Transform3D& target)
-		{
-			return target.rot_world * DIR_UP;
-		}
+		inline constexpr vec3 getdirup() { return rot_world * DIR_UP; }
 		
 		//Increments pitch over time with degrees
 		inline constexpr void addpitch(
-			Transform3D& target,
 			const Transform3D& parent,
 			RotTarget type,
 			float degrees)
 		{
-			addrot(target, parent, type, {degrees, 0, 0});
+			addrot(parent, type, {degrees, 0, 0});
 		}
 		//Increments yaw over time with degrees
 		inline constexpr void addyaw(
-			Transform3D& target,
 			const Transform3D& parent,
 			RotTarget type,
 			float degrees)
 		{
-			addrot(target, parent, type, {0, degrees, 0});
+			addrot(parent, type, {0, degrees, 0});
 		}
 		//Increments roll over time with degrees
 		inline constexpr void addroll(
-			Transform3D& target,
 			const Transform3D& parent,
 			RotTarget type,
 			float degrees)
 		{
-			addrot(target, parent, type, {0, 0, degrees});
+			addrot(parent, type, {0, 0, degrees});
 		}
 		
 		//Snaps pitch to given degrees
 		inline constexpr void setpitch(
-			Transform3D& target,
 			const Transform3D& parent,
 			RotTarget type,
 			float degrees)
 		{
-			vec3 e = getroteuler(target, type);
+			vec3 e = getroteuler(type);
 			e.x = degrees;
-			setroteuler(target, parent, type, e);
+			setroteuler(parent, type, e);
 		}
 		//Snaps yaw to given degrees
 		inline constexpr void setyaw(
-			Transform3D& target,
 			const Transform3D& parent,
 			RotTarget type,
 			float degrees)
 		{
-			vec3 e = getroteuler(target, type);
+			vec3 e = getroteuler(type);
 			e.y = degrees;
-			setroteuler(target, parent, type, e);
+			setroteuler(parent, type, e);
 		}
 		//Snaps roll to given degrees
 		inline constexpr void setroll(
-			Transform3D& target,
 			const Transform3D& parent,
 			RotTarget type,
 			float degrees)
 		{
-			vec3 e = getroteuler(target, type);
+			vec3 e = getroteuler(type);
 			e.z = degrees;
-			setroteuler(target, parent, type, e);
+			setroteuler(parent, type, e);
 		}
 		
 		//Returns pitch as degrees for current transform
 		KNODISCARD
-		inline constexpr f32 getpitch(
-			Transform3D& target,
-			RotTarget type)
-		{
-			return getroteuler(target, type).x;
-		}
+		inline constexpr f32 getpitch(RotTarget type) { return getroteuler(type).x; }
 		//Returns yaw as degrees for current transform
 		KNODISCARD
-		inline constexpr f32 getyaw(
-			Transform3D& target,
-			RotTarget type)
-		{
-			return getroteuler(target, type).y;
-		}
+		inline constexpr f32 getyaw(RotTarget type) { return getroteuler(type).y; }
 		//Returns roll as degrees for current transform
 		KNODISCARD
-		inline constexpr f32 getroll(
-			Transform3D& target,
-			RotTarget type)
-		{
-			return getroteuler(target, type).z;
-		}
+		inline constexpr f32 getroll(RotTarget type) { return getroteuler(type).z; }
 		
 		//Incrementally scales over time
 		inline constexpr void addsize(
-			Transform3D& target,
 			const Transform3D& parent,
 			SizeTarget type,
 			const vec3& size_delta)
@@ -3583,17 +3523,16 @@ namespace KalaHeaders::KalaMath
 			if (type == SizeTarget::SIZE_WORLD) return;
 
 			vec3 size_clamped = kclamp(
-				target.size_local + size_delta,
+				size_local + size_delta,
 				MIN_SIZE3,
 				MAX_SIZE3);
 
-			target.size_local = size_clamped;
+			size_local = size_clamped;
 
-			combine(target, parent);
+			combine(parent);
 		}
 		//Snaps to given scale
 		inline constexpr void setsize(
-			Transform3D& target,
 			const Transform3D& parent,
 			SizeTarget type,
 			const vec3& size_new)
@@ -3606,36 +3545,28 @@ namespace KalaHeaders::KalaMath
 				MIN_SIZE3,
 				MAX_SIZE3);
 
-			target.size_local = size_clamped;
+			size_local = size_clamped;
 
-			combine(target, parent);
+			combine(parent);
 		}
 		KNODISCARD
-		inline constexpr vec3 getsize(
-			const Transform3D& target,
-			SizeTarget type)
+		inline constexpr vec3 getsize(SizeTarget type)
 		{
 			return type == SizeTarget::SIZE_LOCAL
-				? target.size_local
-				: target.size_world;
+				? size_local
+				: size_world;
 		};
 
 	private:
 		//Updates target world pos, rot and size relative to target local and parent world values
-		inline void combine(
-			Transform3D& target,
-			const Transform3D& parent)
+		inline void combine(const Transform3D& parent)
 		{
 			if (!isidentity(parent.pos_world)
 				|| !isidentity_q(parent.rot_world)
 				|| !isnear(parent.size_world, vec3(1.0f)))
 			{
-				target.rot_world = 
-					parent.rot_world
-					* target.rot_local;
-				target.size_world =
-					parent.size_world
-					* target.size_local;
+				rot_world = parent.rot_world * rot_local;
+				size_world = parent.size_world * size_local;
 
 				auto rotate = [](const mat4& m, const quat& q)
 					{
@@ -3662,8 +3593,8 @@ namespace KalaHeaders::KalaMath
 
 				mat4 rot_mat = rotate(mat4(1.0f), parent.rot_world);
 
-				vec4 rot_offset = rot_mat * vec4(target.pos_local, 1.0f);
-				target.pos_world =
+				vec4 rot_offset = rot_mat * vec4(pos_local, 1.0f);
+				pos_world =
 					parent.pos_world
 					+ vec3(
 						rot_offset.x,
@@ -3672,9 +3603,9 @@ namespace KalaHeaders::KalaMath
 			}
 			else
 			{
-				target.pos_world = target.pos_local;
-				target.rot_world = target.rot_local;
-				target.size_world = target.size_local;
+				pos_world = pos_local;
+				rot_world = rot_local;
+				size_world = size_local;
 			}
 		}
 
