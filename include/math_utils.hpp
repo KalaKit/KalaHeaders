@@ -3088,21 +3088,21 @@ namespace KalaHeaders::KalaMath
 
 		//Returns true local right direction of this transform
 		KNODISCARD
-		inline constexpr vec2 getdirright()
+		inline constexpr vec2 getdirright() const
 		{
 			float r = radians(rot_world);
 			return vec2(cosf(r), sinf(r));
 		}
 		//Returns true local up direction of this transform
 		KNODISCARD
-		inline constexpr vec2 getdirup()
+		inline constexpr vec2 getdirup() const
 		{
 			float r = radians(rot_world);
 			return vec2(-sinf(r), cosf(r));
 		}
 
 		KNODISCARD
-		inline constexpr vec2 getpos(PosTarget type)
+		inline constexpr vec2 getpos(PosTarget type) const
 		{
 			return type == PosTarget::POS_LOCAL
 				? pos_local
@@ -3135,7 +3135,7 @@ namespace KalaHeaders::KalaMath
 		
 		//Returns rotation in euler (degrees)
 		KNODISCARD
-		inline constexpr f32 getrot(RotTarget type)
+		inline constexpr f32 getrot(RotTarget type) const
 		{
 			return type == RotTarget::ROT_LOCAL
 				? rot_local
@@ -3162,7 +3162,7 @@ namespace KalaHeaders::KalaMath
 		}
 		
 		KNODISCARD
-		inline constexpr vec2 getsize(SizeTarget type)
+		inline constexpr vec2 getsize(SizeTarget type) const
 		{
 			return type == SizeTarget::SIZE_LOCAL
 				? size_local
@@ -3267,16 +3267,16 @@ namespace KalaHeaders::KalaMath
 
 		//Returns true local front direction of this transform
 		KNODISCARD
-		inline constexpr vec3 getdirfront() { return rot_world * DIR_FRONT; }
+		inline constexpr vec3 getdirfront() const { return rot_world * DIR_FRONT; }
 		//Returns true local right direction of this transform
 		KNODISCARD
-		inline constexpr vec3 getdirright() { return rot_world * DIR_RIGHT; }
+		inline constexpr vec3 getdirright() const { return rot_world * DIR_RIGHT; }
 		//Returns true local up direction of this transform
 		KNODISCARD
-		inline constexpr vec3 getdirup() { return rot_world * DIR_UP; }
+		inline constexpr vec3 getdirup() const { return rot_world * DIR_UP; }
 
 		KNODISCARD
-		inline constexpr vec3 getpos(PosTarget type)
+		inline constexpr vec3 getpos(PosTarget type) const
 		{
 			return type == PosTarget::POS_LOCAL
 				? pos_local
@@ -3346,7 +3346,7 @@ namespace KalaHeaders::KalaMath
 		
 		//Returns rotation in euler (degrees)
 		KNODISCARD
-		inline constexpr vec3 getroteuler(RotTarget type)
+		inline constexpr vec3 getroteuler(RotTarget type) const
 		{
 			return type == RotTarget::ROT_LOCAL
 				? toeuler3(rot_local)
@@ -3354,7 +3354,7 @@ namespace KalaHeaders::KalaMath
 		}
 		//Returns quaternion rotation
 		KNODISCARD
-		inline constexpr quat getrotquat(RotTarget type)
+		inline constexpr quat getrotquat(RotTarget type) const
 		{
 			return type == RotTarget::ROT_LOCAL
 				? rot_local
@@ -3393,13 +3393,13 @@ namespace KalaHeaders::KalaMath
 
 		//Returns pitch as degrees for current transform
 		KNODISCARD
-		inline constexpr f32 getpitch(RotTarget type) { return getroteuler(type).x; }
+		inline constexpr f32 getpitch(RotTarget type) const { return getroteuler(type).x; }
 		//Returns yaw as degrees for current transform
 		KNODISCARD
-		inline constexpr f32 getyaw(RotTarget type) { return getroteuler(type).y; }
+		inline constexpr f32 getyaw(RotTarget type) const { return getroteuler(type).y; }
 		//Returns roll as degrees for current transform
 		KNODISCARD
-		inline constexpr f32 getroll(RotTarget type) { return getroteuler(type).z; }
+		inline constexpr f32 getroll(RotTarget type) const { return getroteuler(type).z; }
 		
 		//Increments pitch over time with degrees
 		inline constexpr void addpitch(float degrees)
@@ -3440,7 +3440,7 @@ namespace KalaHeaders::KalaMath
 		}
 		
 		KNODISCARD
-		inline constexpr vec3 getsize(SizeTarget type)
+		inline constexpr vec3 getsize(SizeTarget type) const
 		{
 			return type == SizeTarget::SIZE_LOCAL
 				? size_local
