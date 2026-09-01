@@ -2514,7 +2514,7 @@ namespace KalaHeaders::KalaMath
 
 	//Returns a valid 2D model matrix for vertex shaders
 	KNODISCARD
-	inline mat4 creatmodelmatrix(
+	inline mat4 createmodelmatrix(
 		const vec2 pos,
 		const f32 rotDeg,
 		const vec2 size)
@@ -2535,7 +2535,7 @@ namespace KalaHeaders::KalaMath
 
 	//Returns a valid 3D model matrix for vertex shaders
 	KNODISCARD
-	inline mat4 createmodelmatrix(
+	inline mat4 createmodelmatrix3d(
 		const vec3& pos, 
 		const quat& rot, 
 		const vec3& size)
