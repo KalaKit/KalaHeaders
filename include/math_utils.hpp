@@ -3042,25 +3042,29 @@ namespace KalaHeaders::KalaMath
 	
 	enum class PosTarget
 	{
-		POS_WORLD,    //position in world space
-		POS_LOCAL,    //position relative to parent
-
-		POS_COMBINED, //final position after combining world and local position
+		//position of this transform
+		POS_LOCAL,
+		//final position after combining local position with parent position
+		POS_WORLD
 	};
 	enum class RotTarget
 	{
-		ROT_WORLD,   //rotation in world space
-		ROT_LOCAL,   //rotation relative to parent
-
-		ROT_COMBINED //final rotation after combining world and local rotation
+		//rotation of this transform
+		ROT_LOCAL,
+		//final rotation after combining local rotation with parent rotation
+		ROT_WORLD
 	};
 	enum class SizeTarget
 	{
-		SIZE_WORLD,   //size in world space
-		SIZE_LOCAL,   //size relative to parent
-
-		SIZE_COMBINED //final position after combining world and local position
+		//size of this transform
+		SIZE_LOCAL,
+		//final size after combining local size with parent size
+		SIZE_WORLD
 	};
+
+	//
+	// 2D TRANSFORM
+	//
 	
 	inline constexpr vec2 MIN_POS2 = vec2(-10000.0f);
 	inline constexpr vec2 MAX_POS2 = vec2(10000.0f);
@@ -3070,18 +3074,227 @@ namespace KalaHeaders::KalaMath
 	
 	struct Transform2D
 	{
-		vec2 pos_world{};
+		//Incrementally update position over time,
+		//adding parent updates this position relative to parent
+		inline constexpr void addpos(
+			Transform2D& target,
+			const Transform2D& parent,
+			PosTarget type,
+			const vec2 pos_delta)
+		{
+			//cannot set world pos
+			if (type == PosTarget::POS_WORLD) return;
+				
+			vec2 pos_clamped = kclamp(
+				target.pos_local + pos_delta,
+				MIN_POS2,
+				MAX_POS2);
+				
+			target.pos_local = pos_clamped;
+			
+			combine(target, parent);
+		}
+		//Snaps to given position,
+		//adding parent updates this position relative to parent
+		inline constexpr void setpos(
+			Transform2D& target,
+			const Transform2D& parent,
+			PosTarget type,
+			const vec2 pos_new)
+		{
+			//cannot set world pos
+			if (type == PosTarget::POS_WORLD) return;
+
+			vec2 pos_clamped = kclamp(
+				pos_new, 
+				MIN_POS2, 
+				MAX_POS2);
+
+			target.pos_local = pos_clamped;
+
+			combine(target, parent);
+		}
+		KNODISCARD
+		inline constexpr vec2 getpos(
+			const Transform2D& target,
+			PosTarget type)
+		{
+			return type == PosTarget::POS_LOCAL
+				? target.pos_local
+				: target.pos_world;
+		}
+		
+		//Returns true local right direction of this transform
+		KNODISCARD
+		inline constexpr vec2 getdirright(Transform2D& target)
+		{
+			float r = radians(target.rot_world);
+			return vec2(cosf(r), sinf(r));
+		}
+		//Returns true local up direction of this transform
+		KNODISCARD
+		inline constexpr vec2 getdirup(Transform2D& target)
+		{
+			float r = radians(target.rot_world);
+			return vec2(-sinf(r), cosf(r));
+		}
+		
+		//Takes in rotation in euler (degrees) and incrementally rotates over time,
+		//adding parent updates this rotation relative to parent,
+		//clamps between -360 and 360, you're expected to wrap according to your needs on your end
+		inline constexpr void addrot(
+			Transform2D& target,
+			const Transform2D& parent,
+			RotTarget type,
+			f32 rot_delta)
+		{
+			//cannot set world vec rot
+			if (type == RotTarget::ROT_WORLD) return;
+
+			f32 clamped = target.rot_local + rot_delta;
+			clamped = clamp(clamped, -360.0f, 360.0f);
+
+			target.rot_local = clamped;
+
+			combine(target, parent);
+		}
+		//Takes in rotation in euler (degrees) and snaps to given rotation,
+		//adding parent updates this rotation relative to parent,
+		//clamps between -360 and 360, you're expected to wrap according to your needs on your end
+		inline constexpr void setrot(
+			Transform2D& target,
+			const Transform2D& parent,
+			RotTarget type,
+			const f32 rot_new)
+		{
+			//cannot set world vec rot
+			if (type == RotTarget::ROT_WORLD) return;
+
+			f32 clamped = clamp(rot_new, -360.0f, 360.0f);
+
+			target.rot_local = clamped;
+
+			combine(target, parent);
+		}
+		//Returns rotation in euler (degrees)
+		KNODISCARD
+		inline constexpr f32 getrot(
+			const Transform2D& target,
+			RotTarget type)
+		{
+			return type == RotTarget::ROT_LOCAL
+				? target.rot_local
+				: target.rot_world;
+		}
+		
+		//Incrementally scales over time,
+		//adding parent updates this size relative to parent
+		inline constexpr void addsize(
+			Transform2D& target,
+			const Transform2D& parent,
+			SizeTarget type,
+			const vec2 size_delta)
+		{
+			//cannot set world size
+			if (type == SizeTarget::SIZE_WORLD) return;
+
+			vec2 size_clamped = kclamp(
+				target.size_local + size_delta,
+				MIN_SIZE2,
+				MAX_SIZE2);
+
+			target.size_local = size_clamped;
+
+			combine(target, parent);
+		}
+		//Snaps to given size,
+		//adding parent updates this size relative to parent
+		inline constexpr void setsize(
+			Transform2D& target,
+			const Transform2D& parent,
+			SizeTarget type,
+			const vec2 size_new)
+		{
+			//cannot set world size
+			if (type == SizeTarget::SIZE_WORLD) return;
+
+			vec2 size_clamped = kclamp(
+				size_new, 
+				MIN_SIZE2, 
+				MAX_SIZE2);
+
+			target.size_local = size_clamped;
+
+			combine(target, parent);
+		}
+		KNODISCARD
+		inline constexpr vec2 getsize(
+			const Transform2D& target,
+			SizeTarget type)
+		{
+			return type == SizeTarget::SIZE_LOCAL
+				? target.size_local
+				: target.size_world;
+		}
+
+	private:
+		//Updates target world pos, rot and size relative to target local and parent world values
+		inline void combine(
+			Transform2D& target,
+			const Transform2D& parent)
+		{
+			if (!isidentity(parent.pos_world)
+				|| !isnear(parent.rot_world)
+				|| !isnear(parent.size_world, vec2(1.0f)))
+			{
+				target.rot_world = 
+					parent.rot_world 
+					+ target.rot_local;
+					
+				target.size_world = 
+					parent.size_world 
+					* target.size_local;
+
+				f32 rads = radians(parent.rot_world);
+				mat3 rot_mat =
+				{
+					cosf(rads), -sinf(rads), 0.0f,
+					sinf(rads),  cosf(rads), 0.0f,
+					0.0f,        0.0f,       1.0f
+				};
+
+				vec3 rot_offset = vec3(rot_mat * vec3(target.pos_local, 1.0f));
+				target.pos_world =
+					parent.pos_world
+					+ vec2(rot_offset.x, rot_offset.y);
+			}
+			else
+			{
+				target.pos_world = target.pos_local;
+				target.rot_world = target.rot_local;
+				target.size_world = target.size_local;
+			}
+		}
+
+		//position of this transform
 		vec2 pos_local{};
-		vec2 pos_combined{};
+		//final position after combining local position with parent position
+		vec2 pos_world{};
 
-		f32 rot_world{};
+		//rotation of this transform
 		f32 rot_local{};
-		f32 rot_combined{};
+		//final rotation after combining local rotation with parent rotation
+		f32 rot_world{};
 
-		vec2 size_world    = vec2(1.0f);
-		vec2 size_local    = vec2(1.0f);
-		vec2 size_combined = vec2(1.0f);
+		//size of this transform
+		vec2 size_local = vec2(1.0f);
+		//final size after combining local size with parent size
+		vec2 size_world = vec2(1.0f);
 	};
+
+	//
+	// 3D TRANSFORM
+	//
 	
 	inline constexpr vec3 MIN_POS3 = vec3(-10000.0f);
 	inline constexpr vec3 MAX_POS3 = vec3(10000.0f);
@@ -3090,750 +3303,394 @@ namespace KalaHeaders::KalaMath
 	inline constexpr vec3 MAX_SIZE3 = vec3(10000.0f);
 	
 	struct Transform3D
-	{
-		vec3 pos_world{};
-		vec3 pos_local{};
-		vec3 pos_combined{};
-
-		quat rot_world{};
-		quat rot_local{};
-		quat rot_combined{};
-
-		vec3 size_world    = vec3(1.0f);
-		vec3 size_local    = vec3(1.0f);
-		vec3 size_combined = vec3(1.0f);
-	};
-	
-	//================================================================================
-	//
-	// TRANSFORM2D OPERATORS
-	//
-	//================================================================================
-	
-	//Updates target combined pos, rot and size relative to target local and parent combined values,
-	//if parent is identity then target combined is target world
-	inline void combine(
-		Transform2D& target,
-		const Transform2D& parent)
-	{
-		if (!isidentity(parent.pos_combined)
-			|| !isnear(parent.rot_combined)
-			|| !isnear(parent.size_combined, vec2(1.0f)))
+	{		
+		//Incrementally moves over time
+		inline constexpr void addpos(
+			Transform3D& target,
+			const Transform3D& parent,
+			PosTarget type,
+			const vec3& pos_delta)
 		{
-			target.rot_combined = 
-				parent.rot_combined 
-				+ target.rot_world 
-				+ target.rot_local;
-				
-			target.size_combined = 
-				parent.size_combined 
-				* target.size_world 
-				* target.size_local;
+			//cannot set world pos
+			if (type == PosTarget::POS_WORLD) return;
 
-			f32 rads = radians(parent.rot_combined);
-			mat3 rot_mat =
+			vec3 pos_clamped = kclamp(
+				target.pos_local + pos_delta,
+				MIN_POS3,
+				MAX_POS3);
+
+			target.pos_local = pos_clamped;
+
+			combine(target, parent);
+		}
+		//Snaps to given position
+		inline constexpr void setpos(
+			Transform3D& target,
+			const Transform3D& parent,
+			PosTarget type,
+			const vec3& pos_new)
+		{
+			//cannot set world pos
+			if (type == PosTarget::POS_WORLD) return;
+
+			vec3 pos_clamped = kclamp(
+				pos_new,
+				MIN_POS3,
+				MAX_POS3);
+
+			target.pos_local = pos_clamped;
+
+			combine(target, parent);
+		}
+		KNODISCARD
+		inline constexpr vec3 getpos(
+			const Transform3D& target,
+			PosTarget type)
+		{
+			return type == PosTarget::POS_LOCAL
+				? target.pos_local
+				: target.pos_world;
+		}
+		
+		//Rotate towards target position
+		inline constexpr void lookat(
+			Transform3D& target,
+			const Transform3D& parent,
+			RotTarget type,
+			const vec3& targetPos)
+		{
+			//cannot set world vec rot
+			if (type == RotTarget::ROT_WORLD) return;
+			
+			vec3 diff = targetPos - target.pos_world;
+			
+			//cannot look at itself or targets too close to compute a direction
+			if (isnear(diff)) return;
+			
+			vec3 forward = normalize(diff);
+			
+			//compute right and up
+			
+			vec3 right = cross(DIR_UP, forward);
+			
+			//ensures right axis is always valid by being perpendicular to forward
+			//and never parallel to up vector if cross fails
+			if (isnear(right)) right = cross(DIR_FRONT, forward);
+			
+			right = normalize(right);
+			
+			vec3 up = cross(forward, right);
+			
+			//build a quat from a rotation matrix
+			
+			quat q = normalize_q(toquat(
 			{
-				cosf(rads), -sinf(rads), 0.0f,
-				sinf(rads),  cosf(rads), 0.0f,
-				0.0f,        0.0f,       1.0f
-			};
-
-			vec3 rot_offset = vec3(rot_mat * vec3(target.pos_local, 1.0f));
-			target.pos_combined =
-				parent.pos_combined
-				+ target.pos_world
-				+ vec2(rot_offset.x, rot_offset.y);
-		}
-		else
-		{
-			target.pos_combined = target.pos_world;
-			target.rot_combined = target.rot_world;
-			target.size_combined = target.size_world;
-		}
-	}
-	
-	//Incrementally update position over time,
-	//adding parent updates this position relative to parent
-	inline constexpr void addpos(
-		Transform2D& target,
-		const Transform2D& parent,
-		PosTarget type,
-		const vec2 pos_delta)
-	{
-		//cannot set combined pos
-		if (type == PosTarget::POS_COMBINED) return;
-		
-		vec2 base = (type == PosTarget::POS_WORLD)
-			? target.pos_world
-			: target.pos_local;
+				right.x,     right.y,    right.z,
+				up.x,        up.y,       up.z,
+				-forward.x, -forward.y, -forward.z
+			}));
 			
-		vec2 pos_clamped = kclamp(
-			base + pos_delta,
-			MIN_POS2,
-			MAX_POS2);
+			target.rot_local = q;
 			
-		switch (type)
-		{
-		default: return;
-		case PosTarget::POS_WORLD: target.pos_world = pos_clamped; break;
-		case PosTarget::POS_LOCAL: target.pos_local = pos_clamped; break;
+			combine(target, parent);
 		}
 		
-		combine(target, parent);
-	}
-	//Snaps to given position,
-	//adding parent updates this position relative to parent
-	inline constexpr void setpos(
-		Transform2D& target,
-		const Transform2D& parent,
-		PosTarget type,
-		const vec2 pos_new)
-	{
-		//cannot set combined pos
-		if (type == PosTarget::POS_COMBINED) return;
-
-		vec2 pos_clamped = kclamp(
-			pos_new, 
-			MIN_POS2, 
-			MAX_POS2);
-
-		switch (type)
+		//Takes in rotation in euler (degrees) and incrementally rotates over time
+		inline constexpr void addrot(
+			Transform3D& target,
+			const Transform3D& parent,
+			RotTarget type,
+			const vec3& rot_delta)
 		{
-		default: return;
-		case PosTarget::POS_WORLD: target.pos_world = pos_clamped; break;
-		case PosTarget::POS_LOCAL: target.pos_local = pos_clamped; break;
-		}
+			//cannot set world vec rot
+			if (type == RotTarget::ROT_WORLD) return;
 
-		combine(target, parent);
-	}
-	KNODISCARD
-	inline constexpr vec2 getpos(
-		const Transform2D& target,
-		PosTarget type)
-	{
-		switch (type)
-		{
-		default: return{};
-		case PosTarget::POS_WORLD:    return target.pos_world; break;
-		case PosTarget::POS_LOCAL:    return target.pos_local; break;
-		case PosTarget::POS_COMBINED: return target.pos_combined; break;
+			vec3 current = toeuler3(target.rot_local);
+				
+			current = current + rot_delta;
+			//clamp to prevent absurd rotation jumps when looking up/down
+			current.x = clamp(current.x, -PITCH_LIMIT, PITCH_LIMIT);
+
+			target.rot_local = toquat(current);
+
+			combine(target, parent);
 		}
-	}
-	
-	//Returns true local right direction of this transform
-	KNODISCARD
-	inline constexpr vec2 getdirright(Transform2D& target)
-	{
-		float r = radians(target.rot_combined);
-		return vec2(cosf(r), sinf(r));
-	}
-	//Returns true local up direction of this transform
-	KNODISCARD
-	inline constexpr vec2 getdirup(Transform2D& target)
-	{
-		float r = radians(target.rot_combined);
-		return vec2(-sinf(r), cosf(r));
-	}
-	
-	//Takes in rotation in euler (degrees) and incrementally rotates over time,
-	//adding parent updates this rotation relative to parent,
-	//clamps between -360 and 360, you're expected to wrap according to your needs on your end
-	inline constexpr void addrot(
-		Transform2D& target,
-		const Transform2D& parent,
-		RotTarget type,
-		f32 rot_delta)
-	{
-		//cannot set combined vec rot
-		if (type == RotTarget::ROT_COMBINED) return;
+		//Takes in rotation in euler (degrees) and snaps to given rotation
+		inline constexpr void setroteuler(
+			Transform3D& target,
+			const Transform3D& parent,
+			RotTarget type,
+			const vec3& rot_new)
+		{
+			//cannot set world vec rot
+			if (type == RotTarget::ROT_WORLD) return;
+
+			target.rot_local = toquat(rot_new);
+
+			combine(target, parent);
+		}
+		//Takes in rotation in quaternion and snaps to given rotation
+		inline constexpr void setrotquat(
+			Transform3D& target,
+			const Transform3D& parent,
+			RotTarget type,
+			const quat& rot_new)
+		{
+			//cannot set world vec rot
+			if (type == RotTarget::ROT_WORLD) return;
+
+			quat rot_clamped = normalize_q(rot_new);
+
+			target.rot_local = rot_clamped;
+				
+			combine(target, parent);
+		}
+		//Returns rotation in euler (degrees)
+		KNODISCARD
+		inline constexpr vec3 getroteuler(
+			const Transform3D& target,
+			RotTarget type)
+		{
+			return type == RotTarget::ROT_LOCAL
+				? toeuler3(target.rot_local)
+				: toeuler3(target.rot_world);
+		}
+		//Returns quaternion rotation
+		KNODISCARD
+		inline constexpr quat getrotquat(
+			const Transform3D& target,
+			RotTarget type)
+		{
+			return type == RotTarget::ROT_LOCAL
+				? target.rot_local
+				: target.rot_world;
+		}
 		
-		f32 base = (type == RotTarget::ROT_WORLD)
-			? target.rot_world
-			: target.rot_local;
-
-		f32 clamped = base + rot_delta;
-		clamped = clamp(clamped, -360.0f, 360.0f);
-
-		switch (type)
+		//Returns true local front direction of this transform
+		KNODISCARD
+		inline constexpr vec3 getdirfront(Transform3D& target)
 		{
-		default: return;
-		case RotTarget::ROT_WORLD: target.rot_world = clamped; break;
-		case RotTarget::ROT_LOCAL: target.rot_local = clamped; break;
+			return target.rot_world * DIR_FRONT;
 		}
-
-		combine(target, parent);
-	}
-	//Takes in rotation in euler (degrees) and snaps to given rotation,
-	//adding parent updates this rotation relative to parent,
-	//clamps between -360 and 360, you're expected to wrap according to your needs on your end
-	inline constexpr void setrot(
-		Transform2D& target,
-		const Transform2D& parent,
-		RotTarget type,
-		const f32 rot_new)
-	{
-		//cannot set combined vec rot
-		if (type == RotTarget::ROT_COMBINED) return;
-
-		f32 clamped = clamp(rot_new, -360.0f, 360.0f);
-
-		switch (type)
+		//Returns true local right direction of this transform
+		KNODISCARD
+		inline constexpr vec3 getdirright(Transform3D& target)
 		{
-		default: return;
-		case RotTarget::ROT_WORLD: target.rot_world = clamped; break;
-		case RotTarget::ROT_LOCAL: target.rot_local = clamped; break;
+			return target.rot_world * DIR_RIGHT;
 		}
-
-		combine(target, parent);
-	}
-	//Returns rotation in euler (degrees)
-	KNODISCARD
-	inline constexpr f32 getrot(
-		const Transform2D& target,
-		RotTarget type)
-	{
-		switch (type)
+		//Returns true local up direction of this transform
+		KNODISCARD
+		inline constexpr vec3 getdirup(Transform3D& target)
 		{
-		default: return{};
-		case RotTarget::ROT_WORLD:    return target.rot_world; break;
-		case RotTarget::ROT_LOCAL:    return target.rot_local; break;
-		case RotTarget::ROT_COMBINED: return target.rot_combined; break;
+			return target.rot_world * DIR_UP;
 		}
-	}
-	
-	//Incrementally scales over time,
-	//adding parent updates this size relative to parent
-	inline constexpr void addsize(
-		Transform2D& target,
-		const Transform2D& parent,
-		SizeTarget type,
-		const vec2 size_delta)
-	{
-		//cannot set combined size
-		if (type == SizeTarget::SIZE_COMBINED) return;
-
-		vec2 base = (type == SizeTarget::SIZE_WORLD)
-			? target.size_world
-			: target.size_local;
-
-		vec2 size_clamped = kclamp(
-			base + size_delta,
-			MIN_SIZE2,
-			MAX_SIZE2);
-
-		switch (type)
+		
+		//Increments pitch over time with degrees
+		inline constexpr void addpitch(
+			Transform3D& target,
+			const Transform3D& parent,
+			RotTarget type,
+			float degrees)
 		{
-		default: return;
-		case SizeTarget::SIZE_WORLD: target.size_world = size_clamped; break;
-		case SizeTarget::SIZE_LOCAL: target.size_local = size_clamped; break;
+			addrot(target, parent, type, {degrees, 0, 0});
 		}
-
-		combine(target, parent);
-	}
-	//Snaps to given size,
-	//adding parent updates this size relative to parent
-	inline constexpr void setsize(
-		Transform2D& target,
-		const Transform2D& parent,
-		SizeTarget type,
-		const vec2 size_new)
-	{
-		//cannot set combined size
-		if (type == SizeTarget::SIZE_COMBINED) return;
-
-		vec2 size_clamped = kclamp(
-			size_new, 
-			MIN_SIZE2, 
-			MAX_SIZE2);
-
-		switch (type)
+		//Increments yaw over time with degrees
+		inline constexpr void addyaw(
+			Transform3D& target,
+			const Transform3D& parent,
+			RotTarget type,
+			float degrees)
 		{
-		default: return;
-		case SizeTarget::SIZE_WORLD: target.size_world = size_clamped; break;
-		case SizeTarget::SIZE_LOCAL: target.size_local = size_clamped; break;
+			addrot(target, parent, type, {0, degrees, 0});
 		}
-
-		combine(target, parent);
-	}
-	KNODISCARD
-	inline constexpr vec2 getsize(
-		const Transform2D& target,
-		SizeTarget type)
-	{
-		switch (type)
+		//Increments roll over time with degrees
+		inline constexpr void addroll(
+			Transform3D& target,
+			const Transform3D& parent,
+			RotTarget type,
+			float degrees)
 		{
-		default: return{};
-		case SizeTarget::SIZE_WORLD:    return target.size_world;
-		case SizeTarget::SIZE_LOCAL:    return target.size_local;
-		case SizeTarget::SIZE_COMBINED: return target.size_combined;
+			addrot(target, parent, type, {0, 0, degrees});
 		}
-	}
-	
-	//================================================================================
-	//
-	// TRANSFORM3D OPERATORS
-	//
-	//================================================================================
-	
-	//Updates target combined pos, rot and size relative to target local and parent combined values,
-	//if parent is identity then target combined is target world
-	inline void combine3d(
-		Transform3D& target,
-		const Transform3D& parent)
-	{
-		if (!isidentity(parent.pos_combined)
-			|| !isidentity_q(parent.rot_combined)
-			|| !isnear(parent.size_combined, vec3(1.0f)))
+		
+		//Snaps pitch to given degrees
+		inline constexpr void setpitch(
+			Transform3D& target,
+			const Transform3D& parent,
+			RotTarget type,
+			float degrees)
 		{
-			target.rot_combined = 
-				parent.rot_combined
-				* target.rot_world
-				* target.rot_local;
-			target.size_combined =
-				parent.size_combined
-				* target.size_world
-				* target.size_local;
+			vec3 e = getroteuler(target, type);
+			e.x = degrees;
+			setroteuler(target, parent, type, e);
+		}
+		//Snaps yaw to given degrees
+		inline constexpr void setyaw(
+			Transform3D& target,
+			const Transform3D& parent,
+			RotTarget type,
+			float degrees)
+		{
+			vec3 e = getroteuler(target, type);
+			e.y = degrees;
+			setroteuler(target, parent, type, e);
+		}
+		//Snaps roll to given degrees
+		inline constexpr void setroll(
+			Transform3D& target,
+			const Transform3D& parent,
+			RotTarget type,
+			float degrees)
+		{
+			vec3 e = getroteuler(target, type);
+			e.z = degrees;
+			setroteuler(target, parent, type, e);
+		}
+		
+		//Returns pitch as degrees for current transform
+		KNODISCARD
+		inline constexpr f32 getpitch(
+			Transform3D& target,
+			RotTarget type)
+		{
+			return getroteuler(target, type).x;
+		}
+		//Returns yaw as degrees for current transform
+		KNODISCARD
+		inline constexpr f32 getyaw(
+			Transform3D& target,
+			RotTarget type)
+		{
+			return getroteuler(target, type).y;
+		}
+		//Returns roll as degrees for current transform
+		KNODISCARD
+		inline constexpr f32 getroll(
+			Transform3D& target,
+			RotTarget type)
+		{
+			return getroteuler(target, type).z;
+		}
+		
+		//Incrementally scales over time
+		inline constexpr void addsize(
+			Transform3D& target,
+			const Transform3D& parent,
+			SizeTarget type,
+			const vec3& size_delta)
+		{
+			//cannot set world size
+			if (type == SizeTarget::SIZE_WORLD) return;
 
-			auto rotate = [](const mat4& m, const quat& q)
-				{
-					const f32 xx = q.x * q.x;
-					const f32 yy = q.y * q.y;
-					const f32 zz = q.z * q.z;
-					const f32 xy = q.x * q.y;
-					const f32 xz = q.x * q.z;
-					const f32 yz = q.y * q.z;
-					const f32 wx = q.w * q.x;
-					const f32 wy = q.w * q.y;
-					const f32 wz = q.w * q.z;
+			vec3 size_clamped = kclamp(
+				target.size_local + size_delta,
+				MIN_SIZE3,
+				MAX_SIZE3);
 
-					mat4 r =
+			target.size_local = size_clamped;
+
+			combine(target, parent);
+		}
+		//Snaps to given scale
+		inline constexpr void setsize(
+			Transform3D& target,
+			const Transform3D& parent,
+			SizeTarget type,
+			const vec3& size_new)
+		{
+			//cannot set world size
+			if (type == SizeTarget::SIZE_WORLD) return;
+
+			vec3 size_clamped = kclamp(
+				size_new,
+				MIN_SIZE3,
+				MAX_SIZE3);
+
+			target.size_local = size_clamped;
+
+			combine(target, parent);
+		}
+		KNODISCARD
+		inline constexpr vec3 getsize(
+			const Transform3D& target,
+			SizeTarget type)
+		{
+			return type == SizeTarget::SIZE_LOCAL
+				? target.size_local
+				: target.size_world;
+		};
+
+	private:
+		//Updates target world pos, rot and size relative to target local and parent world values
+		inline void combine(
+			Transform3D& target,
+			const Transform3D& parent)
+		{
+			if (!isidentity(parent.pos_world)
+				|| !isidentity_q(parent.rot_world)
+				|| !isnear(parent.size_world, vec3(1.0f)))
+			{
+				target.rot_world = 
+					parent.rot_world
+					* target.rot_local;
+				target.size_world =
+					parent.size_world
+					* target.size_local;
+
+				auto rotate = [](const mat4& m, const quat& q)
 					{
-						1 - 2 * (yy + zz), 2 * (xy + wz),     2 * (xz - wy),     0.0f,
-						2 * (xy - wz),     1 - 2 * (xx + zz), 2 * (yz + wx),     0.0f,
-						2 * (xz + wy),     2 * (yz - wx),     1 - 2 * (xx + yy), 0.0f,
-						0.0f,              0.0f,              0.0f,              1.0f
+						const f32 xx = q.x * q.x;
+						const f32 yy = q.y * q.y;
+						const f32 zz = q.z * q.z;
+						const f32 xy = q.x * q.y;
+						const f32 xz = q.x * q.z;
+						const f32 yz = q.y * q.z;
+						const f32 wx = q.w * q.x;
+						const f32 wy = q.w * q.y;
+						const f32 wz = q.w * q.z;
+
+						mat4 r =
+						{
+							1 - 2 * (yy + zz), 2 * (xy + wz),     2 * (xz - wy),     0.0f,
+							2 * (xy - wz),     1 - 2 * (xx + zz), 2 * (yz + wx),     0.0f,
+							2 * (xz + wy),     2 * (yz - wx),     1 - 2 * (xx + yy), 0.0f,
+							0.0f,              0.0f,              0.0f,              1.0f
+						};
+
+						return r * m;
 					};
 
-					return r * m;
-				};
+				mat4 rot_mat = rotate(mat4(1.0f), parent.rot_world);
 
-			mat4 rot_mat = rotate(mat4(1.0f), parent.rot_combined);
-
-			vec4 rot_offset = rot_mat * vec4(target.pos_local, 1.0f);
-			target.pos_combined =
-				parent.pos_combined
-				+ target.pos_world
-				+ vec3(
-					rot_offset.x,
-					rot_offset.y,
-					rot_offset.z);
-		}
-		else
-		{
-			target.pos_combined = target.pos_world;
-			target.rot_combined = target.rot_world;
-			target.size_combined = target.size_world;
-		}
-	}
-	
-	//Incrementally moves over time,
-	//if parent is identity then target combined is target world
-	inline constexpr void addpos3d(
-		Transform3D& target,
-		const Transform3D& parent,
-		PosTarget type,
-		const vec3& pos_delta)
-	{
-		//cannot set combined pos
-		if (type == PosTarget::POS_COMBINED) return;
-
-		vec3 base = (type == PosTarget::POS_WORLD)
-			? target.pos_world
-			: target.pos_local;
-
-		vec3 pos_clamped = kclamp(
-			base + pos_delta,
-			MIN_POS3,
-			MAX_POS3);
-
-		switch (type)
-		{
-		default: return;
-		case PosTarget::POS_WORLD: target.pos_world = pos_clamped; break;
-		case PosTarget::POS_LOCAL: target.pos_local = pos_clamped; break;
+				vec4 rot_offset = rot_mat * vec4(target.pos_local, 1.0f);
+				target.pos_world =
+					parent.pos_world
+					+ vec3(
+						rot_offset.x,
+						rot_offset.y,
+						rot_offset.z);
+			}
+			else
+			{
+				target.pos_world = target.pos_local;
+				target.rot_world = target.rot_local;
+				target.size_world = target.size_local;
+			}
 		}
 
-		combine3d(target, parent);
-	}
-	//Snaps to given position,
-	//if parent is identity then target combined is target world
-	inline constexpr void setpos3d(
-		Transform3D& target,
-		const Transform3D& parent,
-		PosTarget type,
-		const vec3& pos_new)
-	{
-		//cannot set combined pos
-		if (type == PosTarget::POS_COMBINED) return;
+		//position of this transform
+		vec3 pos_local{};
+		//final position after combining local position with parent position
+		vec3 pos_world{};
 
-		vec3 pos_clamped = kclamp(
-			pos_new,
-			MIN_POS3,
-			MAX_POS3);
+		//rotation of this transform
+		quat rot_local{};
+		//final rotation after combining local rotation with parent rotation
+		quat rot_world{};
 
-		switch (type)
-		{
-		default: return;
-		case PosTarget::POS_WORLD: target.pos_world = pos_clamped; break;
-		case PosTarget::POS_LOCAL: target.pos_local = pos_clamped; break;
-		}
-
-		combine3d(target, parent);
-	}
-	KNODISCARD
-	inline constexpr vec3 getpos3d(
-		const Transform3D& target,
-		PosTarget type)
-	{
-		switch (type)
-		{
-		default: return{};
-		case PosTarget::POS_WORLD:    return target.pos_world;
-		case PosTarget::POS_LOCAL:    return target.pos_local;
-		case PosTarget::POS_COMBINED: return target.pos_combined;
-		}
-	}
-	
-	//Rotate towards target position,
-	//if parent is identity then target combined is target world
-	inline constexpr void lookat(
-		Transform3D& target,
-		const Transform3D& parent,
-		RotTarget type,
-		const vec3& targetPos)
-	{
-		//cannot set combined vec rot
-		if (type == RotTarget::ROT_COMBINED) return;
-		
-		vec3 diff = targetPos - target.pos_combined;
-		
-		//cannot look at itself or targets too close to compute a direction
-		if (isnear(diff)) return;
-		
-		vec3 forward = normalize(diff);
-		
-		//compute right and up
-		
-		vec3 right = cross(DIR_UP, forward);
-		
-		//ensures right axis is always valid by being perpendicular to forward
-		//and never parallel to up vector if cross fails
-		if (isnear(right)) right = cross(DIR_FRONT, forward);
-		
-		right = normalize(right);
-		
-		vec3 up = cross(forward, right);
-		
-		//build a quat from a rotation matrix
-		
-		quat q = normalize_q(toquat(
-		{
-			right.x,     right.y,    right.z,
-			up.x,        up.y,       up.z,
-			-forward.x, -forward.y, -forward.z
-		}));
-		
-		switch (type)
-		{
-		default: return;
-		case RotTarget::ROT_WORLD: target.rot_world = q; break;
-		case RotTarget::ROT_LOCAL: target.rot_local = q; break;
-		}
-		
-		combine3d(target, parent);
-	}
-	
-	//Takes in rotation in euler (degrees) and incrementally rotates over time,
-	//if parent is identity then target combined is target world
-	inline constexpr void addrot3d(
-		Transform3D& target,
-		const Transform3D& parent,
-		RotTarget type,
-		const vec3& rot_delta)
-	{
-		//cannot set combined vec rot
-		if (type == RotTarget::ROT_COMBINED) return;
-
-		vec3 current{};
-
-		switch (type)
-		{
-		default: return;
-		case RotTarget::ROT_WORLD: current = toeuler3(target.rot_world); break;
-		case RotTarget::ROT_LOCAL: current = toeuler3(target.rot_local); break;
-		}
-			
-		current = current + rot_delta;
-		//clamp to prevent absurd rotation jumps when looking up/down
-		current.x = clamp(current.x, -PITCH_LIMIT, PITCH_LIMIT);
-
-		switch (type)
-		{
-		default: return;
-		case RotTarget::ROT_WORLD: target.rot_world = toquat(current); break;
-		case RotTarget::ROT_LOCAL: target.rot_local = toquat(current); break;
-		}
-
-		combine3d(target, parent);
-	}
-	//Takes in rotation in euler (degrees) and snaps to given rotation,
-	//if parent is identity then target combined is target world,
-	inline constexpr void setroteuler(
-		Transform3D& target,
-		const Transform3D& parent,
-		RotTarget type,
-		const vec3& rot_new)
-	{
-		//cannot set combined vec rot
-		if (type == RotTarget::ROT_COMBINED) return;
-
-		switch (type)
-		{
-		default: return;
-		case RotTarget::ROT_WORLD: target.rot_world = toquat(rot_new); break;
-		case RotTarget::ROT_LOCAL: target.rot_local = toquat(rot_new); break;
-		}
-
-		combine3d(target, parent);
-	}
-	//Takes in rotation in quaternion and snaps to given rotation,
-	//if parent is identity then target combined is target world
-	inline constexpr void setrotquat(
-		Transform3D& target,
-		const Transform3D& parent,
-		RotTarget type,
-		const quat& rot_new)
-	{
-		//cannot set combined vec rot
-		if (type == RotTarget::ROT_COMBINED) return;
-
-		quat rot_clamped = normalize_q(rot_new);
-
-		switch (type)
-		{
-		default: return;
-		case RotTarget::ROT_WORLD: target.rot_world = rot_clamped; break;
-		case RotTarget::ROT_LOCAL: target.rot_local = rot_clamped; break;
-		}
-			
-		combine3d(target, parent);
-	}
-	//Returns rotation in euler (degrees)
-	KNODISCARD
-	inline constexpr vec3 getroteuler(
-		const Transform3D& target,
-		RotTarget type)
-	{
-		switch (type)
-		{
-		default: return{};
-		case RotTarget::ROT_WORLD:    return toeuler3(target.rot_world); break;
-		case RotTarget::ROT_LOCAL:    return toeuler3(target.rot_local); break;
-		case RotTarget::ROT_COMBINED: return toeuler3(target.rot_combined); break;
-		}
-	}
-	//Returns quaternion rotation
-	KNODISCARD
-	inline constexpr quat getrotquat(
-		const Transform3D& target,
-		RotTarget type)
-	{
-		switch (type)
-		{
-		default: return{};
-		case RotTarget::ROT_WORLD:    return target.rot_world; break;
-		case RotTarget::ROT_LOCAL:    return target.rot_local; break;
-		case RotTarget::ROT_COMBINED: return target.rot_combined; break;
-		}
-	}
-	
-	//Returns true local front direction of this transform
-	KNODISCARD
-	inline constexpr vec3 getdirfront(Transform3D& target)
-	{
-		return target.rot_combined * DIR_FRONT;
-	}
-	//Returns true local right direction of this transform
-	KNODISCARD
-	inline constexpr vec3 getdirright(Transform3D& target)
-	{
-		return target.rot_combined * DIR_RIGHT;
-	}
-	//Returns true local up direction of this transform
-	KNODISCARD
-	inline constexpr vec3 getdirup(Transform3D& target)
-	{
-		return target.rot_combined * DIR_UP;
-	}
-	
-	//Increments pitch over time with degrees,
-	//if parent is identity then target combined is target world
-	inline constexpr void addpitch(
-		Transform3D& target,
-		const Transform3D& parent,
-		RotTarget type,
-		float degrees)
-	{
-		addrot3d(target, parent, type, {degrees, 0, 0});
-	}
-	//Increments yaw over time with degrees,
-	//if parent is identity then target combined is target world
-	inline constexpr void addyaw(
-		Transform3D& target,
-		const Transform3D& parent,
-		RotTarget type,
-		float degrees)
-	{
-		addrot3d(target, parent, type, {0, degrees, 0});
-	}
-	//Increments roll over time with degrees,
-	//if parent is identity then target combined is target world
-	inline constexpr void addroll(
-		Transform3D& target,
-		const Transform3D& parent,
-		RotTarget type,
-		float degrees)
-	{
-		addrot3d(target, parent, type, {0, 0, degrees});
-	}
-	
-	//Snaps pitch to given degrees,
-	//if parent is identity then target combined is target world
-	inline constexpr void setpitch(
-		Transform3D& target,
-		const Transform3D& parent,
-		RotTarget type,
-		float degrees)
-	{
-		vec3 e = getroteuler(target, type);
-		e.x = degrees;
-		setroteuler(target, parent, type, e);
-	}
-	//Snaps yaw to given degrees,
-	//if parent is identity then target combined is target world
-	inline constexpr void setyaw(
-		Transform3D& target,
-		const Transform3D& parent,
-		RotTarget type,
-		float degrees)
-	{
-		vec3 e = getroteuler(target, type);
-		e.y = degrees;
-		setroteuler(target, parent, type, e);
-	}
-	//Snaps roll to given degrees,
-	//if parent is identity then target combined is target world
-	inline constexpr void setroll(
-		Transform3D& target,
-		const Transform3D& parent,
-		RotTarget type,
-		float degrees)
-	{
-		vec3 e = getroteuler(target, type);
-		e.z = degrees;
-		setroteuler(target, parent, type, e);
-	}
-	
-	//Returns pitch as degrees for current transform
-	KNODISCARD
-	inline constexpr f32 getpitch(
-		Transform3D& target,
-		RotTarget type)
-	{
-		return getroteuler(target, type).x;
-	}
-	//Returns yaw as degrees for current transform
-	KNODISCARD
-	inline constexpr f32 getyaw(
-		Transform3D& target,
-		RotTarget type)
-	{
-		return getroteuler(target, type).y;
-	}
-	//Returns roll as degrees for current transform
-	KNODISCARD
-	inline constexpr f32 getroll(
-		Transform3D& target,
-		RotTarget type)
-	{
-		return getroteuler(target, type).z;
-	}
-	
-	//Incrementally scales over time,
-	//if parent is identity then target combined is target world
-	inline constexpr void addsize3d(
-		Transform3D& target,
-		const Transform3D& parent,
-		SizeTarget type,
-		const vec3& size_delta)
-	{
-		//cannot set combined size
-		if (type == SizeTarget::SIZE_COMBINED) return;
-
-		vec3 base = (type == SizeTarget::SIZE_WORLD)
-			? target.size_world
-			: target.size_local;
-
-		vec3 size_clamped = kclamp(
-			base + size_delta,
-			MIN_SIZE3,
-			MAX_SIZE3);
-
-		switch (type)
-		{
-		default: return;
-		case SizeTarget::SIZE_WORLD: target.size_world = size_clamped; break;
-		case SizeTarget::SIZE_LOCAL: target.size_local = size_clamped; break;
-		}
-
-		combine3d(target, parent);
-	}
-	//Snaps to given scale,
-	//if parent is identity then target combined is target world
-	inline constexpr void setsize3d(
-		Transform3D& target,
-		const Transform3D& parent,
-		SizeTarget type,
-		const vec3& size_new)
-	{
-		//cannot set combined size
-		if (type == SizeTarget::SIZE_COMBINED) return;
-
-		vec3 size_clamped = kclamp(
-			size_new,
-			MIN_SIZE3,
-			MAX_SIZE3);
-
-		switch (type)
-		{
-		default: return;
-		case SizeTarget::SIZE_WORLD: target.size_world = size_clamped; break;
-		case SizeTarget::SIZE_LOCAL: target.size_local = size_clamped; break;
-		}
-
-		combine3d(target, parent);
-	}
-	KNODISCARD
-	inline constexpr vec3 getsize3d(
-		const Transform3D& target,
-		SizeTarget type)
-	{
-		switch (type)
-		{
-		default: return{};
-		case SizeTarget::SIZE_WORLD:    return target.size_world;
-		case SizeTarget::SIZE_LOCAL:    return target.size_local;
-		case SizeTarget::SIZE_COMBINED: return target.size_combined;
-		}
+		//size of this transform
+		vec3 size_local = vec3(1.0f);
+		//final size after combining local size with parent size
+		vec3 size_world = vec3(1.0f);
 	};
 }
