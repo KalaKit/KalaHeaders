@@ -2241,6 +2241,41 @@ namespace KalaHeaders::KalaMath
 		return q;
 	}
 
+	//Converts mat4 to vec3 position
+	KNODISCARD
+	inline constexpr vec3 topos(const mat4& m)
+	{
+		return
+		{
+			m.m30,
+			m.m31,
+			m.m32	
+		};
+	}
+
+	//Converts mat4 to vec3 size
+	KNODISCARD
+	inline vec3 tosize(const mat4& m)
+	{
+		return
+		{
+			sqrtf(
+				m.m00 * m.m00
+				+ m.m01 * m.m01
+				+ m.m02 * m.m02),
+
+			sqrtf(
+				m.m10 * m.m10
+				+ m.m11 * m.m11
+				+ m.m12 * m.m12),
+
+			sqrtf(
+				m.m20 * m.m20
+				+ m.m21 * m.m21
+				+ m.m22 * m.m22)
+		};
+	}
+
 	//Converts quat to mat3
 	KNODISCARD
 	inline mat3 tomat3(const quat& q)
