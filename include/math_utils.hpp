@@ -2198,48 +2198,6 @@ namespace KalaHeaders::KalaMath
 
 		return q;
 	}
-	//Converts mat4 to quat
-	KNODISCARD
-	inline constexpr quat toquat(const mat4& m)
-	{
-		const f32 trace = m.m00 + m.m11 + m.m22;
-		quat q{};
-
-		if (trace > 0.0f)
-		{
-			const f32 s = 0.5f / sqrtf(trace + 1.0f);
-			q.w = 0.25f / s;
-			q.x = (m.m21 - m.m12) * s;
-			q.y = (m.m02 - m.m20) * s;
-			q.z = (m.m10 - m.m01) * s;
-		}
-		else if (m.m00 > m.m11 && m.m00 > m.m22)
-		{
-			const f32 s = 2.0f * sqrtf(1.0f + m.m00 - m.m11 - m.m22);
-			q.w = (m.m21 - m.m12) / s;
-			q.x = 0.25f * s;
-			q.y = (m.m10 + m.m01) / s;
-			q.z = (m.m20 + m.m02) / s;
-		}
-		else if (m.m11 > m.m22)
-		{
-			const f32 s = 2.0f * sqrtf(1.0f + m.m11 - m.m00 - m.m22);
-			q.w = (m.m02 - m.m20) / s;
-			q.x = (m.m10 + m.m01) / s;
-			q.y = 0.25f * s;
-			q.z = (m.m21 + m.m12) / s;
-		}
-		else
-		{
-			const f32 s = 2.0f * sqrtf(1.0f + m.m22 - m.m00 - m.m11);
-			q.w = (m.m10 - m.m01) / s;
-			q.x = (m.m20 + m.m02) / s;
-			q.y = (m.m21 + m.m12) / s;
-			q.z = 0.25f * s;
-		}
-
-		return q;
-	}
 
 	//Converts mat4 to vec3 position
 	KNODISCARD
@@ -2274,6 +2232,38 @@ namespace KalaHeaders::KalaMath
 				+ m.m21 * m.m21
 				+ m.m22 * m.m22)
 		};
+	}
+
+	//Converts mat4 to scale-normalized quat
+	KNODISCARD
+	inline constexpr quat toquat(const mat4& m)
+	{
+		vec3 size = tosize(m);
+
+		//prevent division by zero
+		if (isnear(size.x)
+			|| isnear(size.y)
+			|| isnear(size.z))
+		{
+			return {};
+		}
+
+		mat3 rot
+		{
+			m.m00 / size.x,
+			m.m01 / size.x,
+			m.m02 / size.x,
+
+			m.m10 / size.y,
+			m.m11 / size.y,
+			m.m12 / size.y,
+
+			m.m20 / size.z,
+			m.m21 / size.z,
+			m.m22 / size.z
+		};
+
+		return toquat(rot);
 	}
 
 	//Converts quat to mat3
