@@ -869,6 +869,33 @@ namespace KalaHeaders::KalaMath
 				_m03, _m13, _m23, _m33
 			} {}
 
+		constexpr mat(const f32 (&_m)[4])
+			requires (N == 2)
+			: mat_storage<N>
+			{
+				_m[0], _m[1],
+				_m[2], _m[3]
+			} {}
+
+		constexpr mat(const f32 (&_m)[9])
+			requires (N == 3)
+			: mat_storage<N>
+			{
+				_m[0], _m[1], _m[2],
+				_m[3], _m[4], _m[5],
+				_m[6], _m[7], _m[8]
+			} {}
+
+		constexpr mat(const f32 (&_m)[16])
+			requires (N == 4)
+			: mat_storage<N>
+			{
+				_m[0],  _m[1],  _m[2],  _m[3],
+				_m[4],  _m[5],  _m[6],  _m[7],
+				_m[8],  _m[9],  _m[10], _m[11],
+				_m[12], _m[13], _m[14], _m[15]
+			} {}
+
 		using storage = mat_storage<N>;
 
 		//================================================================================
