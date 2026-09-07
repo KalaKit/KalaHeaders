@@ -2232,9 +2232,9 @@ namespace KalaHeaders::KalaMath
 	{
 		return
 		{
-			m.m30,
-			m.m31,
-			m.m32	
+			m.m03,
+			m.m13,
+			m.m23	
 		};
 	}
 
