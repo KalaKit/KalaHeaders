@@ -99,3 +99,9 @@ Provides:
   - standard layout for typography, math and currency symbols
   - standard layout for latin and cyrillic alphabet letters
   - standard layout for emojis
+  
+## export_glb.hpp
+
+Provides:
+  - export .glb files (full parity with KalaGraphics material system, but as fully standalone header)
+  - print json file of .glb to debug the output, can make it look pretty by setting makePretty true
