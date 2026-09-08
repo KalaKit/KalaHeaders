@@ -110,7 +110,7 @@ Provides:
 
 Provides:
   - exports .png files with full parity with the KalaGraphics material system while remaining as fully standalone header
-  - uses dynamic Huffman deflate compression with three compression levels (or no compression)
+  - uses dynamic Huffman deflate compression (if compression is enabled)
   - uses adaptive png scanline filtering
   - converts raw pixel data directly into .png binary data
   - exports already-converted .png binary data directly to disk
