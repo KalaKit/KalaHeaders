@@ -200,30 +200,6 @@ namespace KalaHeaders::KalaExportGLB
 	using std::ofstream;
 	using std::ios;
 
-	static constexpr u32 GLTF_MAGIC = 0x46546C67; // "glTF"
-	static constexpr u32 GLTF_VERSION = 2;
-	static constexpr u32 JSON_CHUNK_TYPE = 0x4E4F534A; // "JSON"
-	static constexpr u32 BIN_CHUNK_TYPE = 0x004E4942; // "BIN"
-
-	struct GLB_Header
-	{
-		u32 magic = GLTF_MAGIC;
-		u32 version = GLTF_VERSION;
-		u32 length{};
-	};
-
-	struct JSON_Header
-	{
-		u32 jsonChunkLength{};
-		u32 jsonChunkType = JSON_CHUNK_TYPE;
-	};
-
-	struct BIN_Header
-	{
-		u32 binChunkLength{};
-		u32 binChunkType = BIN_CHUNK_TYPE;
-	};
-
 	struct Transform
 	{
 		//XYZ position
@@ -986,6 +962,30 @@ R"(
 		const path& exportPath,
 		bool overwrite = false)
 	{
+		static constexpr u32 GLTF_MAGIC = 0x46546C67; // "glTF"
+		static constexpr u32 GLTF_VERSION = 2;
+		static constexpr u32 JSON_CHUNK_TYPE = 0x4E4F534A; // "JSON"
+		static constexpr u32 BIN_CHUNK_TYPE = 0x004E4942; // "BIN"
+
+		struct GLB_Header
+		{
+			u32 magic = GLTF_MAGIC;
+			u32 version = GLTF_VERSION;
+			u32 length{};
+		};
+
+		struct JSON_Header
+		{
+			u32 jsonChunkLength{};
+			u32 jsonChunkType = JSON_CHUNK_TYPE;
+		};
+
+		struct BIN_Header
+		{
+			u32 binChunkLength{};
+			u32 binChunkType = BIN_CHUNK_TYPE;
+		};
+
 		auto get_binary_data = [](const vector<ExportNodeData>& nodeData) -> vector<u8>
 			{
 				vector<u8> binaryData{};
