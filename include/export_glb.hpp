@@ -243,16 +243,36 @@ namespace KalaHeaders::KalaExportGLB
 		f32 color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	};
 
+	enum class AlphaMode : u8
+	{
+		A_OPAQUE = 0,
+		A_BLEND = 1,
+		A_MASK = 2
+	};
+
 	struct ExportMeshData
 	{
 		vector<Vertex> vertices{};
 		vector<u32> indices{};
 	};
 
+    struct ExportGLBTextureData
+    {
+		//should be already parsed png binary data, not raw pixel data
+		vector<u8> pngImageData{};
+
+		//TODO: add texture type like diffuse etc...
+    };
+
 	struct ExportMaterialData
 	{
 		string materialName = "unnamed_material";
 		f32 baseColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+		AlphaMode alphaMode{};
+		f32 alphaCutoff{};
+
+		ExportGLBTextureData textureData{};
 	};
 
 	struct ExportNodeData
@@ -401,7 +421,7 @@ namespace KalaHeaders::KalaExportGLB
 
 		if (nodeData.empty())
 		{
-			return "Failed to write to export path because no node data was passed!";
+			return "Failed to export GLB to path because no node data was passed!";
 		}
 
 		for (size_t i = 0; i < nodeData.size(); i++)
@@ -593,9 +613,35 @@ R"(",
 				+ to_string(matData.baseColor[2]) + ", "
 				+ to_string(matData.baseColor[3]);
 
+			string alphaModeString{};
+
+			switch (matData.alphaMode)
+			{
+			default:
+			case AlphaMode::A_OPAQUE:
+				alphaModeString = "OPAQUE";
+				break;
+			case AlphaMode::A_BLEND:
+				alphaModeString = "BLEND";
+				break;
+			case AlphaMode::A_MASK:
+				alphaModeString = "MASK";
+				break;
+			}
+
 			outJson +=
 R"(]
-      }
+      },
+	  "alphaMode": ")";
+			outJson += alphaModeString;
+
+			outJson +=
+R"(",    
+      "alphaCutoff": )";
+			outJson += to_string(matData.alphaCutoff);
+
+			outJson +=
+R"(
     })";
 
 			//next material
@@ -937,7 +983,8 @@ R"(
 	KNODISCARD
 	inline string ExportMeshes(
 		vector<ExportNodeData>&& nodeData,
-		const path& exportPath)
+		const path& exportPath,
+		bool overwrite = false)
 	{
 		auto get_binary_data = [](const vector<ExportNodeData>& nodeData) -> vector<u8>
 			{
@@ -1008,7 +1055,7 @@ R"(
 
 		if (nodeData.empty())
 		{
-			return "Failed to write to export path because no node data was passed!";
+			return "Failed to export GLB because its node data is empty!";
 		}
 
 		for (size_t i = 0; i < nodeData.size(); i++)
@@ -1017,28 +1064,40 @@ R"(
 
 			if (node.meshData.vertices.empty())
 			{
-				return "Failed to write to export path because node '" + to_string(i) + "' had no vertices!";
+				return "Failed to export GLB to path because node '" + to_string(i) + "' had no vertices!";
 			}
 		}
 
 		if (exportPath.empty())
 		{
-			return "Failed to write to export path because it is empty!";
+			return "Failed to export GLB because its export path is empty!";
+		}
+
+		if (!exportPath.parent_path().empty()
+			&& !exists(exportPath.parent_path()))
+		{
+			return "Failed to export GLB because export path '" + exportPath.string() + "' is invalid!";
+		}
+
+		if (is_directory(exportPath))
+		{
+			return "Failed to export GLB to export path '" + exportPath.string() + "' because it is a directory!";
 		}
 
 		if (!exportPath.has_extension())
 		{
-			return "Failed to write to export path '" + exportPath.string() + "' because it is a directory!";
+			return "Failed to export GLB to export path '" + exportPath.string() + "' because it is a directory!";
 		}
 		
 		if (exportPath.extension() != ".glb")
 		{
-			return "Failed to write to export path '" + exportPath.string() + "' because its extension is not supported!";
+			return "Failed to export GLB to export path '" + exportPath.string() + "' because its extension is not supported!";
 		}
 
-		if (exists(exportPath))
+		if (!overwrite
+			&& exists(exportPath))
 		{
-			return "Failed to write to export path '" + exportPath.string() + "' because it already exists!";
+			return "Failed to export GLB to export path '" + exportPath.string() + "' because it already exists!";
 		}
 
         auto fileStatus = status(absolute(exportPath).parent_path());
@@ -1050,7 +1109,7 @@ R"(
             | perms::others_write))
             != perms::none;
 
-        if (!canWrite) return "Failed to write to export path '" + exportPath.string() + "' because of insufficient write permissions!";
+        if (!canWrite) return "Failed to export GLB to export path '" + exportPath.string() + "' because of insufficient write permissions!";
 
 		//
 		// GET DATA THAT WILL BE WRITTEN
@@ -1110,7 +1169,7 @@ R"(
 			rcast<const char*>(binData.data()),
 			binData.size());
 
-		if (!file) return "Failed to write to file '" + exportPath.string() + "'!";
+		if (!file) return "Failed to export GLB file '" + exportPath.string() + "'!";
 
 		file.close();
 

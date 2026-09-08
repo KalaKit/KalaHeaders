@@ -105,3 +105,12 @@ Provides:
 Provides:
   - export .glb files (full parity with KalaGraphics material system, but as fully standalone header)
   - print json file of .glb to debug the output, can make it look pretty by setting makePretty true
+  
+## export_png.hpp
+
+Provides:
+  - exports .png files with full parity with the KalaGraphics material system while remaining as fully standalone header
+  - uses dynamic Huffman deflate compression with three compression levels (or no compression)
+  - uses adaptive png scanline filtering
+  - converts raw pixel data directly into .png binary data
+  - exports already-converted .png binary data directly to disk
