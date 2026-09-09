@@ -567,6 +567,8 @@ R"(
   "materials":
   [)";
 
+		size_t textureIndex{};
+
 		//write material data
 		for (size_t i = 0; i < nodeData.size(); i++)
 		{
@@ -589,6 +591,25 @@ R"(",
 				+ to_string(matData.baseColor[2]) + ", "
 				+ to_string(matData.baseColor[3]);
 
+			outJson += "]";
+
+			if (!matData.textureData.pngImageData.empty())
+			{
+				outJson += 
+R"(,
+        "baseColorTexture":
+        {
+          "index": )";
+
+				outJson += to_string(textureIndex);
+
+				outJson +=
+R"(
+        })";
+				textureIndex++;
+
+			}
+
 			string alphaModeString{};
 
 			switch (matData.alphaMode)
@@ -606,7 +627,7 @@ R"(",
 			}
 
 			outJson +=
-R"(]
+R"(
       },
 	  "alphaMode": ")";
 			outJson += alphaModeString;
@@ -622,6 +643,83 @@ R"(
 
 			//next material
 			if (i + 1 < nodeData.size()) outJson += ",";
+		}
+
+		//write textures
+		if (textureIndex > 0)
+		{
+			outJson +=
+R"(
+  ],
+  "textures":
+  [)";
+
+			size_t currentTextureIndex{};
+
+			for (size_t i = 0; i < nodeData.size(); i++)
+			{
+				const ExportGLBTextureData& textureData = nodeData[i].matData.textureData;
+
+				if (textureData.pngImageData.empty()) continue;
+
+				outJson += 
+R"(
+    {
+      "source": )";
+				outJson += to_string(currentTextureIndex);
+
+				outJson +=
+R"(
+    })";
+
+				currentTextureIndex++;
+
+				//next texture
+				if (currentTextureIndex < textureIndex) outJson += ",";
+			}
+		}
+
+		size_t imagebufferviewIndex{};
+
+		for (size_t i = 0; i < nodeData.size(); i++)
+		{
+			imagebufferviewIndex += nodeData[i].meshData.indices.empty() ? 4 : 5;
+		}
+
+		//write images
+		if (textureIndex > 0)
+		{
+			outJson +=
+R"(
+  ],
+  "images":
+  [)";
+
+			size_t currentImageIndex{};
+
+			for (size_t i = 0; i < nodeData.size(); i++)
+			{
+				const ExportGLBTextureData& textureData = nodeData[i].matData.textureData;
+
+				if (textureData.pngImageData.empty()) continue;
+
+				outJson +=
+R"(
+    {
+      "bufferView": )";
+				outJson += to_string(imagebufferviewIndex);
+
+				outJson +=
+R"(,
+      "mimeType": "image/png"
+    })";
+
+				imagebufferviewIndex++;
+				currentImageIndex++;
+
+				//next image
+				if (currentImageIndex < textureIndex) outJson += ",";
+			}
 		}
 
 		//start "accessors"
@@ -893,6 +991,34 @@ R"(
 			//next mesh buffer views
 			if (i + 1 < nodeData.size()) outJson += ",";
 		}
+
+		//write image buffer views
+		for (size_t i = 0; i < nodeData.size(); i++)
+		{
+			const ExportGLBTextureData& textureData = nodeData[i].matData.textureData;
+
+			if (textureData.pngImageData.empty()) continue;
+
+			while (byteOffset % 4 != 0) byteOffset++;
+
+			outJson +=
+R"(,
+    {
+      "buffer": 0,
+      "byteOffset": )";
+			outJson += to_string(byteOffset);
+
+			outJson +=
+R"(,
+      "byteLength": )";
+			outJson += to_string(textureData.pngImageData.size());
+
+			outJson +=
+R"(
+    })";
+
+			byteOffset += textureData.pngImageData.size();
+		}
    
 		//write buffer
 		outJson +=
@@ -1048,6 +1174,21 @@ R"(
 							data,
 							data + meshData.indices.size() * sizeof(u32));
 					}
+				}
+
+				//textures
+				for (const ExportNodeData& node : nodeData)
+				{
+					const vector<u8>& pngImageData = node.matData.textureData.pngImageData;
+
+					if (pngImageData.empty()) continue;
+
+					while (binaryData.size() % 4 != 0) binaryData.push_back(0);
+
+					binaryData.insert(
+						binaryData.end(),
+						pngImageData.begin(),
+						pngImageData.end());
 				}
 
 				return binaryData;
