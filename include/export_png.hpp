@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------
-// export_gltf.hpp
+// export_png.hpp
 //
 // Copyright (C) 2026 Lost Empire Entertainment
 //
