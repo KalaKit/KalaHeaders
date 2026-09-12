@@ -2989,6 +2989,50 @@ namespace KalaHeaders::KalaMath
 	{
 		return (dot(a, b) / dot(b, b)) * b;
 	}
+
+	//Converts linear color to sRGB color
+    KNODISCARD
+	inline constexpr vec4 to_srgb(vec4&& linearColor)
+    {
+        linearColor = kclamp(linearColor, 0, 1);
+
+        auto convert = [](f32 value) -> f32
+            {
+                if (value <= 0.0031308f) return value * 12.92f;
+
+                return 1.055f * powf(value, 1.0f / 2.4f) - 0.055f;
+            };
+
+        return
+        {
+            convert(linearColor.x),
+            convert(linearColor.y),
+            convert(linearColor.z),
+            linearColor.w
+        };
+    }
+
+    //Converts sRGB color to linear color
+    KNODISCARD
+	inline constexpr vec4 to_linear(vec4&& sRGBColor)
+    {
+        sRGBColor = kclamp(sRGBColor, 0, 1);
+
+        auto convert = [](f32 value) -> f32
+            {
+                if (value <= 0.04045f) return value / 12.92f;
+
+                return powf((value + 0.055f) / 1.055f, 2.4f);
+            };
+
+        return
+        {
+            convert(sRGBColor.x),
+            convert(sRGBColor.y),
+            convert(sRGBColor.z),
+            sRGBColor.w
+        };
+    }
 	
 	//Returns neutral vec2
 	KNODISCARD

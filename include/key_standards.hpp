@@ -494,16 +494,16 @@ namespace KalaHeaders::KalaKeyStandards
 		{scast<u32>(KeyboardButton::K_Y), 0x0079, "y"},
 		{scast<u32>(KeyboardButton::K_Z), 0x007A, "z"},
 
-		{scast<u32>(KeyboardButton::K_NUM_0), 0x0030, "num-0"},
-		{scast<u32>(KeyboardButton::K_NUM_1), 0x0031, "num-1"},
-		{scast<u32>(KeyboardButton::K_NUM_2), 0x0032, "num-2"},
-		{scast<u32>(KeyboardButton::K_NUM_3), 0x0033, "num-3"},
-		{scast<u32>(KeyboardButton::K_NUM_4), 0x0034, "num-4"},
-		{scast<u32>(KeyboardButton::K_NUM_5), 0x0035, "num-5"},
-		{scast<u32>(KeyboardButton::K_NUM_6), 0x0036, "num-6"},
-		{scast<u32>(KeyboardButton::K_NUM_7), 0x0037, "num-7"},
-		{scast<u32>(KeyboardButton::K_NUM_8), 0x0038, "num-8"},
-		{scast<u32>(KeyboardButton::K_NUM_9), 0x0039, "num-9"},
+		{scast<u32>(KeyboardButton::K_NUM_0), 0x0030, "0"},
+		{scast<u32>(KeyboardButton::K_NUM_1), 0x0031, "1"},
+		{scast<u32>(KeyboardButton::K_NUM_2), 0x0032, "2"},
+		{scast<u32>(KeyboardButton::K_NUM_3), 0x0033, "3"},
+		{scast<u32>(KeyboardButton::K_NUM_4), 0x0034, "4"},
+		{scast<u32>(KeyboardButton::K_NUM_5), 0x0035, "5"},
+		{scast<u32>(KeyboardButton::K_NUM_6), 0x0036, "6"},
+		{scast<u32>(KeyboardButton::K_NUM_7), 0x0037, "7"},
+		{scast<u32>(KeyboardButton::K_NUM_8), 0x0038, "8"},
+		{scast<u32>(KeyboardButton::K_NUM_9), 0x0039, "9"},
 		
 		{scast<u32>(KeyboardButton::K_NUM_LOCK),     0, "num-lock"}, 
 		{scast<u32>(KeyboardButton::K_NUM_RETURN),   0, "mun-return"}, 
@@ -512,16 +512,16 @@ namespace KalaHeaders::KalaKeyStandards
 		{scast<u32>(KeyboardButton::K_NUM_ADD),      0, "num-add"}, 
 		{scast<u32>(KeyboardButton::K_NUM_SUBTRACT), 0, "num-subtract"},
 		
-		{scast<u32>(KeyboardButton::K_0), 0x0030, "top-0"},
-		{scast<u32>(KeyboardButton::K_1), 0x0031, "top-1"},
-		{scast<u32>(KeyboardButton::K_2), 0x0032, "top-2"},
-		{scast<u32>(KeyboardButton::K_3), 0x0033, "top-3"},
-		{scast<u32>(KeyboardButton::K_4), 0x0034, "top-4"},
-		{scast<u32>(KeyboardButton::K_5), 0x0035, "top-5"},
-		{scast<u32>(KeyboardButton::K_6), 0x0036, "top-6"},
-		{scast<u32>(KeyboardButton::K_7), 0x0037, "top-7"},
-		{scast<u32>(KeyboardButton::K_8), 0x0038, "top-8"},
-		{scast<u32>(KeyboardButton::K_9), 0x0039, "top-9"},
+		{scast<u32>(KeyboardButton::K_0), 0x0030, "0"},
+		{scast<u32>(KeyboardButton::K_1), 0x0031, "1"},
+		{scast<u32>(KeyboardButton::K_2), 0x0032, "2"},
+		{scast<u32>(KeyboardButton::K_3), 0x0033, "3"},
+		{scast<u32>(KeyboardButton::K_4), 0x0034, "4"},
+		{scast<u32>(KeyboardButton::K_5), 0x0035, "5"},
+		{scast<u32>(KeyboardButton::K_6), 0x0036, "6"},
+		{scast<u32>(KeyboardButton::K_7), 0x0037, "7"},
+		{scast<u32>(KeyboardButton::K_8), 0x0038, "8"},
+		{scast<u32>(KeyboardButton::K_9), 0x0039, "9"},
 		
 		{scast<u32>(KeyboardButton::K_F1), 0, "f1"}, 
 		{scast<u32>(KeyboardButton::K_F2), 0, "f2"}, 
@@ -1269,11 +1269,13 @@ namespace KalaHeaders::KalaKeyStandards
 		
 		const auto it = find_if(
 			keyValues.begin(), keyValues.end(),
-			[&](const KeyValue& kv) { return kv.value == value; });
+			[&](const KeyValue& kv)
+			{
+				return kv.value == value
+					&& kv.utf != 0;
+			});
 			
-		return (
-			it != keyValues.end()
-			&& it->utf != 0)
+		return it != keyValues.end()
 			? it->utf
 			: 0x003F; //returns ? as fallback
 	}
