@@ -228,8 +228,8 @@ namespace KalaHeaders::KalaLog
 		LOG_INFO,    //General-purpose log message, sent to stdout
 		LOG_DEBUG,   //Debugging message, only appears in debug builds, sent to stdout
 		LOG_SUCCESS, //Confirmation that an operation succeeded, sent to stdout
-		LOG_WARNING, //Non-critical issue that should be looked into, sent to stdout
-		LOG_ERROR    //Serious issue or failure, sent to stderr, always flushes
+		LOG_WARNING, //User error, invalid request, usually not harmful
+		LOG_ERROR    //Application error, request failed to be handled, sent to stderr, always flushes
 	};
 	enum class TimeFormat : u8
 	{
