@@ -117,3 +117,10 @@ Provides:
   - uses adaptive png scanline filtering
   - converts raw pixel data directly into .png binary data
   - exports already-converted .png binary data directly to disk
+  
+## password_hasher.hpp
+
+Provides:
+  - Argon2id v1.3 (RFC 9106) and BLAKE2b (RFC 7693) compatible password hash implementation
+  - HashPassword function to convert any string into a hashed password and salt
+  - VerifyPassword function to confirm if a raw password is correct compared to a hashed password and its salt
