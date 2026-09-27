@@ -570,6 +570,24 @@ namespace KalaHeaders::KalaCore
 	// REMOVE DUPLICATES FROM CONTAINER
 	//
 
+	//Returns true if the vector contains duplicate values
+	template <AnyVector T>
+		requires IsHashable<typename T::value_type>
+	inline constexpr bool HasDuplicates(const T& v)
+	{
+		if (v.size() < 2) return false;
+
+		unordered_set<typename T::value_type> seen{};
+		seen.reserve(v.size());
+
+		for (const auto& x : v)
+		{
+			if (!seen.insert(x).second) return true;
+		}
+
+		return false;
+	}
+
 	//Remove all duplicate values the from vector that appear more than once, order is preserved
 	template <AnyVector T>
 		requires IsHashable<typename T::value_type>
@@ -584,24 +602,6 @@ namespace KalaHeaders::KalaCore
 		{
 			return !seen.insert(x).second;
 		});
-	}
-
-	//Remove all duplicate values from the map or unordered map that appear more than once, key order is preserved for maps
-	template <AnyMap T>
-		requires IsHashable<typename T::mapped_type>
-	inline constexpr void RemoveDuplicates(T& m)
-	{
-		if (m.size() < 2) return;
-
-		using Value = typename T::mapped_type;
-		unordered_set<Value> seen{};
-		seen.reserve(m.size());
-
-		for (auto it = m.begin(); it != m.end();)
-		{
-			if (!seen.insert(it->second).second) it = m.erase(it);
-			else ++it;
-		}
 	}
 
 	//
