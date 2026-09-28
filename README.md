@@ -124,3 +124,5 @@ Provides:
   - Argon2id v1.3 (RFC 9106) and BLAKE2b (RFC 7693) compatible password hash implementation
   - HashPassword function to convert any string into a hashed password and salt
   - VerifyPassword function to confirm if a raw password is correct compared to a hashed password and its salt
+  - StringToBytes function to safely convert hexadecimal string to binary bytes
+  - BytesToString function to safely convert binary bytes to hexadecimal string 
