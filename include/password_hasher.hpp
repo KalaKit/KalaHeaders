@@ -217,19 +217,18 @@ namespace KalaHeaders::KalaPasswordHasher
 
 	inline string _GenerateHash(
 		string_view rawPassword,
-		string_view salt,
+		const array<u8, SALT_SIZE_BYTES>& salt,
 		const Argon2idConfig& config,
-		string& outHash);
+		array<u8, HASH_SIZE_BYTES>& outHash);
 
 	inline string _VerifyRawPassword(string_view rawPassword);
-	inline string _VerifyGeneratedHashAndSalt(const pair<string, string>& hashAndSalt);
 	inline string _VerifyArgon2idConfig(const Argon2idConfig& config);
 
 	//Takes in a raw password string and optional Argon2id config,
 	//returns a string for error, hash password and salt
 	inline string HashPassword(
 		string_view rawPassword,
-		pair<string, string>& outResult,
+		pair<array<u8, HASH_SIZE_BYTES>, array<u8, SALT_SIZE_BYTES>>& outResult,
 		Argon2idConfig config = {})
 	{
 		string err = _VerifyRawPassword(rawPassword);
@@ -238,20 +237,19 @@ namespace KalaHeaders::KalaPasswordHasher
 		err = _VerifyArgon2idConfig(config);
 		if (!err.empty()) return err;
 
-		auto generate_salt = []() -> string
+		auto generate_salt = []() -> array<u8, SALT_SIZE_BYTES>
 			{
 				random_device rd{};
 
-				string generatedSalt{};
-				generatedSalt.resize(SALT_SIZE_BYTES);
+				array<u8, SALT_SIZE_BYTES> generatedSalt{};
 
-				for (size_t i = 0; i < SALT_SIZE_BYTES;)
+				for (size_t i = 0; i < generatedSalt.size();)
 				{
 					u32 value = rd();
 
-					for (size_t j = 0; j < sizeof(value) && i < SALT_SIZE_BYTES; j++, i++)
+					for (size_t j = 0; j < sizeof(value) && i < generatedSalt.size(); j++, i++)
 					{
-						generatedSalt[i] = scast<char>(value & 0xFF);
+						generatedSalt[i] = scast<u8>(value & 0xFF);
 						value >>= 8;
 					}
 				}
@@ -259,7 +257,7 @@ namespace KalaHeaders::KalaPasswordHasher
 				return generatedSalt;
 			};
 
-		pair<string, string> result = { "", generate_salt() };
+		pair<array<u8, HASH_SIZE_BYTES>, array<u8, SALT_SIZE_BYTES>> result = { {}, generate_salt() };
 
 		err = _GenerateHash(
 			rawPassword,
@@ -277,19 +275,16 @@ namespace KalaHeaders::KalaPasswordHasher
 	//returns filled string on errors and if raw password does not match hashed password
 	inline string VerifyPassword(
 		string_view rawPassword,
-		const pair<string, string>& hashAndSalt,
+		const pair<array<u8, HASH_SIZE_BYTES>, array<u8, SALT_SIZE_BYTES>>& hashAndSalt,
 		Argon2idConfig config = {})
 	{
 		string err = _VerifyRawPassword(rawPassword);
 		if (!err.empty()) return err;
 
-		err = _VerifyGeneratedHashAndSalt(hashAndSalt);
-		if (!err.empty()) return err;
-
 		err = _VerifyArgon2idConfig(config);
 		if (!err.empty()) return err;
 
-		string outHash{};
+		array<u8, HASH_SIZE_BYTES> outHash{};
 
 		err = _GenerateHash(
 			rawPassword,
@@ -300,32 +295,23 @@ namespace KalaHeaders::KalaPasswordHasher
 		if (!err.empty()) return err;
 
 		//Constant-time comparison
-		auto hashes_match = [
-			&outHash, 
-			&hashAndSalt]() -> bool
-			{
-				if (outHash.size() != hashAndSalt.first.size()) return false;
+		u8 difference{};
 
-				u8 difference{};
+		for (size_t i = 0; i < outHash.size(); i++)
+		{
+			difference |= scast<u8>(outHash[i] ^ hashAndSalt.first[i]);
+		}
 
-				for (size_t i = 0; i < outHash.size(); i++)
-				{
-					difference |= scast<u8>(outHash[i] ^ hashAndSalt.first[i]);
-				}
-
-				return difference == 0;
-			};
-
-		return hashes_match() 
+		return difference == 0 
 			? "" 
 			: "Raw password does not match hashed password!";
 	}
 
 	inline string _GenerateHash(
 		string_view rawPassword,
-		string_view salt,
+		const array<u8, SALT_SIZE_BYTES>& salt,
 		const Argon2idConfig& config,
-		string& outHash)
+		array<u8, HASH_SIZE_BYTES>& outHash)
 	{
 		//Argon2id
 		static constexpr u8 ARGON2_TYPE_ID = 2;
@@ -1246,9 +1232,10 @@ namespace KalaHeaders::KalaPasswordHasher
 					finalBytes.size(),
 					HASH_SIZE_BYTES);
 
-				outHash.assign(
-					rcast<const char*>(hash.data()),
-					hash.size());
+				std::move(
+					hash.begin(),
+					hash.end(),
+					outHash.begin());
 			};
 
 		finalize_hash();
@@ -1267,21 +1254,6 @@ namespace KalaHeaders::KalaPasswordHasher
 			|| rawPassword.size() > MAX_PASSWORD_LENGTH_BYTES)
 		{
 			return "Raw password size was out of range!";
-		}
-
-		return "";
-	}
-
-	inline string _VerifyGeneratedHashAndSalt(const pair<string, string>& hashAndSalt)
-	{
-		if (hashAndSalt.first.size() != HASH_SIZE_BYTES)
-		{
-			return "Hashed password size was invalid!";
-		}
-
-		if (hashAndSalt.second.size() != SALT_SIZE_BYTES)
-		{
-			return "Hashed password salt size was invalid!";
 		}
 
 		return "";
