@@ -302,6 +302,38 @@ namespace KalaHeaders::KalaString
 			});
 	}
 
+	//Returns true if the given string is within min and max range
+	KNODISCARD
+	inline bool IsStringInRange(
+		string_view value,
+		size_t minLength,
+		size_t maxLength)
+	{
+		size_t bytes{};
+		size_t chars{};
+
+		while (bytes < value.size())
+		{
+			unsigned char c = scast<unsigned char>(value[bytes]);
+
+			size_t charLen = 
+				(c < 0x80) ? 1 
+				: (c < 0xE0) ? 2 
+				: (c < 0xF0) ? 3 
+				: 4;
+				
+			//incomplete char
+			if (bytes + charLen > value.size()) return false;
+			
+			bytes += charLen;
+			++chars;
+
+			if (chars > maxLength) return false;
+		}
+
+		return chars >= minLength;
+	}
+
 	//Casts a base-16 hexadecimal string to a base-10 unsigned decimal number,
 	//something a CPU can use, returns error string on failure
 	KNODISCARD
