@@ -10,6 +10,8 @@
 //   - Argon2id v1.3 (RFC 9106) and BLAKE2b (RFC 7693) compatible password hash implementation
 //   - HashPassword function to convert any string into a hashed password and salt
 //   - VerifyPassword function to confirm if a raw password is correct compared to a hashed password and its salt
+//   - StringToBytes function to safely convert hexadecimal string to binary bytes
+//   - BytesToString function to safely convert binary bytes to hexadecimal string 
 //---------------------------------------------------------------------------
 
 #pragma once
@@ -201,7 +203,9 @@ namespace KalaHeaders::KalaPasswordHasher
 	static constexpr u8 MAX_PASSWORD_LENGTH_BYTES = 32;
 	static constexpr u8 MIN_PASSWORD_LENGTH_BYTES = 8;
 
+	//256-bit hashed password
 	static constexpr u8 HASH_SIZE_BYTES = 32;
+	//128-bit password salt
 	static constexpr u8 SALT_SIZE_BYTES = 16;
 
 	struct Argon2idConfig
@@ -215,17 +219,95 @@ namespace KalaHeaders::KalaPasswordHasher
 		u32 parallelism = 1;
 	};
 
+	KNODISCARD
 	inline string _GenerateHash(
 		string_view rawPassword,
 		const array<u8, SALT_SIZE_BYTES>& salt,
 		const Argon2idConfig& config,
 		array<u8, HASH_SIZE_BYTES>& outHash);
 
+	KNODISCARD
 	inline string _VerifyRawPassword(string_view rawPassword);
+	KNODISCARD
 	inline string _VerifyArgon2idConfig(const Argon2idConfig& config);
+
+	//Converts hashed password or password salt bytes to hexadecimal string
+	template<size_t SIZE>
+		requires (SIZE == HASH_SIZE_BYTES || SIZE == SALT_SIZE_BYTES)
+	inline void BytesToString(
+		const array<u8, SIZE>& value,
+		string& outValue)
+	{
+		static constexpr char HEX[] = "0123456789abcdef";
+
+		string result{};
+		result.reserve(value.size() * 2);
+
+		for (u8 byte : value)
+		{
+			result += HEX[byte >> 4];
+			result += HEX[byte & 0x0F];
+		}
+
+		outValue = std::move(result);
+	}
+
+	//Converts hexadecimal string to hashed password or password salt bytes,
+	//returns error string on failure
+	template<size_t SIZE>
+		requires (SIZE == HASH_SIZE_BYTES || SIZE == SALT_SIZE_BYTES)
+	KNODISCARD
+	inline string StringToBytes(
+		string_view bytesString,
+		array<u8, SIZE>& outValue)
+	{
+		if (bytesString.size() != SIZE * 2)
+		{
+			return "Bytes string size was invalid!";
+		}
+
+		auto hex_to_value = [](
+			char value,
+			u8& outValue) -> bool
+			{
+				if (value >= '0' && value <= '9')
+				{
+					outValue = scast<u8>(value - '0');
+					return true;
+				}
+
+				if (value >= 'a' && value <= 'f')
+				{
+					outValue = scast<u8>((value - 'a') + 10);
+					return true;
+				}
+
+				return false;
+			};
+
+		array<u8, SIZE> result{};
+
+		for (size_t i = 0; i < result.size(); i++)
+		{
+			u8 high{};
+			u8 low{};
+
+			if (!hex_to_value(bytesString[i * 2], high)
+				|| !hex_to_value(bytesString[(i * 2) + 1], low))
+			{
+				return "Bytes string contained invalid hexadecimal characters!";
+			}
+
+			result[i] = scast<u8>((high << 4) | low);
+		}
+
+		outValue = std::move(result);
+		return "";
+	}
 
 	//Takes in a raw password string and optional Argon2id config,
 	//returns a string for error, hash password and salt
+	KNODISCARD
 	inline string HashPassword(
 		string_view rawPassword,
 		pair<array<u8, HASH_SIZE_BYTES>, array<u8, SALT_SIZE_BYTES>>& outResult,
@@ -273,6 +355,7 @@ namespace KalaHeaders::KalaPasswordHasher
 
 	//Takes in a raw password string, optional Argon2id config, hash password and salt,
 	//returns filled string on errors and if raw password does not match hashed password
+	KNODISCARD
 	inline string VerifyPassword(
 		string_view rawPassword,
 		const pair<array<u8, HASH_SIZE_BYTES>, array<u8, SALT_SIZE_BYTES>>& hashAndSalt,
@@ -307,6 +390,7 @@ namespace KalaHeaders::KalaPasswordHasher
 			: "Raw password does not match hashed password!";
 	}
 
+	KNODISCARD
 	inline string _GenerateHash(
 		string_view rawPassword,
 		const array<u8, SALT_SIZE_BYTES>& salt,
@@ -1243,6 +1327,7 @@ namespace KalaHeaders::KalaPasswordHasher
 		return "";
 	}
 
+	KNODISCARD
 	inline string _VerifyRawPassword(string_view rawPassword)
 	{
 		if (rawPassword.empty())
@@ -1259,6 +1344,7 @@ namespace KalaHeaders::KalaPasswordHasher
 		return "";
 	}
 
+	KNODISCARD
 	inline string _VerifyArgon2idConfig(const Argon2idConfig& config)
 	{
 		static constexpr u32 MIN_MEMORY_COST_KIBIBYTES = 8 * 1024;    //8 MiB
